@@ -36,7 +36,8 @@ To run local:
 To run the docker container:
 
 1. Build and deploy docker image using provided Dockerfile.  Refer to docker documentation
-2. Run Docker Image 'docker run -p 80:9000 -p 443:9443 -e "PLAY_TEST_PASSWORD=*my_password*" -d *my_docker_repository*'
+2. Run Docker Image  
+'docker run -p 80:9000 -p 443:9443 -e "PLAY_TEST_PASSWORD=`<`*my_password*`>`" -d `<`*my_docker_repository*`>`'
 
 Environment Variables:
 
