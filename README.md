@@ -31,7 +31,7 @@ To run local:
 
 1. Clone repository
 2. Change to 'home' directory in repository.
-3. Run Play 'activator -DPLAY_TEST_PASSWORD=*my_password* run'
+3. Run Play 'activator -DPLAY_TEST_PASSWORD=`<`*my_password*`>` run'
 
 To run the docker container:
 
