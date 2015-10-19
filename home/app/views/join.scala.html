@@ -1,0 +1,238 @@
+@(implicit request: Request[Any])
+
+@main("join",None,"join") {
+} {
+} {
+
+<div id="title-container">
+	<h2>Join</h2>
+</div>
+<div id="primary-container" class="join-page">
+	<div class="content">
+		<div class="message-container"></div>
+
+		<div class="join-container"></div>
+
+		<div class="clearing">&nbsp;</div>
+	</div>
+</div>
+
+
+<script type="text/html" id="join-template">
+
+<div class="full-name-container">
+	<label>Full Name:</label>
+	<input id="full-name-input" type="text" data-bind="value:full_name,events:['keyup']">
+	<div class="clearing">&nbsp;</div>
+</div>
+<div class="email-address-container">
+	<label>Email Address:</label>
+	<input id="email-input" type="text" data-bind="value:email,events:['keyup']">
+	<div class="clearing">&nbsp;</div>
+</div>
+<div class="user-name-container">
+	<label>User Name:</label>
+	<input id="user-name-input" type="text" data-bind="value:user_name,events:['keyup']">
+	<div class="clearing">&nbsp;</div>
+</div>
+<div class="password-container">
+	<label>Password:</label>
+	<input id="password-input" type="password" data-bind="value:password,events:['keyup']">
+	<div class="clearing">&nbsp;</div>
+</div>
+<div class="join-button-container">
+	<label>&nbsp;</label>
+	<a class="button join-button button-default" style="float:left;">join</a>
+	<img class="join-wait-img" src='@routes.Assets.versioned("/public/images","ajax-spinner-transparent.gif")' style="display:none;float:left;margin-left:5px;" />
+	<div class="clearing">&nbsp;</div>										
+</div>
+<div class="clearing">&nbsp;</div>
+
+</script>
+
+<script type="text/html" id="wait-template">
+
+<img id="wait-img" src='@routes.Assets.versioned("/public/images","ajax-spinner-transparent.gif")' />
+
+</script>
+
+<script type="text/html" id="unexpected-error-template">
+
+<div class="error-box">There was an unexpected error.  Try again later.</div>
+
+</script>
+
+<script type="text/html" id="errors-template">
+
+<div class="error-box">
+<% _.each(errors, function(error){ %>
+<div style="margin-bottom:5px;"><%= error %> </div>
+<% }); %>
+</div>
+
+</script>
+
+<script type="text/javascript">
+
+	var com;
+	$(function(){
+		@views.html.components.namespace_init(Seq("home"))
+		@views.html.components.epoxy_init()
+		com.rodneylai.home.join = function() {
+			var	m_app;
+
+			return {
+				init: function() {
+					m_app = new Backbone.Marionette.Application();
+
+					m_app.module('model', function (model, app, Backbone) {
+
+						model.Join = Backbone.Model.extend({
+							defaults: {
+								full_name:"",
+								email:"",
+								user_name:"",
+								password:""
+							},
+							url: '@controllers.services.routes.auth.join'
+						});
+
+						model.Errors = Backbone.Model.extend({
+							defaults: {
+								errors:[]
+							}
+						});
+					});
+
+					m_app.module('view', function (view, app, Backbone, Marionette) {
+
+						view.Join = com.rodneylai.EpoxyItemView.extend({
+							model: app.model.Join,
+							bindings: "data-bind",
+							template: Backbone.Marionette.TemplateCache.get("#join-template"),
+							ui: {
+								full_name_input:"#full-name-input",
+								email_input:"#email-input",
+								user_name_input:"#user-name-input",
+								password_input:"#password-input",
+								join_button:".join-button",
+								join_wait_img:".join-wait-img"
+							},
+							events: {
+								"click .join-button[disabled!=disabled]" : "join_click",
+								"blur #full-name-input" : "create_user_name",
+								"keyup #full-name-input" : "check_for_enter",
+								"keyup #email-input" : "check_for_enter",
+								"keyup #user-name-input" : "check_for_enter",
+								"keyup #password-input" : "check_for_enter"
+							},
+							check_for_enter:function(ev){
+								if (ev.keyCode == 13) {
+									this.join_click();
+								}
+							},
+							create_user_name:function(ev){
+								if ((this.ui.full_name_input.val().length >= 3) && (this.ui.user_name_input.val().length == 0)) {
+									this.ui.user_name_input.val(this.ui.full_name_input.val().toLowerCase().trim().replace(/\s\s+/g, ' ').replace(/ /g, '-').replace(/~[a-z0-9-]/g, ''));
+								}
+							},
+							join_click:function(){
+								var	view = this;
+
+								this.ui.join_wait_img.show();
+								this.ui.full_name_input.attr("disabled","disabled");
+								this.ui.email_input.attr("disabled","disabled");
+								this.ui.user_name_input.attr("disabled","disabled");
+								this.ui.password_input.attr("disabled","disabled");
+								this.ui.join_button.attr("disabled","disabled");
+								this.model.save(null,
+									{
+										success: function(model, response, options){
+											if (response == 'fail') {
+												view.ui.join_wait_img.hide();
+												view.ui.full_name_input.removeAttr("disabled");
+												view.ui.email_input.removeAttr("disabled");
+												view.ui.user_name_input.removeAttr("disabled");
+												view.ui.password_input.removeAttr("disabled");
+												view.ui.join_button.removeAttr("disabled");
+												m_app.message.show(new m_app.view.UnexpectedError());
+											} else {
+												document.location = '@routes.Auth.login';
+											}
+										},
+										error: function(model, xhr, options){
+											view.ui.join_wait_img.hide();
+											view.ui.full_name_input.removeAttr("disabled");
+											view.ui.email_input.removeAttr("disabled");
+											view.ui.user_name_input.removeAttr("disabled");
+											view.ui.password_input.removeAttr("disabled");
+											view.ui.join_button.removeAttr("disabled");
+											if (xhr.responseJSON == "fail") {
+												m_app.message.show(new m_app.view.UnexpectedError());
+											} else {
+												m_app.message.show(new m_app.view.Errors({ model : new m_app.model.Errors({errors:xhr.responseJSON})}));
+											}
+										}
+									}
+								);
+							}
+						});
+
+						view.Errors = Marionette.ItemView.extend({
+							template: Backbone.Marionette.TemplateCache.get("#errors-template"),
+							model: app.model.Errors
+						});
+
+						view.UnexpectedError = Marionette.ItemView.extend({
+							template: Backbone.Marionette.TemplateCache.get("#unexpected-error-template"),
+							ui: {
+								error_box:".error-box"
+							},
+							onShow: function(){
+								var	ui = this.ui;
+								setInterval(function(){$(ui.error_box).fadeOut()},5000);
+							}
+						});
+
+						view.Wait = Marionette.ItemView.extend({
+							template: Backbone.Marionette.TemplateCache.get("#wait-template")
+						});
+
+					});
+
+					m_app.addRegions({	message : '.message-container',
+										join : '.join-container'
+					});
+
+					m_app.addInitializer(function(options){
+						m_app.join.show(new m_app.view.Join({ model : new m_app.model.Join() }));
+					});
+
+					m_app.start();
+				}
+			}
+		}();
+		com.rodneylai.home.join.init();
+	});
+
+</script>
+
+}
+
+@*
+ *
+ * Copyright (c) 2015 Rodney S.K. Lai
+ *
+ * Permission to use, copy, modify, and/or distribute this software for 
+ * any purpose with or without fee is hereby granted, provided that the 
+ * above copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES 
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF 
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR 
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES 
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN 
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF 
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *@

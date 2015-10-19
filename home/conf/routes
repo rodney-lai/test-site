@@ -1,0 +1,58 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET		/												controllers.Application.index
+HEAD	/												controllers.ApplicationDoNotTrack.index_header
+GET		/login											controllers.Auth.login
+GET     /logout											controllers.Application.logout
+GET		/join											controllers.Auth.join
+GET		/about											controllers.Application.about
+GET		/admin											controllers.Admin.index
+GET		/admin/users									controllers.Admin.users
+GET		/developer										controllers.Developer.index
+GET		/developer/server								controllers.Developer.server
+GET		/developer/memcached							controllers.Developer.memcached
+GET		/developer/mongodb/:collection_name				controllers.Developer.mongodb_collection(collection_name:String)
+GET		/developer/mongodb								controllers.Developer.mongodb
+GET		/developer/api									controllers.Developer.api
+
+GET		/api-docs										controllers.ApiDocs.index
+GET		/api-docs.json									controllers.services.developer.api_docs.getResources
+GET		/api-docs.json/home								controllers.services.developer.api_docs.getResource(path:String = "/home")
+GET		/api-docs.json/auth								controllers.services.developer.api_docs.getResource(path:String = "/auth")
+GET		/api-docs.json/developer						controllers.services.developer.api_docs.getResource(path:String = "/developer")
+GET		/api-docs.json/developer/memcached				controllers.services.developer.api_docs.getResource(path:String = "/developer/memcached")
+GET		/api-docs.json/developer/mongodb				controllers.services.developer.api_docs.getResource(path:String = "/developer/mongodb")
+GET		/api-docs.json/admin							controllers.services.developer.api_docs.getResource(path:String = "/admin")
+GET		/api-docs.json/admin/users						controllers.services.developer.api_docs.getResource(path:String = "/admin/users")
+
+GET		/services/who_am_i								controllers.services.home.who_am_i
+GET		/services/scraped_images						controllers.services.home.get_scraped_images
+POST	/services/login									controllers.services.auth.login
+POST	/services/join									controllers.services.auth.join
+GET		/services/developer/memcached/:key				controllers.services.developer.memcached.get(key:String)
+PUT		/services/developer/memcached/:key				controllers.services.developer.memcached.set(key:String)
+POST	/services/developer/memcached/:key				controllers.services.developer.memcached.set(key:String)
+DELETE	/services/developer/memcached/:key				controllers.services.developer.memcached.clear(key:String)
+GET		/services/developer/mongodb/:collection_name	controllers.services.developer.mongodb.get(collection_name:String,skip:Int ?= 0)
+GET		/services/admin/users							controllers.services.admin.users.get(filter:String ?= "",skip:Int ?= 0)
+PUT		/services/admin/user/:friendly_url				controllers.services.admin.users.save(friendly_url:String)
+
+GET     /throw-exception								controllers.Test.throw_exception
+GET     /test-val/:x									controllers.Test.test_val(x:Integer)
+
+GET		/robots.txt										controllers.Assets.versioned(path="/public",file="robots.txt")
+GET		/favicon.png									controllers.Assets.versioned(path="/public",file="favicon.png")
+GET		/favicon.ico									controllers.Assets.versioned(path="/public",file="favicon.png")
+GET     /js/*file										controllers.Assets.versioned(path="/public/javascripts", file)
+GET     /js/swagger/*file								controllers.Assets.versioned(path="/public/javascripts/swagger", file)
+GET     /js/swagger/lang/*file							controllers.Assets.versioned(path="/public/javascripts/swagger/lang", file)
+GET     /css/*file										controllers.Assets.versioned(path="/public/stylesheets", file)
+GET     /css/swagger/*file								controllers.Assets.versioned(path="/public/stylesheets/swagger", file)
+GET     /img/*file										controllers.Assets.versioned(path="/public/images", file)
+GET     /img/swagger/*file								controllers.Assets.versioned(path="/public/images/swagger", file)
+GET     /fonts/*file									controllers.Assets.versioned(path="/public/fonts", file)
+GET     /fonts/swagger/*file							controllers.Assets.versioned(path="/public/fonts/swagger", file)
+

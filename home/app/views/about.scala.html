@@ -1,0 +1,66 @@
+@(accountOption:Option[com.rodneylai.auth.Account],htmlOption:Option[String],buildDateOption:Option[String])(implicit request: Request[Any])
+
+@main("About Rodney's Test Server",accountOption,"about") {
+} {
+} {
+
+<div id="title-container">
+	<h2>About Rodney's Test Server</h2>
+</div>
+<div id="primary-container" class="about-page">
+	<div class="content">
+@htmlOption match {
+	case Some(html) => {
+		@Html(html)
+	}
+	case None => {
+		<a href="https://github.com/rodney-lai">GitHub Repository</a>
+	}
+}
+@buildDateOption match {
+	case Some(buildDate) => {
+		<div style="margin-top:15px;">Built on @buildDate</div>
+	}
+	case None => { }
+}
+	</div>
+</div>
+
+<script type="text/javascript">
+
+	var com;
+	$(function(){
+		@views.html.components.namespace_init(Seq("home","about"))
+		com.rodneylai.home.about = function() {
+
+			return {
+				init: function() {
+				}
+			}
+		}();
+		com.rodneylai.home.about.init();
+	});
+
+</script>
+
+}
+
+@*
+ *
+ * Copyright (c) 2015 Rodney S.K. Lai
+ *
+ * Permission to use, copy, modify, and/or distribute this software for 
+ * any purpose with or without fee is hereby granted, provided that the 
+ * above copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES 
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF 
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR 
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES 
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN 
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF 
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *@
+
+

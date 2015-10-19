@@ -1,0 +1,49 @@
+Rodney's Test Site v0.8.0
+=========================
+
+rlai [ at ] irismedia [ dot ] com
+
+[GitHub Repository](https://github.com/rodney-lai)
+
+Features
+--------
+
+* User Accounts
+* User Roles
+* Page View Logging
+* Admin Portal to manage users
+* Developer Portal to manage web server, memcached, and mongodb
+* Interactive API documentation
+
+Server Technology
+-----------------
+
+* Web Framework - [Play Framework v2.4.3](https://playframework.com/)
+* Language - [Scala v2.11.7](http://scala-lang.org/)
+* NoSQL Database - [MongoDB](https://www.mongodb.org/)
+* Data Cache - [Memcached](http://memcached.org/)
+
+Backend Libraries
+-----------------
+
+* Authentication - [Play2-Auth](https://github.com/t2v/play2-auth)
+* Authorization - [Deadbolt 2](https://github.com/schaloner/deadbolt-2)
+* Password Encryption - [jBCrypt](http://www.mindrot.org/projects/jBCrypt/)
+* API Documentation - [Swagger](http://swagger.io/)
+
+Frontend Libraries
+------------------
+
+* DOM Library - [jQuery](http://jquery.com/)
+* MVC Framework - [backbone.js](http://backbonejs.org/)
+* Utility Library - [underscore.js](http://underscorejs.org/)
+* Data Binding for Backbone - [epoxy.js](http://epoxyjs.org/)
+* Backbone Framework - [marionette.js](http://marionettejs.com/)
+
+Build, Deploy, Hosting
+----------------------
+
+* Build and Deploy - [Docker](https://www.docker.com/)
+* Web Server Hosting - [Amazon Web Services (AWS)](http://aws.amazon.com/)
+* MongoDB Hosting - [MongoLab](https://mongolab.com/)
+
