@@ -31,13 +31,13 @@ To run local:
 
 1. Clone repository
 2. Change to 'home' directory in repository.
-3. Run Play 'activator -DPLAY_TEST_PASSWORD=`<`*my_password*`>` run'
+3. Run Play 'activator -DPLAY_TEST_PASSWORD=[*my_password*] run'
 
 To run the docker container:
 
 1. Build and deploy docker image using provided Dockerfile.  Refer to docker documentation
 2. Run Docker Image  
-'docker run -p 80:9000 -p 443:9443 -e "PLAY_TEST_PASSWORD=`<`*my_password*`>`" -d `<`*my_docker_repository*`>`'
+'docker run -p 80:9000 -p 443:9443 -e "PLAY_TEST_PASSWORD=[*my_password*]" -d [*my_docker_repository*]'
 
 Environment Variables:
 
