@@ -16,11 +16,26 @@
  *
  */
 
-package com.rodneylai.security.models
+package com.rodneylai.stackc
 
-import be.objectify.deadbolt.core.models.Permission
+import play.api.Mode
+import play.api.mvc._
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Future}
+import jp.t2v.lab.play2.auth._
+import jp.t2v.lab.play2.stackc._
+import com.rodneylai.util._
 
-class UserPermission(val value: String) extends Permission
-{
-  def getValue: String = value
+trait DevModeDelay extends StackableController {
+  self: Controller =>
+
+  case object EnvironmentKey extends RequestAttributeKey[play.api.Environment]
+
+  override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[Result]): Future[Result] = {
+    super.proceed(req) { req =>
+      req.get(EnvironmentKey).map(environment => if (environment.mode == Mode.Dev) Thread.sleep(2000))
+      f(req)
+    }
+  }
+
 }

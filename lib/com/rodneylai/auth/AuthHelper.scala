@@ -1,17 +1,17 @@
 /**
  *
- * Copyright (c) 2015 Rodney S.K. Lai
+ * Copyright (c) 2015-2016 Rodney S.K. Lai
  *
- * Permission to use, copy, modify, and/or distribute this software for 
- * any purpose with or without fee is hereby granted, provided that the 
+ * Permission to use, copy, modify, and/or distribute this software for
+ * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES 
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF 
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR 
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES 
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN 
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
@@ -20,10 +20,9 @@ package com.rodneylai.auth
 
 import play.api.mvc._
 import java.util.{Calendar,Date}
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Future}
+import scala.concurrent.{ExecutionContext,Future}
 import org.mindrot.jbcrypt._
-import com.mongodb.casbah.Imports._
+import org.mongodb.scala._
 import com.rodneylai.models.mongodb._
 import com.rodneylai.util._
 
@@ -49,53 +48,58 @@ object AuthHelper extends AuthConfigImpl
 
   def validatePassword(password:String,passwordHash:String):Boolean = BCrypt.checkpw(password, passwordHash)
 
-  def initTestUsers:Option[Seq[UserAccount]] = {
+  def initTestUsers(implicit ctx: ExecutionContext):Future[Option[Seq[UserAccount]]] = {
     if (MongoHelper.isActive) {
-      val userAccountCollection:MongoCollection = UserAccount.getCollection
+      for {
+        collection <- UserAccountDao.collectionFuture
+        userAccounts <- Future.sequence(
+          m_testAccounts.map(account => {
+            for {
+              userAccountOption <- UserAccountDao.findByEmailAddress(account.email)
+              userAccount <- userAccountOption match {
+                case Some(userAccount) => Future.successful(userAccount)
+                case None => {
+                  val now:java.util.Date = Calendar.getInstance.getTime
+                  val userAccount:UserAccount = UserAccount(java.util.UUID.randomUUID,
+                                                            testPasswordHash,
+                                                            account.email,
+                                                            account.email,
+                                                            account.name,
+                                                            account.friendlyUrl,
+                                                            account.roleList,
+                                                            "active",
+                                                            now,
+                                                            now)
 
-      Some(m_testAccounts.map(account => {
-        userAccountCollection.findOne( MongoDBObject("EmailAddressLowerCase" -> account.email) ) match {
-          case Some(userAccount) => UserAccountMap.fromBson(userAccount)
-          case None => {
-            val now:java.util.Date = Calendar.getInstance.getTime
-            val userAccount:UserAccount = UserAccount(None,
-                                                      java.util.UUID.randomUUID,
-                                                      testPasswordHash,
-                                                      account.email,
-                                                      account.email,
-                                                      account.name,
-                                                      account.friendlyUrl,
-                                                      account.roleList,
-                                                      "active",
-                                                      now,
-                                                      now)
-
-            userAccountCollection.insert(UserAccountMap.toBson(userAccount))
-            userAccount
-          }
-        }
-      }))
+                  for {
+                    _ <- collection.insertOne(UserAccountDao.toBson(userAccount)).toFuture
+                  } yield userAccount
+                }
+              }
+            } yield userAccount
+          })
+        )
+      } yield Some(userAccounts)
     } else {
-      None
+      Future.successful(None)
     }
   }
 
-  def getCurrentUserId(implicit request: RequestHeader): Future[Option[Id]] = {
+  def getCurrentUserId(request: RequestHeader)(implicit ctx: ExecutionContext):Future[Option[Id]] = {
     tokenAccessor.extract(request) match {
       case Some(token) => idContainer.get(token)
-      case None => Future(None)
+      case None => Future.successful(None)
     }
   }
 
-  def getCurrentUser(implicit request: RequestHeader): Future[Option[User]] = {
-    getCurrentUserId(request) map {
-      case Some(id) => Account.findByIdNow(id)
-      case None => None
-    }
+  def getCurrentUser(request: RequestHeader)(implicit ctx: ExecutionContext):Future[Option[User]] = {
+    for {
+      idOption <- getCurrentUserId(request)
+      userOption <- idOption match {
+        case Some(id) => Account.findById(id)
+        case None => Future.successful(None)
+      }
+    } yield userOption
   }
 
 }
-
-
-
-

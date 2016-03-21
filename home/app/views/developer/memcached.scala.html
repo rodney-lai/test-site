@@ -1,70 +1,70 @@
-@(account:com.rodneylai.auth.Account,memcachedStatsListOption:Option[Map[String,Seq[(String,String)]]],errorMessageOption:Option[String] = None)(implicit request: Request[Any])
+@(account:com.rodneylai.auth.Account,memcachedStatsListOption:Option[Map[String,Seq[(String,String)]]],errorMessageOption:Option[String] = None)(implicit request: Request[Any], environment: play.api.Environment)
 
 @views.html.developer.main("manage memcached",Some(account),"developer","memcached") {
 } {
 
 <div id="title-container">
-	<h2>Manage Memcached</h2>
+  <h2>Manage Memcached</h2>
 </div>
 <div id="primary-container" class="manage-memcached-page">
-	<div class="content">
-		<div class="message-container">
+  <div class="content">
+    <div class="message-container">
 @errorMessageOption match {
-	case Some(errorMessage) => {
-		<div class="error-box">@errorMessage</div>
-	}
-	case None => { }
+  case Some(errorMessage) => {
+    <div class="error-box">@errorMessage</div>
+  }
+  case None => { }
 }
-		</div>
+    </div>
 
-		<div class="key-value-container"></div>
+    <div class="key-value-container"></div>
 
-		<div class="list-container">
+    <div class="list-container">
 @memcachedStatsListOption match {
-	case Some(memcachedStatsList) => {
-		@for((memcachedServer,memcachedStats) <- memcachedStatsList) {
-			<div class="server-container">@memcachedServer</div>
-			@for((stat,value) <- memcachedStats) {
-			<div class="stat-container">
-				<label>@stat:</label>
-				<div style="float:left;">@value</div>
-				<div class="clearing">&nbsp;</div>
-			</div>
-			}
-		}
-	}
-	case None => { }
+  case Some(memcachedStatsList) => {
+    @for((memcachedServer,memcachedStats) <- memcachedStatsList) {
+      <div class="server-container">@memcachedServer</div>
+      @for((stat,value) <- memcachedStats) {
+      <div class="stat-container">
+        <label>@stat:</label>
+        <div style="float:left;">@value</div>
+        <div class="clearing">&nbsp;</div>
+      </div>
+      }
+    }
+  }
+  case None => { }
 }
-		</div>
-		<div class="clearing">&nbsp;</div>
-	</div>
+    </div>
+    <div class="clearing">&nbsp;</div>
+  </div>
 </div>
 
 <script type="text/html" id="key-value-template">
 
 <div class="key">
-	<label>Key:</label>
-	<input id="key-input" type="text" data-bind="value:id,events:['keyup']" />
-	<div class="clearing">&nbsp;</div>
+  <label>Key:</label>
+  <input id="key-input" type="text" data-bind="value:id,events:['keyup']" />
+  <div class="clearing">&nbsp;</div>
 </div>
 <div class="key-buttons">
-	<label>&nbsp;</label>
-	<div style="float:left;">
-		<a class="get-button button button-default">get</a>
-		<img id="get-wait-img" src='@routes.Assets.versioned("/public/images","ajax-spinner-transparent.gif")' style="display:none;" />
-	</div>
-	<div style="float:right;">
-		<img id="remove-wait-img" src='@routes.Assets.versioned("/public/images","ajax-spinner-transparent.gif")' style="display:none;" />
-		<a class="remove-button button">remove</a>
-	</div>
-	<div class="clearing">&nbsp;</div>
+  <label>&nbsp;</label>
+  <div style="float:left;">
+    <a class="get-button button button-default">get</a>
+    <img id="get-wait-img" src='@routes.Assets.versioned("/public/images","ajax-spinner-transparent.gif")' style="display:none;" />
+  </div>
+  <div style="float:right;">
+    <img id="remove-wait-img" src='@routes.Assets.versioned("/public/images","ajax-spinner-transparent.gif")' style="display:none;" />
+    <a class="remove-button button">remove</a>
+  </div>
+  <div class="clearing">&nbsp;</div>
 </div>
 
 <% if (value) { %>
 <div class="key-results">
-	<label>&nbsp;</label>
-	<div style="float:left;" class="information-box"><%= value %></div>
-	<div class="clearing">&nbsp;</div>
+  <label>&nbsp;</label>
+  <div style="float:left;" class="information-box"><%= value %></div>
+  <div class="clearing">&nbsp;</div>
 </div>
 <% } %>
 
@@ -96,155 +96,155 @@
 
 <script type="text/javascript">
 
-	var com;
-	$(function(){
-		@views.html.components.namespace_init(Seq("developer"))
-		@views.html.components.epoxy_init()
-		com.rodneylai.developer.memcached = function() {
-			var	m_app;
-			var	m_keyValueView;
+  var com;
+  $(function(){
+    @views.html.components.namespace_init(Seq("developer"))
+    @views.html.components.epoxy_init()
+    com.rodneylai.developer.memcached = function() {
+      var m_app;
+      var m_keyValueView;
 
-			return {
-				init: function() {
-					m_app = new Backbone.Marionette.Application();
+      return {
+        init: function() {
+          m_app = new Backbone.Marionette.Application();
 
-					m_app.module('model', function (model, app, Backbone) {
+          m_app.module('model', function (model, app, Backbone) {
 
-						model.KeyValue = Backbone.Model.extend({
-							defaults: {
-								id : null,
-								value : null
-							},
-							urlRoot: '/services/developer/memcached'
-						});
+            model.KeyValue = Backbone.Model.extend({
+              defaults: {
+                id : null,
+                value : null
+              },
+              urlRoot: '/services/developer/memcached'
+            });
 
-					});
+          });
 
-					m_app.module('view', function (view, app, Backbone, Marionette) {
+          m_app.module('view', function (view, app, Backbone, Marionette) {
 
-						view.UnexpectedError = Marionette.ItemView.extend({
-							template: Backbone.Marionette.TemplateCache.get("#unexpected-error-template"),
-							ui: {
-								error_box:".error-box"
-							},
-							onShow: function(){
-								var	ui = this.ui;
-								setInterval(function(){$(ui.error_box).fadeOut()},5000);
-							}
-						});
+            view.UnexpectedError = Marionette.ItemView.extend({
+              template: Backbone.Marionette.TemplateCache.get("#unexpected-error-template"),
+              ui: {
+                error_box:".error-box"
+              },
+              onShow: function(){
+                var ui = this.ui;
+                setInterval(function(){$(ui.error_box).fadeOut()},5000);
+              }
+            });
 
-						view.KeyNotFound = Marionette.ItemView.extend({
-							template: Backbone.Marionette.TemplateCache.get("#key-not-found-template"),
-							ui: {
-								error_box:".error-box"
-							},
-							onShow: function(){
-								var	ui = this.ui;
-								setInterval(function(){$(ui.error_box).fadeOut()},5000);
-							}
-						});
+            view.KeyNotFound = Marionette.ItemView.extend({
+              template: Backbone.Marionette.TemplateCache.get("#key-not-found-template"),
+              ui: {
+                error_box:".error-box"
+              },
+              onShow: function(){
+                var ui = this.ui;
+                setInterval(function(){$(ui.error_box).fadeOut()},5000);
+              }
+            });
 
-						view.KeyRemoved = Marionette.ItemView.extend({
-							template: Backbone.Marionette.TemplateCache.get("#key-removed-template"),
-							ui: {
-								information_box:".information-box"
-							},
-							onShow: function(){
-								var	ui = this.ui;
-								setInterval(function(){$(ui.information_box).fadeOut()},5000);
-							}
-						});
+            view.KeyRemoved = Marionette.ItemView.extend({
+              template: Backbone.Marionette.TemplateCache.get("#key-removed-template"),
+              ui: {
+                information_box:".information-box"
+              },
+              onShow: function(){
+                var ui = this.ui;
+                setInterval(function(){$(ui.information_box).fadeOut()},5000);
+              }
+            });
 
-						view.KeyValue = com.rodneylai.EpoxyItemView.extend({
-							model: app.model.Key,
-							bindings: "data-bind",
-							template: Backbone.Marionette.TemplateCache.get("#key-value-template"),
-							ui: {
-								get_button:".get-button",
-								remove_button:".remove-button",
-								get_wait_img:"#get-wait-img",
-								remove_wait_img:"#remove-wait-img"
-							},
-							events: {
-								"keyup #key-input" : "check_for_enter",
-								"click .get-button[disabled!=disabled]" : "get_click",
-								"click .remove-button[disabled!=disabled]" : "remove_click"
-							},
-							check_for_enter:function(ev){
-								if (ev.keyCode == 13) {
-									this.get_click();
-								}
-							},
-							get_click: function() {
-								this.ui.get_button.attr("disabled","disabled");
-								this.ui.remove_button.attr("disabled","disabled");
-								this.ui.get_wait_img.show();
-								this.model.fetch({
-									success: function(model, response) {
-										m_keyValueView.ui.get_button.removeAttr("disabled");
-										m_keyValueView.ui.remove_button.removeAttr("disabled");
-										m_keyValueView.ui.get_wait_img.hide();
-										m_keyValueView.model = model;
-										m_keyValueView.render();
-									},
-									error: function(model, xhr, options) {
-										m_keyValueView.ui.get_button.removeAttr("disabled");
-										m_keyValueView.ui.remove_button.removeAttr("disabled");
-										m_keyValueView.ui.get_wait_img.hide();
-										if (xhr.status == 404) {
-											m_app.message.show(new m_app.view.KeyNotFound());
-										} else if (xhr.responseJSON == "kick") {
-											document.location = "@routes.Auth.login?return_url=@play.utils.UriEncoding.encodePathSegment(request.uri,"UTF-8")";
-										} else {
-											m_app.message.show(new m_app.view.UnexpectedError());
-										}
-									}
-								});
-							},
-							remove_click: function() {
-								this.ui.get_button.attr("disabled","disabled");
-								this.ui.remove_button.attr("disabled","disabled");
-								this.ui.remove_wait_img.show();
-								this.model.destroy({
-									success: function(model, response) {
-										m_keyValueView.ui.get_button.removeAttr("disabled");
-										m_keyValueView.ui.remove_button.removeAttr("disabled");
-										m_keyValueView.ui.remove_wait_img.hide();
-										model.set("value",null);
-										m_keyValueView.model = model;
-										m_keyValueView.render();
-										m_app.message.show(new m_app.view.KeyRemoved());
-									},
-									error: function(model, response) {
-										m_keyValueView.ui.get_button.removeAttr("disabled");
-										m_keyValueView.ui.remove_button.removeAttr("disabled");
-										m_keyValueView.ui.remove_wait_img.hide();
-										m_app.message.show(new m_app.view.UnexpectedError());
-									}
-								});
-							}
-						});
+            view.KeyValue = com.rodneylai.EpoxyItemView.extend({
+              model: app.model.Key,
+              bindings: "data-bind",
+              template: Backbone.Marionette.TemplateCache.get("#key-value-template"),
+              ui: {
+                get_button:".get-button",
+                remove_button:".remove-button",
+                get_wait_img:"#get-wait-img",
+                remove_wait_img:"#remove-wait-img"
+              },
+              events: {
+                "keyup #key-input" : "check_for_enter",
+                "click .get-button[disabled!=disabled]" : "get_click",
+                "click .remove-button[disabled!=disabled]" : "remove_click"
+              },
+              check_for_enter:function(ev){
+                if (ev.keyCode == 13) {
+                  this.get_click();
+                }
+              },
+              get_click: function() {
+                this.ui.get_button.attr("disabled","disabled");
+                this.ui.remove_button.attr("disabled","disabled");
+                this.ui.get_wait_img.show();
+                this.model.fetch({
+                  success: function(model, response) {
+                    m_keyValueView.ui.get_button.removeAttr("disabled");
+                    m_keyValueView.ui.remove_button.removeAttr("disabled");
+                    m_keyValueView.ui.get_wait_img.hide();
+                    m_keyValueView.model = model;
+                    m_keyValueView.render();
+                  },
+                  error: function(model, xhr, options) {
+                    m_keyValueView.ui.get_button.removeAttr("disabled");
+                    m_keyValueView.ui.remove_button.removeAttr("disabled");
+                    m_keyValueView.ui.get_wait_img.hide();
+                    if (xhr.status == 404) {
+                      m_app.message.show(new m_app.view.KeyNotFound());
+                    } else if (xhr.responseJSON == "kick") {
+                      document.location = "@routes.Auth.login?return_url=@play.utils.UriEncoding.encodePathSegment(request.uri,"UTF-8")";
+                    } else {
+                      m_app.message.show(new m_app.view.UnexpectedError());
+                    }
+                  }
+                });
+              },
+              remove_click: function() {
+                this.ui.get_button.attr("disabled","disabled");
+                this.ui.remove_button.attr("disabled","disabled");
+                this.ui.remove_wait_img.show();
+                this.model.destroy({
+                  success: function(model, response) {
+                    m_keyValueView.ui.get_button.removeAttr("disabled");
+                    m_keyValueView.ui.remove_button.removeAttr("disabled");
+                    m_keyValueView.ui.remove_wait_img.hide();
+                    model.set("value",null);
+                    m_keyValueView.model = model;
+                    m_keyValueView.render();
+                    m_app.message.show(new m_app.view.KeyRemoved());
+                  },
+                  error: function(model, response) {
+                    m_keyValueView.ui.get_button.removeAttr("disabled");
+                    m_keyValueView.ui.remove_button.removeAttr("disabled");
+                    m_keyValueView.ui.remove_wait_img.hide();
+                    m_app.message.show(new m_app.view.UnexpectedError());
+                  }
+                });
+              }
+            });
 
-						view.Wait = Marionette.ItemView.extend({
-							template: Backbone.Marionette.TemplateCache.get("#wait-template")
-						});
+            view.Wait = Marionette.ItemView.extend({
+              template: Backbone.Marionette.TemplateCache.get("#wait-template")
+            });
 
-					});
+          });
 
-					m_app.addRegions({	message : '.message-container',
-										key_value : '.key-value-container'
-					});
+          m_app.addRegions({message : '.message-container',
+                            key_value : '.key-value-container'
+          });
 
-					m_app.addInitializer(function(options){
-						m_app.key_value.show(m_keyValueView = new m_app.view.KeyValue({ model : new m_app.model.KeyValue() }));
-					});
+          m_app.addInitializer(function(options){
+            m_app.key_value.show(m_keyValueView = new m_app.view.KeyValue({ model : new m_app.model.KeyValue() }));
+          });
 
-					m_app.start();
-				}
-			}
-		}();
-		com.rodneylai.developer.memcached.init();
-	});
+          m_app.start();
+        }
+      }
+    }();
+    com.rodneylai.developer.memcached.init();
+  });
 
 </script>
 
@@ -252,18 +252,18 @@
 
 @*
  *
- * Copyright (c) 2015 Rodney S.K. Lai
+ * Copyright (c) 2015-2016 Rodney S.K. Lai
  *
- * Permission to use, copy, modify, and/or distribute this software for 
- * any purpose with or without fee is hereby granted, provided that the 
+ * Permission to use, copy, modify, and/or distribute this software for
+ * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES 
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF 
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR 
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES 
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN 
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  *@

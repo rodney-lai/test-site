@@ -1,31 +1,33 @@
 /**
  *
- * Copyright (c) 2015 Rodney S.K. Lai
+ * Copyright (c) 2015-2016 Rodney S.K. Lai
  *
- * Permission to use, copy, modify, and/or distribute this software for 
- * any purpose with or without fee is hereby granted, provided that the 
+ * Permission to use, copy, modify, and/or distribute this software for
+ * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES 
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF 
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR 
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES 
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN 
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
 
 package com.rodneylai.models.mongodb
 
-import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.commons.{MongoDBList, MongoDBObject}
-import com.mongodb.DBObject
-import org.bson.types._
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.util.{Failure,Success,Try}
+import org.bson.types.{ObjectId}
+import org.mongodb.scala._
+import org.mongodb.scala.bson.{BsonBinary,BsonDateTime,BsonObjectId,BsonString}
+import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.util._
 
 case class TrackingEvent (
-  id: Option[ObjectId],
   trackingUuid: java.util.UUID,
   sourceUuid: java.util.UUID,
   actionType: String,
@@ -35,38 +37,44 @@ case class TrackingEvent (
   sessionId: String,
   userAgent: String,
   urlReferrer: String,
-  createDateTimeUTC: java.util.Date
+  createDate: java.util.Date,
+  id: Option[ObjectId] = None
 )
 
-object TrackingEvent {
-  def getCollection:MongoCollection = {
-    MongoHelper.getOrCreateCollection("TrackingEvent")
-  }
-}
+object TrackingEventDao {
+  private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
-object TrackingEventMap {  
-
-  def fromBson(trackingEvent: DBObject):TrackingEvent = {
-    TrackingEvent(
-      Some(trackingEvent.as[ObjectId]("_id")),
-      MongoHelper.fromStandardBinaryUUID(trackingEvent.as[Binary]("TrackingUuid")),
-      MongoHelper.fromStandardBinaryUUID(trackingEvent.as[Binary]("SourceUuid")),
-      trackingEvent.as[String]("ActionType"),
-      MongoHelper.fromStandardBinaryUUID(trackingEvent.as[Binary]("ActionUuid")),
-      MongoHelper.fromStandardBinaryUUID(trackingEvent.as[Binary]("UserUuid")),
-      trackingEvent.as[String]("IpAddress"),
-      trackingEvent.as[String]("SessionId"),
-      trackingEvent.as[String]("UserAgent"),
-      trackingEvent.as[String]("UrlReferrer"),
-      trackingEvent.as[java.util.Date]("CreateDateTimeUTC")
-    )
+  lazy val collectionFuture:Future[MongoCollection[Document]] = {
+    Future.successful(MongoHelper.getCollection("TrackingEvent"))
   }
 
-  def toBson(trackingEvent: TrackingEvent): DBObject = {
+  def fromBson(trackingEventBson:Document):Option[TrackingEvent] = {
+    Try(TrackingEvent(
+      MongoHelper.fromStandardBinaryUUID(trackingEventBson.get[BsonBinary]("TrackingUuid").get.getData),
+      MongoHelper.fromStandardBinaryUUID(trackingEventBson.get[BsonBinary]("SourceUuid").get.getData),
+      trackingEventBson.get[BsonString]("ActionType").get.getValue,
+      MongoHelper.fromStandardBinaryUUID(trackingEventBson.get[BsonBinary]("ActionUuid").get.getData),
+      MongoHelper.fromStandardBinaryUUID(trackingEventBson.get[BsonBinary]("UserUuid").get.getData),
+      trackingEventBson.get[BsonString]("IpAddress").get.getValue,
+      trackingEventBson.get[BsonString]("SessionId").get.getValue,
+      trackingEventBson.get[BsonString]("UserAgent").get.getValue,
+      trackingEventBson.get[BsonString]("UrlReferrer").get.getValue,
+      new java.util.Date(trackingEventBson.get[BsonDateTime]("CreateDate").get.getValue),
+      Some(trackingEventBson.get[BsonObjectId]("_id").get.getValue)
+    )) match {
+      case Success(trackingEvent) => Some(trackingEvent)
+      case Failure(ex) => {
+        m_log.error(s"failed to convert bson to case class [$trackingEventBson]",ex)
+        None
+      }
+    }
+  }
+
+  def toBson(trackingEvent:TrackingEvent):Document = {
     trackingEvent.id match {
       case Some(objectId) => {
-        MongoDBObject(
-          "_id" -> objectId,
+        Document(
+          "_id" ->  BsonObjectId(objectId),
           "TrackingUuid" -> MongoHelper.toStandardBinaryUUID(trackingEvent.trackingUuid),
           "SourceUuid" -> MongoHelper.toStandardBinaryUUID(trackingEvent.sourceUuid),
           "ActionType" -> trackingEvent.actionType,
@@ -76,11 +84,11 @@ object TrackingEventMap {
           "SessionId" -> trackingEvent.sessionId,
           "UserAgent" -> trackingEvent.userAgent,
           "UrlReferrer" -> trackingEvent.urlReferrer,
-          "CreateDateTimeUTC" -> trackingEvent.createDateTimeUTC
+          "CreateDate" -> trackingEvent.createDate
         )
       }
       case None => {
-        MongoDBObject(
+        Document(
           "TrackingUuid" -> MongoHelper.toStandardBinaryUUID(trackingEvent.trackingUuid),
           "SourceUuid" -> MongoHelper.toStandardBinaryUUID(trackingEvent.sourceUuid),
           "ActionType" -> trackingEvent.actionType,
@@ -90,10 +98,9 @@ object TrackingEventMap {
           "SessionId" -> trackingEvent.sessionId,
           "UserAgent" -> trackingEvent.userAgent,
           "UrlReferrer" -> trackingEvent.urlReferrer,
-          "CreateDateTimeUTC" -> trackingEvent.createDateTimeUTC
+          "CreateDate" -> trackingEvent.createDate
         )
       }
     }
   }
 }
-

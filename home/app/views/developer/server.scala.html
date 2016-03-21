@@ -1,31 +1,31 @@
-@(account:com.rodneylai.auth.Account,infoList:Seq[(String,String)])(implicit request: Request[Any])
+@(account:com.rodneylai.auth.Account,infoList:Seq[(String,String)])(implicit request: Request[Any], environment: play.api.Environment)
 
 @views.html.developer.main("manage server",Some(account),"developer","server") {
 } {
 
 <div id="title-container">
-	<h2>Manage Server</h2>
+  <h2>Manage Server</h2>
 </div>
 <div id="primary-container" class="manage-server-page">
-	<div class="content">
-		<div class="message-container"></div>
+  <div class="content">
+    <div class="message-container"></div>
 
-		<div class="list-container">
+    <div class="list-container">
 @for((label,value) <- infoList) {
-			<div class="stat-container">
-	@if(label.trim.length == 0) {
-				<label>@label</label>
-	} else {
-				<label>@label:</label>
-	}
-				<div style="float:left;">@value</div>
-				<div class="clearing">&nbsp;</div>
-			</div>
+      <div class="stat-container">
+  @if(label.trim.length == 0) {
+        <label>@label</label>
+  } else {
+        <label>@label:</label>
+  }
+        <div style="float:left;">@value</div>
+        <div class="clearing">&nbsp;</div>
+      </div>
 }
-		</div>
+    </div>
 
-		<div class="clearing">&nbsp;</div>
-	</div>
+    <div class="clearing">&nbsp;</div>
+  </div>
 </div>
 
 
@@ -37,41 +37,41 @@
 
 <script type="text/javascript">
 
-	var com;
-	$(function(){
-		@views.html.components.namespace_init(Seq("developer"))
-		@views.html.components.epoxy_init()
-		com.rodneylai.developer.index = function() {
-			var	m_app;
+  var com;
+  $(function(){
+    @views.html.components.namespace_init(Seq("developer"))
+    @views.html.components.epoxy_init()
+    com.rodneylai.developer.index = function() {
+      var m_app;
 
-			return {
-				init: function() {
-					m_app = new Backbone.Marionette.Application();
+      return {
+        init: function() {
+          m_app = new Backbone.Marionette.Application();
 
-					m_app.module('model', function (model, app, Backbone) {
+          m_app.module('model', function (model, app, Backbone) {
 
-					});
+          });
 
-					m_app.module('view', function (view, app, Backbone, Marionette) {
+          m_app.module('view', function (view, app, Backbone, Marionette) {
 
-						view.Wait = Marionette.ItemView.extend({
-							template: Backbone.Marionette.TemplateCache.get("#wait-template")
-						});
+            view.Wait = Marionette.ItemView.extend({
+              template: Backbone.Marionette.TemplateCache.get("#wait-template")
+            });
 
-					});
+          });
 
-					m_app.addRegions({
-					});
+          m_app.addRegions({
+          });
 
-					m_app.addInitializer(function(options){
-					});
+          m_app.addInitializer(function(options){
+          });
 
-					m_app.start();
-				}
-			}
-		}();
-		com.rodneylai.developer.index.init();
-	});
+          m_app.start();
+        }
+      }
+    }();
+    com.rodneylai.developer.index.init();
+  });
 
 </script>
 
@@ -79,18 +79,18 @@
 
 @*
  *
- * Copyright (c) 2015 Rodney S.K. Lai
+ * Copyright (c) 2015-2016 Rodney S.K. Lai
  *
- * Permission to use, copy, modify, and/or distribute this software for 
- * any purpose with or without fee is hereby granted, provided that the 
+ * Permission to use, copy, modify, and/or distribute this software for
+ * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES 
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF 
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR 
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES 
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN 
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  *@

@@ -1,17 +1,17 @@
 /**
  *
- * Copyright (c) 2015 Rodney S.K. Lai
+ * Copyright (c) 2015-2016 Rodney S.K. Lai
  *
- * Permission to use, copy, modify, and/or distribute this software for 
- * any purpose with or without fee is hereby granted, provided that the 
+ * Permission to use, copy, modify, and/or distribute this software for
+ * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES 
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF 
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR 
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES 
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN 
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
@@ -19,9 +19,9 @@
 package com.rodneylai.auth
 
 import scala.concurrent.{ExecutionContext, Future}
-import ExecutionContext.Implicits.global 
+import ExecutionContext.Implicits.global
 import scala.util.{Try, Success, Failure}
-import com.mongodb.casbah.Imports._
+import org.mongodb.scala._
 import jp.t2v.lab.play2.auth._
 import com.rodneylai.models.mongodb._
 import com.rodneylai.util._
@@ -30,14 +30,12 @@ case class Account(id: java.util.UUID, email: String, name: String, role: Role, 
 
 object Account {
 
-  def findById(id: java.util.UUID): Future[Option[Account]] = Future {
-    findByIdNow(id)
-  }
-
-  def findByIdNow(id: java.util.UUID): Option[Account] = {
-    UserAccount.findByUserUuid(id) match {
-      case Some(userAccount) => Some(Account(userAccount.userUuid,userAccount.emailAddress,userAccount.name,if (userAccount.isAdmin) Role.Administrator else Role.NormalUser,userAccount.roleList))
-      case None => None
+  def findById(id: java.util.UUID): Future[Option[Account]] = {
+    for {
+      userAccountOption <- UserAccountDao.findByUserUuid(id)
+    } yield {
+      userAccountOption.map(userAccount => Account(userAccount.userUuid,userAccount.emailAddress,userAccount.name,if (userAccount.isAdmin) Role.Administrator else Role.NormalUser,userAccount.roleList))
     }
   }
+
 }

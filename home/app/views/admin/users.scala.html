@@ -1,20 +1,20 @@
-@(account:com.rodneylai.auth.Account)(implicit request: Request[Any])
+@(account:com.rodneylai.auth.Account)(implicit request: Request[Any], environment: play.api.Environment)
 
 @views.html.main("manage users",Some(account),"admin") {
 } {
 } {
 
 <div id="title-container">
-	<h2>Manage Users</h2>
+  <h2>Manage Users</h2>
 </div>
 <div id="primary-container" class="manage-users-page">
-	<div class="content">
-		<div class="message-container"></div>
+  <div class="content">
+    <div class="message-container"></div>
 
-		<div class="user-list-container"></div>
-		<div class="loading-container"></div>
-		<div class="clearing">&nbsp;</div>
-	</div>
+    <div class="user-list-container"></div>
+    <div class="loading-container"></div>
+    <div class="clearing">&nbsp;</div>
+  </div>
 </div>
 
 <script type="text/html" id="unexpected-error-template">
@@ -32,58 +32,58 @@
 <script type="text/html" id="user-template">
 
 <div style="float:left;">
-	<div style="font-size:1.2em;margin-bottom:3px;"><%= name %></div>
-	<div>
-		<div class="left-column">
-			<div><label>Email:</label><%= email %></div>
-			<div><label>FriendlyUrl:</label><%= id %></div>
-			<div>
-				<label>Added:</label>
-				<div style="float:left;">
-					<div><%= added_date %></div>
-					<div>[ <%= added_ago %> ]</div>
-				</div>
-				<div class="clearing">&nbsp;</div>
-			</div>
-		</div>
-		<div class="center-column">
-			<div class="status-container">
-				<label>Status:</label>
+  <div style="font-size:1.2em;margin-bottom:3px;"><%= name %></div>
+  <div>
+    <div class="left-column">
+      <div><label>Email:</label><%= email %></div>
+      <div><label>FriendlyUrl:</label><%= id %></div>
+      <div>
+        <label>Added:</label>
+        <div style="float:left;">
+          <div><%= added_date %></div>
+          <div>[ <%= added_ago %> ]</div>
+        </div>
+        <div class="clearing">&nbsp;</div>
+      </div>
+    </div>
+    <div class="center-column">
+      <div class="status-container">
+        <label>Status:</label>
 <% if (mode == "view") { %>
-				<span class="status-<%= status %>"><%= status %></span>
+        <span class="status-<%= status %>"><%= status %></span>
 <% } else if (mode == "edit") { %>
-				<select class="status-selector">
-					<option value="active"<%= (status == "active")?" selected":"" %>>active</option>
-					<option value="unconfirmed"<%= (status == "unconfirmed")?" selected":"" %>>unconfirmed</option>
-					<option value="inactive"<%= (status == "inactive")?" selected":"" %>>inactive</option>
-				</select>
+        <select class="status-selector">
+          <option value="active"<%= (status == "active")?" selected":"" %>>active</option>
+          <option value="unconfirmed"<%= (status == "unconfirmed")?" selected":"" %>>unconfirmed</option>
+          <option value="inactive"<%= (status == "inactive")?" selected":"" %>>inactive</option>
+        </select>
 <% } %>
-				<div class="clearing">&nbsp;</div>
-			</div>
-			<div class="roles-container">
-				<label>Roles:</label>
+        <div class="clearing">&nbsp;</div>
+      </div>
+      <div class="roles-container">
+        <label>Roles:</label>
 <% if (mode == "view") { %>
-				<span class="roles"><%= (roles.length == 0)?"normal user":roles.join() %></span>
+        <span class="roles"><%= (roles.length == 0)?"normal user":roles.join() %></span>
 <% } else if (mode == "edit") { %>
-				<select class="role-selector" multiple="multiple">
-					<option value="admin"<%= _.contains(roles,"admin")?" selected":"" %>>admin</option>
-					<option value="developer"<%= _.contains(roles,"developer")?" selected":"" %>>developer</option>
-				</select>
+        <select class="role-selector" multiple="multiple">
+          <option value="admin"<%= _.contains(roles,"admin")?" selected":"" %>>admin</option>
+          <option value="developer"<%= _.contains(roles,"developer")?" selected":"" %>>developer</option>
+        </select>
 <% } %>
-				<div class="clearing">&nbsp;</div>
-			</div>
-		</div>
-		<div class="clearing">&nbsp;</div>
-	</div>
+        <div class="clearing">&nbsp;</div>
+      </div>
+    </div>
+    <div class="clearing">&nbsp;</div>
+  </div>
 </div>
 <div class="right-column">
 <% if (mode == "view") { %>
-	<div><a class="edit-button button button-default">edit</a></div>
+  <div><a class="edit-button button button-default">edit</a></div>
 <% } else if (mode == "edit") { %>
-	<div><a class="update-button button button-default">update</a></div>
-	<div><a class="cancel-button button">cancel</a></div>
+  <div><a class="update-button button button-default">update</a></div>
+  <div><a class="cancel-button button">cancel</a></div>
 <% } %>
-	<img class="button-wait-img" src='@routes.Assets.versioned("/public/images","ajax-spinner-transparent.gif")' style="display:none;" />
+  <img class="button-wait-img" src='@routes.Assets.versioned("/public/images","ajax-spinner-transparent.gif")' style="display:none;" />
 </div>
 <div class="clearing">&nbsp;</div>
 
@@ -91,189 +91,189 @@
 
 <script type="text/javascript">
 
-	var com;
-	$(function(){
-		@views.html.components.namespace_init(Seq("admin"))
-		@views.html.components.epoxy_init()
-		com.rodneylai.admin.users = function() {
-			var	m_app;
-			var	m_userList = null;
-			var	m_prevScrollPos = 0;
+  var com;
+  $(function(){
+    @views.html.components.namespace_init(Seq("admin"))
+    @views.html.components.epoxy_init()
+    com.rodneylai.admin.users = function() {
+      var m_app;
+      var m_userList = null;
+      var m_prevScrollPos = 0;
 
-			return {
-				init: function() {
-					m_app = new Backbone.Marionette.Application();
+      return {
+        init: function() {
+          m_app = new Backbone.Marionette.Application();
 
-					m_app.module('model', function (model, app, Backbone) {
+          m_app.module('model', function (model, app, Backbone) {
 
-						model.User = Backbone.Model.extend({
-							defaults: {
-								id: null,
-								email: null,
-								name: null,
-								roles: null,
-								status: null,
-								added_date: null,
-								added_ago: null
-							},
-							urlRoot:'/services/admin/user'
-						});
+            model.User = Backbone.Model.extend({
+              defaults: {
+                id: null,
+                email: null,
+                name: null,
+                roles: null,
+                status: null,
+                added_date: null,
+                added_ago: null
+              },
+              urlRoot:'/services/admin/user'
+            });
 
-	                    model.UserCollection = Backbone.Collection.extend({
-    	                    model: m_app.model.User
-        	            });
+                      model.UserCollection = Backbone.Collection.extend({
+                          model: m_app.model.User
+                      });
 
-					});
+          });
 
-					m_app.module('view', function (view, app, Backbone, Marionette) {
+          m_app.module('view', function (view, app, Backbone, Marionette) {
 
-						view.User = Marionette.ItemView.extend({
-							template: Backbone.Marionette.TemplateCache.get("#user-template"),
-							model: app.model.User,
-							className: "user-item-container",
-							templateHelpers: function () {
-								return {
-									mode: this.options.mode
-								};
-							},
-							ui: {
-								status_selector:".status-selector",
-								role_selector:".role-selector",
-								button_wait_img:".button-wait-img",
-								edit_button:".edit-button",
-								update_button:".update-button",
-								cancel_button:".cancel-button"
-							},
-							events: {
-								"click .edit-button[disabled!=disabled]" : "edit_click",
-								"click .update-button[disabled!=disabled]" : "update_click",
-								"click .cancel-button[disabled!=disabled]" : "cancel_click"
-							},
-							onDomRefresh: function(){
-								this.ui.role_selector.tokenize({
-									newElements:false,
-									displayDropdownOnFocus:true,
-									placeholder:"normal user"
-								});
-							},
-							edit_click:function(ev) {
-								this.options.mode = "edit";
-								this.render();
-							},
-							update_click:function(ev) {
-								var	view = this;
-								var	saveStatus = this.model.get("status");
-								var saveRoles = this.model.get("roles");
+            view.User = Marionette.ItemView.extend({
+              template: Backbone.Marionette.TemplateCache.get("#user-template"),
+              model: app.model.User,
+              className: "user-item-container",
+              templateHelpers: function () {
+                return {
+                  mode: this.options.mode
+                };
+              },
+              ui: {
+                status_selector:".status-selector",
+                role_selector:".role-selector",
+                button_wait_img:".button-wait-img",
+                edit_button:".edit-button",
+                update_button:".update-button",
+                cancel_button:".cancel-button"
+              },
+              events: {
+                "click .edit-button[disabled!=disabled]" : "edit_click",
+                "click .update-button[disabled!=disabled]" : "update_click",
+                "click .cancel-button[disabled!=disabled]" : "cancel_click"
+              },
+              onDomRefresh: function(){
+                this.ui.role_selector.tokenize({
+                  newElements:false,
+                  displayDropdownOnFocus:true,
+                  placeholder:"normal user"
+                });
+              },
+              edit_click:function(ev) {
+                this.options.mode = "edit";
+                this.render();
+              },
+              update_click:function(ev) {
+                var view = this;
+                var saveStatus = this.model.get("status");
+                var saveRoles = this.model.get("roles");
 
-								this.ui.status_selector.attr("disabled","disabled");
-								this.ui.role_selector.tokenize().disable();
-								this.ui.button_wait_img.show();
-								this.ui.update_button.attr("disabled","disabled");
-								this.ui.cancel_button.attr("disabled","disabled");
+                this.ui.status_selector.attr("disabled","disabled");
+                this.ui.role_selector.tokenize().disable();
+                this.ui.button_wait_img.show();
+                this.ui.update_button.attr("disabled","disabled");
+                this.ui.cancel_button.attr("disabled","disabled");
 
-								this.model.set("status",this.ui.status_selector.val());
-								this.model.set("roles",this.ui.role_selector.val() || []);
-								this.model.save(null,
-									{
-										success: function(model, response, options){
-											view.options.mode = "view";
-											view.render();
-										},
-										error: function(model, xhr, options){
-											view.model.set("status",saveStatus);
-											view.model.set("roles",saveRoles);
-											m_app.message.show(new m_app.view.UnexpectedError());
-											view.options.mode = "view";
-											view.render();
-										}
-									}
-								);
-							},
-							cancel_click:function(ev) {
-								this.options.mode = "view";
-								this.render();
-							}
-						});
+                this.model.set("status",this.ui.status_selector.val());
+                this.model.set("roles",this.ui.role_selector.val() || []);
+                this.model.save(null,
+                  {
+                    success: function(model, response, options){
+                      view.options.mode = "view";
+                      view.render();
+                    },
+                    error: function(model, xhr, options){
+                      view.model.set("status",saveStatus);
+                      view.model.set("roles",saveRoles);
+                      m_app.message.show(new m_app.view.UnexpectedError());
+                      view.options.mode = "view";
+                      view.render();
+                    }
+                  }
+                );
+              },
+              cancel_click:function(ev) {
+                this.options.mode = "view";
+                this.render();
+              }
+            });
 
-						view.UserList = Marionette.CollectionView.extend({
-							collection: app.model.UserCollection,
-							childView: view.User,
-							childViewOptions: function(model, index) {
-								return {
-									childIndex: index,
-									mode: "view"
-								}
-							}
-						});
+            view.UserList = Marionette.CollectionView.extend({
+              collection: app.model.UserCollection,
+              childView: view.User,
+              childViewOptions: function(model, index) {
+                return {
+                  childIndex: index,
+                  mode: "view"
+                }
+              }
+            });
 
-						view.UnexpectedError = Marionette.ItemView.extend({
-							template: Backbone.Marionette.TemplateCache.get("#unexpected-error-template"),
-							ui: {
-								error_box:".error-box"
-							},
-							onShow: function(){
-								var	ui = this.ui;
-								setInterval(function(){$(ui.error_box).fadeOut()},5000);
-							}
-						});
+            view.UnexpectedError = Marionette.ItemView.extend({
+              template: Backbone.Marionette.TemplateCache.get("#unexpected-error-template"),
+              ui: {
+                error_box:".error-box"
+              },
+              onShow: function(){
+                var ui = this.ui;
+                setInterval(function(){$(ui.error_box).fadeOut()},5000);
+              }
+            });
 
-						view.Wait = Marionette.ItemView.extend({
-							template: Backbone.Marionette.TemplateCache.get("#wait-template")
-						});
+            view.Wait = Marionette.ItemView.extend({
+              template: Backbone.Marionette.TemplateCache.get("#wait-template")
+            });
 
-					});
+          });
 
-					m_app.addRegions({
-						message : '.message-container',
-						user_list : '.user-list-container',
-						loading : '.loading-container'
-					});
+          m_app.addRegions({
+            message : '.message-container',
+            user_list : '.user-list-container',
+            loading : '.loading-container'
+          });
 
-					m_app.addInitializer(function(options){
-						m_app.loading.show(new m_app.view.Wait);
-						m_userList = new m_app.model.UserCollection;
-						m_userList.url = '/services/admin/users';
-						m_userList.fetch({
-							success: function(collection, response, options){
-								m_app.loading.reset();
-								m_app.user_list.show(new m_app.view.UserList({collection:m_userList}));
-							},
-							error: function(collection, xhr, options){
-								m_app.loading.reset();
-								if (xhr.responseJSON == "kick") {
-									document.location = "@routes.Auth.login?return_url=@play.utils.UriEncoding.encodePathSegment(request.uri,"UTF-8")";
-								}
-							}
-						});
-						$(window).scroll(function(ev){
-							if ((!m_app.loading.hasView()) && (m_prevScrollPos < $(window).scrollTop()) &&
-								($(window).scrollTop() + $(window).height() > $("body").height())) {
-								m_app.loading.show(new m_app.view.Wait);
-								userList = new m_app.model.UserCollection;
-								userList.url = '/services/admin/users?skip=' + m_userList.length;
-								userList.fetch({
-									success: function(collection, response, options){
-										m_app.loading.reset();
-										m_userList.add(userList.models);
-									},
-									error: function(collection, xhr, options){
-										m_app.loading.reset();
-										if (xhr.responseJSON == "kick") {
-											document.location = "@routes.Auth.login?return_url=@play.utils.UriEncoding.encodePathSegment(request.uri,"UTF-8")";
-										}
-									}
-								});
-							}
-							m_prevScrollPos = $(window).scrollTop();
-						});
-					});
+          m_app.addInitializer(function(options){
+            m_app.loading.show(new m_app.view.Wait);
+            m_userList = new m_app.model.UserCollection;
+            m_userList.url = '/services/admin/users';
+            m_userList.fetch({
+              success: function(collection, response, options){
+                m_app.loading.reset();
+                m_app.user_list.show(new m_app.view.UserList({collection:m_userList}));
+              },
+              error: function(collection, xhr, options){
+                m_app.loading.reset();
+                if (xhr.responseJSON == "kick") {
+                  document.location = "@routes.Auth.login?return_url=@play.utils.UriEncoding.encodePathSegment(request.uri,"UTF-8")";
+                }
+              }
+            });
+            $(window).scroll(function(ev){
+              if ((!m_app.loading.hasView()) && (m_prevScrollPos < $(window).scrollTop()) &&
+                ($(window).scrollTop() + $(window).height() > $("body").height())) {
+                m_app.loading.show(new m_app.view.Wait);
+                userList = new m_app.model.UserCollection;
+                userList.url = '/services/admin/users?skip=' + m_userList.length;
+                userList.fetch({
+                  success: function(collection, response, options){
+                    m_app.loading.reset();
+                    m_userList.add(userList.models);
+                  },
+                  error: function(collection, xhr, options){
+                    m_app.loading.reset();
+                    if (xhr.responseJSON == "kick") {
+                      document.location = "@routes.Auth.login?return_url=@play.utils.UriEncoding.encodePathSegment(request.uri,"UTF-8")";
+                    }
+                  }
+                });
+              }
+              m_prevScrollPos = $(window).scrollTop();
+            });
+          });
 
-					m_app.start();
-				}
-			}
-		}();
-		com.rodneylai.admin.users.init();
-	});
+          m_app.start();
+        }
+      }
+    }();
+    com.rodneylai.admin.users.init();
+  });
 
 </script>
 
@@ -281,18 +281,18 @@
 
 @*
  *
- * Copyright (c) 2015 Rodney S.K. Lai
+ * Copyright (c) 2015-2016 Rodney S.K. Lai
  *
- * Permission to use, copy, modify, and/or distribute this software for 
- * any purpose with or without fee is hereby granted, provided that the 
+ * Permission to use, copy, modify, and/or distribute this software for
+ * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES 
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF 
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR 
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES 
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN 
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  *@

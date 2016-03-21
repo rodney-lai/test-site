@@ -1,32 +1,35 @@
 /**
  *
- * Copyright (c) 2015 Rodney S.K. Lai
+ * Copyright (c) 2015-2016 Rodney S.K. Lai
  *
- * Permission to use, copy, modify, and/or distribute this software for 
- * any purpose with or without fee is hereby granted, provided that the 
+ * Permission to use, copy, modify, and/or distribute this software for
+ * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES 
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF 
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR 
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES 
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN 
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
 
 package com.rodneylai.util
 
-import play.api._
+import play.api.Application
 import play.api.libs.mailer._
 import play.api.mvc._
 import play.api.Play.current
+import scala.concurrent.{ExecutionContext,Future}
 import scala.util.{Failure, Success, Try}
+import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.auth._
 
 object GlobalHelper
 {
+  private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
   private val m_mailer:MailerClient = new CommonsMailer(play.api.Play.current.configuration)
 
   private def getConfigValue(app:Application,key:String,o:Any):String = key matches "^.*?(password|secret).*?$" match {
@@ -57,7 +60,6 @@ object GlobalHelper
   def onStartMsg(app: Application):Unit = {
     val msg:StringBuilder = new StringBuilder()
 
-    println("onStart")
     msg.append("StartUp\n\n")
     msg.append(InfoHelper.getMachineInfoString)
     msg.append(InfoHelper.getApplicationInfoString)
@@ -75,49 +77,53 @@ object GlobalHelper
                         bodyText = Some(msg.toString)
                       )
           Try(m_mailer.send(email)) match {
-            case Success(x) => Logger.info(msg.toString)
+            case Success(x) => m_log.info(msg.toString)
             case Failure(ex) => ExceptionHelper.log(this.getClass,ex,Some("Failed to send startup email"),None,None,false)
           }
       }
-      case _ => Logger.info(msg.toString)
+      case _ => m_log.info(msg.toString)
     }
   }
 
-  def onHandlerNotFoundMsg(request: RequestHeader,accountOption:Option[Account] = None):Unit = {
-    val msg:StringBuilder = new StringBuilder()
+  def onHandlerNotFoundMsg(request:RequestHeader,accountOption:Option[Account] = None)(implicit ctx: ExecutionContext):Future[Unit] = {
+    for {
+      _ <- TrackingHelper.trackEventByTypeAndUrl(request,request.cookies.get("tracking_id").map(trackingIdCookie => java.util.UUID.fromString(trackingIdCookie.value)).getOrElse(MongoHelper.CONSTANTS.UUID.Empty),accountOption.map(_.id).getOrElse(MongoHelper.CONSTANTS.UUID.Empty),"page_not_found",request.path)
+    } yield {
+      val msg:StringBuilder = new StringBuilder()
 
-    msg.append("General Information [HandlerNotFound][").append(request.path).append("]\n\n")
-    accountOption match {
-      case Some(account) => {
-        msg.append("user:\n")
-        msg.append("  id: ").append(account.id).append("\n")
-        msg.append("  email: ").append(account.email).append("\n")
-        msg.append("  name: ").append(account.name).append("\n")
-      }
-      case None => {
-        msg.append("user: [ UNKNOWN ]\n")
-      }
-    }
-    msg.append(ExceptionHelper.getRequestInfo(request))
-    (play.api.Play.current.configuration.getString("email.exceptions"),play.api.Play.current.configuration.getString("email.from.exception")) match {
-      case (Some(toEmailAddress),Some(fromEmailAddress)) => {
-        val email = Email(
-                      subject = "Exception [HandlerNotFound][" + request.path + "]",
-                      from = "Admin [" + play.api.Play.current.mode.toString + "][" + request.path + "] <" + fromEmailAddress + ">",
-                      to = Seq(toEmailAddress),
-                      bodyText = Some(msg.toString)
-                    )
-
-        Try(m_mailer.send(email)) match {
-          case Success(x) => Logger.info(msg.toString)
-          case Failure(ex) => ExceptionHelper.log(this.getClass,ex,Some("Failed to send handler not found error"),None,Some(request),false)
+      msg.append("General Information [HandlerNotFound][").append(request.path).append("]\n\n")
+      accountOption match {
+        case Some(account) => {
+          msg.append("user:\n")
+          msg.append("  id: ").append(account.id).append("\n")
+          msg.append("  email: ").append(account.email).append("\n")
+          msg.append("  name: ").append(account.name).append("\n")
+        }
+        case None => {
+          msg.append("user: [ UNKNOWN ]\n")
         }
       }
-      case _ => Logger.info(msg.toString)
+      msg.append(ExceptionHelper.getRequestInfo(request))
+      (play.api.Play.current.configuration.getString("email.exceptions"),play.api.Play.current.configuration.getString("email.from.exception")) match {
+        case (Some(toEmailAddress),Some(fromEmailAddress)) => {
+          val email = Email(
+                        subject = "Exception [HandlerNotFound][" + request.path + "]",
+                        from = "Admin [" + play.api.Play.current.mode.toString + "][" + request.path + "] <" + fromEmailAddress + ">",
+                        to = Seq(toEmailAddress),
+                        bodyText = Some(msg.toString)
+                      )
+
+          Try(m_mailer.send(email)) match {
+            case Success (x) => m_log.info(msg.toString)
+            case Failure(ex) => ExceptionHelper.log(this.getClass,ex,Some("Failed to send handler not found error"),None,Some(request),false)
+          }
+        }
+        case _ => m_log.info(msg.toString)
+      }
     }
   }
 
-  def onBadRequestMsg(request: RequestHeader, error: String, accountOption:Option[Account] = None):Unit = {
+  def onBadRequestMsg(request: RequestHeader, error: String, accountOption:Option[Account] = None):Future[Unit] = {
     val msg:StringBuilder = new StringBuilder()
 
     msg.append("General Information [BadRequest][").append(error).append("]\n\n")
@@ -142,17 +148,17 @@ object GlobalHelper
                       bodyText = Some(msg.toString)
                     )
         Try(m_mailer.send(email)) match {
-          case Success(x) => Logger.info(msg.toString)
+          case Success(x) => m_log.info(msg.toString)
           case Failure(ex) => ExceptionHelper.log(this.getClass,ex,Some("Failed to send handler bad request error"),None,Some(request),false)
         }
       }
-      case _ => Logger.info(msg.toString)
+      case _ => m_log.info(msg.toString)
     }
+    Future.successful(Unit)
   }
 
-  def onErrorMsg(request: RequestHeader, ex: Throwable, accountOption:Option[Account] = None):Unit = {
+  def onErrorMsg(request: RequestHeader, ex: Throwable, accountOption:Option[Account] = None):Future[Unit] = {
     ExceptionHelper.log(ex,accountOption,Some(request))
+    Future.successful(Unit)
   }
 }
-
-

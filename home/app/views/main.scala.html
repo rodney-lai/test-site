@@ -1,180 +1,180 @@
-@(title: String,accountOption:Option[com.rodneylai.auth.Account],tab:String,showLogin:Boolean = true)(replaceHead: Html)(navSub: Html)(content: Html)(implicit request: Request[Any])
+@(title: String,accountOption:Option[com.rodneylai.auth.Account],tab:String,showLogin:Boolean = true)(replaceHead: Html)(navSub: Html)(content: Html)(implicit request: Request[Any], environment: play.api.Environment)
 
 <!DOCTYPE html>
 
 <!-- @java.net.InetAddress.getLocalHost.getHostName -->
 
 <html lang="en">
-	<head>
-		<title>@title.toLowerCase</title>
-		<link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("/public","favicon.png")">
-		<meta property="og:title" content="Rodney's Test Server" />
-		<meta property="og:url" content="http://test.rodneylai.com/" />
-		<meta property="og:description" content="Rodney's Test Server is using the Play Framework and Scala to test new web technology." />
-		<meta property="og:image" content="http://@request.host@routes.Assets.versioned("/public/images","logo_big.jpg")" />
-		<meta name="description" content="Rodney's Test Server" />
-		<meta name="keywords" content="Scala, Play Framework, MongoDB" />
-		<meta name="copyright" content="Rodney Lai" /> 
+  <head>
+    <title>@title.toLowerCase</title>
+    <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("/public","favicon.png")">
+    <meta property="og:title" content="Rodney's Test Server" />
+    <meta property="og:url" content="http://test.rodneylai.com/" />
+    <meta property="og:description" content="Rodney's Test Server is using the Play Framework and Scala to test new web technology." />
+    <meta property="og:image" content="http://@request.host@routes.Assets.versioned("/public/images","logo_big.jpg")" />
+    <meta name="description" content="Rodney's Test Server" />
+    <meta name="keywords" content="Scala, Play Framework, MongoDB" />
+    <meta name="copyright" content="Rodney Lai" />
 @if(replaceHead.body.trim.size == 0) {
-@if(play.api.Play.isDev(play.api.Play.current)) {
-		<script src="@routes.Assets.versioned("/public/javascripts","jquery-1.11.3.js")" type="text/javascript"></script>
-		<script src="@routes.Assets.versioned("/public/javascripts","underscore.js")" type="text/javascript"></script>
-		<script src="@routes.Assets.versioned("/public/javascripts","backbone.js")" type="text/javascript"></script>
-		<script src="@routes.Assets.versioned("/public/javascripts","backbone.marionette.js")" type="text/javascript"></script>
-		<script src="@routes.Assets.versioned("/public/javascripts","backbone.epoxy.js")" type="text/javascript"></script>
+@if(environment.mode == play.api.Mode.Dev) {
+    <script src="@routes.Assets.versioned("/public/javascripts","jquery-1.11.3.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.versioned("/public/javascripts","underscore.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.versioned("/public/javascripts","backbone.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.versioned("/public/javascripts","backbone.marionette.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.versioned("/public/javascripts","backbone.epoxy.js")" type="text/javascript"></script>
 } else {
-		<script src="@routes.Assets.versioned("/public/javascripts","jquery-1.11.3.min.js")" type="text/javascript"></script>
-		<script src="@routes.Assets.versioned("/public/javascripts","underscore-min.js")" type="text/javascript"></script>
-		<script src="@routes.Assets.versioned("/public/javascripts","backbone-min.js")" type="text/javascript"></script>
-		<script src="@routes.Assets.versioned("/public/javascripts","backbone.marionette.min.js")" type="text/javascript"></script>
-		<script src="@routes.Assets.versioned("/public/javascripts","backbone.epoxy.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.versioned("/public/javascripts","jquery-1.11.3.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.versioned("/public/javascripts","underscore-min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.versioned("/public/javascripts","backbone-min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.versioned("/public/javascripts","backbone.marionette.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.versioned("/public/javascripts","backbone.epoxy.min.js")" type="text/javascript"></script>
 }
-		<script type="text/javascript" src="@routes.Assets.versioned("/public/javascripts","jquery.tokenize.js")"></script>
-		<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("/public/stylesheets","jquery.tokenize.css")" />
+    <script type="text/javascript" src="@routes.Assets.versioned("/public/javascripts","jquery.tokenize.js")"></script>
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("/public/stylesheets","jquery.tokenize.css")" />
 } else {
-		@replaceHead
+    @replaceHead
 }
-		<link rel="stylesheet" media="screen" href="@routes.Assets.versioned("/public/stylesheets","main.css")">
-	</head>
-	<body>
+    <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("/public/stylesheets","main.css")">
+  </head>
+  <body>
 @com.rodneylai.util.ExceptionHelper.getTopMessage(request) match {
-	case Some((topMessageIconClass,topMessage)) => {
-		<div id="top_info_message_container">
-			<div class="top_info_message">
-				<div id="top_info_message_inner_container">
-					<div id="top_info_icon" class="@topMessageIconClass"></div>
-					<div id="top_info_text">@topMessage</div>
-					<div id="top_info_close"><a id="top_info_close_button" class="button-auto">close</a></div>
-					<div class="clearing"></div>
-				</div>
-			</div>
-		</div>
-		<script type="text/javascript">
-		$(function() {
-			$('#top_info_close_button').click(function(ev){
-				$("#top_info_message_container").slideUp("fast");
-			});
-			window.setTimeout(function() {
-				$("#top_info_message_container").slideUp("slow");
-			}, 15000);
-		});
-		</script>
-	}
-	case None => { }
+  case Some((topMessageIconClass,topMessage)) => {
+    <div id="top_info_message_container">
+      <div class="top_info_message">
+        <div id="top_info_message_inner_container">
+          <div id="top_info_icon" class="@topMessageIconClass"></div>
+          <div id="top_info_text">@topMessage</div>
+          <div id="top_info_close"><a id="top_info_close_button" class="button-auto">close</a></div>
+          <div class="clearing"></div>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript">
+    $(function() {
+      $('#top_info_close_button').click(function(ev){
+        $("#top_info_message_container").slideUp("fast");
+      });
+      window.setTimeout(function() {
+        $("#top_info_message_container").slideUp("slow");
+      }, 15000);
+    });
+    </script>
+  }
+  case None => { }
 }
-		<div id="logobar-container">
-			<div class="logo-container">
-				<a class ="logo" href="@routes.Application.index"></a>
-				<div class="clearing"></div>
-			</div>
-			<div class="login">
+    <div id="logobar-container">
+      <div class="logo-container">
+        <a class ="logo" href="@routes.Application.index"></a>
+        <div class="clearing"></div>
+      </div>
+      <div class="login">
 @accountOption match {
-	case Some(account) => {
-				<div class="hello" id="hello">
-					hello @account.email
-				</div>
-				<div class="separator">&nbsp;|&nbsp;</div>
-				<div class="link">
-					<a href="@routes.Application.logout">logout</a>
-				</div>
-	}
-	case None if (showLogin) => {
-				<div class="link">
-					<a href="@routes.Auth.login">login</a>
-				</div>
-	}
-	case None if (!showLogin) => { }
+  case Some(account) => {
+        <div class="hello" id="hello">
+          hello @account.email
+        </div>
+        <div class="separator">&nbsp;|&nbsp;</div>
+        <div class="link">
+          <a href="@routes.Application.logout">logout</a>
+        </div>
+  }
+  case None if (showLogin) => {
+        <div class="link">
+          <a href="@routes.Auth.login">login</a>
+        </div>
+  }
+  case None if (!showLogin) => { }
 }
-				<div class="clearing"></div>
-			</div>
-			<div class="clearing"></div>
-		</div>
-		<div id="nav-container">
-			<div id="nav-main-container">
-				<ul>
-					<li>
+        <div class="clearing"></div>
+      </div>
+      <div class="clearing"></div>
+    </div>
+    <div id="nav-container">
+      <div id="nav-main-container">
+        <ul>
+          <li>
 @if(tab == "home") {
-						<a href="@routes.Application.index" class="selected">Home<span></span></a>
+            <a href="@routes.Application.index" class="selected">Home<span></span></a>
 } else {
-						<a href="@routes.Application.index">Home<span></span></a>
+            <a href="@routes.Application.index">Home<span></span></a>
 }
-					</li>
+          </li>
 @accountOption match {
-	case Some(account) if (account.role == com.rodneylai.auth.Role.Administrator) => {
-					<li>
-		@if(tab == "admin") {
-						<a href="@routes.Admin.index" class="selected">Admin<span></span></a>
-		} else {
-						<a href="@routes.Admin.index">Admin<span></span></a>
-		}
-					</li>
-		@be.objectify.deadbolt.scala.views.html.restrict(new com.rodneylai.security.DefaultDeadboltHandler(accountOption),List(Array("developer"))) {
-					<li>
-			@if(tab == "developer") {
-						<a href="@routes.Developer.server" class="selected">Developer<span></span></a>
-			} else {
-						<a href="@routes.Developer.server">Developer<span></span></a>
-			}
-					</li>
-		}
-	}
-	case None => {
-					<li>
-		@if(tab == "join") {
-						<a href="@routes.Auth.join" class="selected">Join<span></span></a>
-		} else {
-						<a href="@routes.Auth.join">Join<span></span></a>
-		}
-					</li>
-					<li>
+  case Some(account) if (account.role == com.rodneylai.auth.Role.Administrator) => {
+          <li>
+    @if(tab == "admin") {
+            <a href="@routes.Admin.index" class="selected">Admin<span></span></a>
+    } else {
+            <a href="@routes.Admin.index">Admin<span></span></a>
+    }
+          </li>
+    @be.objectify.deadbolt.scala.views.html.restrict(new com.rodneylai.security.DefaultDeadboltHandler(accountOption),List(Array("developer"))) {
+          <li>
+      @if(tab == "developer") {
+            <a href="@routes.Developer.server" class="selected">Developer<span></span></a>
+      } else {
+            <a href="@routes.Developer.server">Developer<span></span></a>
+      }
+          </li>
+    }
+  }
+  case None => {
+          <li>
+    @if(tab == "join") {
+            <a href="@routes.Auth.join" class="selected">Join<span></span></a>
+    } else {
+            <a href="@routes.Auth.join">Join<span></span></a>
+    }
+          </li>
+          <li>
 @if(tab == "about") {
-						<a href="@routes.Application.about" class="selected">About<span></span></a>
+            <a href="@routes.Application.about" class="selected">About<span></span></a>
 } else {
-						<a href="@routes.Application.about">About<span></span></a>
+            <a href="@routes.Application.about">About<span></span></a>
 }
-					</li>
-	}
-	case _ => {
-					<li>
+          </li>
+  }
+  case _ => {
+          <li>
 @if(tab == "about") {
-						<a href="@routes.Application.about" class="selected">About<span></span></a>
+            <a href="@routes.Application.about" class="selected">About<span></span></a>
 } else {
-						<a href="@routes.Application.about">About<span></span></a>
+            <a href="@routes.Application.about">About<span></span></a>
 }
-					</li>
-	}
+          </li>
+  }
 }
-				</ul>
-			</div>
-			<div id="nav-sub-container">
-				@navSub
-			</div>
-			<div class="clearing"></div>
-		</div>
-		<div id="main-container">
-			@content
-			<div class="clearing"></div>
-		</div>
-		<div id="footer-container">
-			Copyright (c) 2015 Rodney S.K. Lai
-		</div>
-	</body>
+        </ul>
+      </div>
+      <div id="nav-sub-container">
+        @navSub
+      </div>
+      <div class="clearing"></div>
+    </div>
+    <div id="main-container">
+      @content
+      <div class="clearing"></div>
+    </div>
+    <div id="footer-container">
+      Copyright (c) 2015-2016 Rodney S.K. Lai
+    </div>
+  </body>
 </html>
 
 @*
  *
- * Copyright (c) 2015 Rodney S.K. Lai
+ * Copyright (c) 2015-2016 Rodney S.K. Lai
  *
- * Permission to use, copy, modify, and/or distribute this software for 
- * any purpose with or without fee is hereby granted, provided that the 
+ * Permission to use, copy, modify, and/or distribute this software for
+ * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES 
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF 
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR 
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES 
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN 
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  *@

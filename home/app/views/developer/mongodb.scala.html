@@ -1,54 +1,54 @@
-@(account:com.rodneylai.auth.Account)(implicit request: Request[Any])
+@(account:com.rodneylai.auth.Account,statsOption:Option[Seq[(String,String)]],collectionListOption:Option[Set[String]])(implicit request: Request[Any], environment: play.api.Environment)
 
 @views.html.developer.main("manage mongodb",Some(account),"developer","mongodb") {
 } {
 
 <div id="title-container">
-	<h2>Manage MongoDB</h2>
+  <h2>Manage MongoDB</h2>
 </div>
 <div id="primary-container" class="manage-mongodb-page">
-	<div class="content">
+  <div class="content">
 
-		<div class="main-container">
-			<div class="main-content">
-				<div class="message-container"></div>
-				<div style="font-size:1.2em;">Stats</div>
-@com.rodneylai.util.MongoHelper.getDatabaseStats match {
-	case Some(mongoDatabaseStats) => {
-				<div class="stat-list-container">
-		@for((stat,value) <- mongoDatabaseStats) {
-					<div class="stat-container">
-						<label>@stat:</label>
-						<div style="float:left;">@value</div>
-						<div class="clearing">&nbsp;</div>
-					</div>
-		}
-				</div>
-	}
-	case None => {
-				<div class="error-box">Mongo NOT configured</div>
-	}
+    <div class="main-container">
+      <div class="main-content">
+        <div class="message-container"></div>
+        <div style="font-size:1.2em;">Stats</div>
+@statsOption match {
+  case Some(mongoDatabaseStats) => {
+        <div class="stat-list-container">
+    @for((stat,value) <- mongoDatabaseStats) {
+          <div class="stat-container">
+            <label>@stat:</label>
+            <div style="float:left;">@value</div>
+            <div class="clearing">&nbsp;</div>
+          </div>
+    }
+        </div>
+  }
+  case None => {
+        <div class="error-box">Mongo NOT configured</div>
+  }
 }
-				<div class="clearing">&nbsp;</div>
-			</div>
-		</div>
-		<div class="sidebar-container">
-			<div style="font-size:1.2em;">Collections</div>
-@com.rodneylai.util.MongoHelper.getCollectionList match {
-	case Some(collectionList) => {
-		@for((collectionName,index) <- collectionList.toSeq.sortBy(x => x.toLowerCase).zipWithIndex) {
-			<div class="item-@(index%2)"><a href="@routes.Developer.mongodb_collection(collectionName)">@collectionName</a></div>
-		}
-	}
-	case None => {
-			<div>No collections</div>
-	}
+        <div class="clearing">&nbsp;</div>
+      </div>
+    </div>
+    <div class="sidebar-container">
+      <div style="font-size:1.2em;">Collections</div>
+@collectionListOption match {
+  case Some(collectionList) => {
+    @for((collectionName,index) <- collectionList.toSeq.sortBy(x => x.toLowerCase).zipWithIndex) {
+      <div class="item-@(index%2)"><a href="@routes.Developer.mongodb_collection(collectionName)">@collectionName</a></div>
+    }
+  }
+  case None => {
+      <div>No collections</div>
+  }
 }
-			<div class="clearing">&nbsp;</div>
-		</div>
+      <div class="clearing">&nbsp;</div>
+    </div>
 
-		<div class="clearing">&nbsp;</div>
-	</div>
+    <div class="clearing">&nbsp;</div>
+  </div>
 </div>
 
 
@@ -60,41 +60,41 @@
 
 <script type="text/javascript">
 
-	var com;
-	$(function(){
-		@views.html.components.namespace_init(Seq("developer"))
-		@views.html.components.epoxy_init()
-		com.rodneylai.developer.mongodb = function() {
-			var	m_app;
+  var com;
+  $(function(){
+    @views.html.components.namespace_init(Seq("developer"))
+    @views.html.components.epoxy_init()
+    com.rodneylai.developer.mongodb = function() {
+      var m_app;
 
-			return {
-				init: function() {
-					m_app = new Backbone.Marionette.Application();
+      return {
+        init: function() {
+          m_app = new Backbone.Marionette.Application();
 
-					m_app.module('model', function (model, app, Backbone) {
+          m_app.module('model', function (model, app, Backbone) {
 
-					});
+          });
 
-					m_app.module('view', function (view, app, Backbone, Marionette) {
+          m_app.module('view', function (view, app, Backbone, Marionette) {
 
-						view.Wait = Marionette.ItemView.extend({
-							template: Backbone.Marionette.TemplateCache.get("#wait-template")
-						});
+            view.Wait = Marionette.ItemView.extend({
+              template: Backbone.Marionette.TemplateCache.get("#wait-template")
+            });
 
-					});
+          });
 
-					m_app.addRegions({
-					});
+          m_app.addRegions({
+          });
 
-					m_app.addInitializer(function(options){
-					});
+          m_app.addInitializer(function(options){
+          });
 
-					m_app.start();
-				}
-			}
-		}();
-		com.rodneylai.developer.mongodb.init();
-	});
+          m_app.start();
+        }
+      }
+    }();
+    com.rodneylai.developer.mongodb.init();
+  });
 
 </script>
 
@@ -102,18 +102,18 @@
 
 @*
  *
- * Copyright (c) 2015 Rodney S.K. Lai
+ * Copyright (c) 2015-2016 Rodney S.K. Lai
  *
- * Permission to use, copy, modify, and/or distribute this software for 
- * any purpose with or without fee is hereby granted, provided that the 
+ * Permission to use, copy, modify, and/or distribute this software for
+ * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES 
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF 
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR 
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES 
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN 
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  *@

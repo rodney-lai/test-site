@@ -1,82 +1,90 @@
 /**
  *
- * Copyright (c) 2015 Rodney S.K. Lai
+ * Copyright (c) 2015-2016 Rodney S.K. Lai
  *
- * Permission to use, copy, modify, and/or distribute this software for 
- * any purpose with or without fee is hereby granted, provided that the 
+ * Permission to use, copy, modify, and/or distribute this software for
+ * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES 
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF 
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR 
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES 
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN 
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
 
 package com.rodneylai.models.mongodb
 
-import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.commons.{MongoDBList, MongoDBObject}
-import com.mongodb.DBObject
-import org.bson.types._
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.util.{Failure,Success,Try}
+import org.bson.types.{ObjectId}
+import org.mongodb.scala._
+import org.mongodb.scala.bson.{BsonBinary,BsonDateTime,BsonNumber,BsonObjectId,BsonString}
+import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.util._
 
 case class TrackingAction (
-  id: Option[ObjectId],
   actionUuid: java.util.UUID,
   actionType: String,
   referenceType: String,
   referenceId: Long,
   rawUrl: String,
-  createDateTimeUTC: java.util.Date
+  createDate: java.util.Date,
+  id: Option[ObjectId] = None
 )
 
-object TrackingAction {
-  def getCollection:MongoCollection = {
-    MongoHelper.getOrCreateCollection("TrackingAction")
-  }
-}
+object TrackingActionDao {
+  private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
-object TrackingActionMap {  
-  def fromBson(trackingAction: DBObject):TrackingAction = {
-    TrackingAction(
-      Some(trackingAction.as[ObjectId]("_id")),
-      MongoHelper.fromStandardBinaryUUID(trackingAction.as[Binary]("ActionUuid")),
-      trackingAction.as[String]("ActionType"),
-      trackingAction.as[String]("ReferenceType"),
-      trackingAction.as[Long]("ReferenceId"),
-      trackingAction.as[String]("RawUrl"),
-      trackingAction.as[java.util.Date]("CreateDateTimeUTC")
-    )
+  lazy val collectionFuture:Future[MongoCollection[Document]] = {
+    Future.successful(MongoHelper.getCollection("TrackingAction"))
   }
 
-  def toBson(trackingAction: TrackingAction): DBObject = {
+  def fromBson(trackingActionBson:Document):Option[TrackingAction] = {
+    Try(TrackingAction(
+      MongoHelper.fromStandardBinaryUUID(trackingActionBson.get[BsonBinary]("ActionUuid").get.getData),
+      trackingActionBson.get[BsonString]("ActionType").get.getValue,
+      trackingActionBson.get[BsonString]("ReferenceType").get.getValue,
+      trackingActionBson.get[BsonNumber]("ReferenceId").get.longValue,
+      trackingActionBson.get[BsonString]("RawUrl").get.getValue,
+      new java.util.Date(trackingActionBson.get[BsonDateTime]("CreateDate").get.getValue),
+      Some(trackingActionBson.get[BsonObjectId]("_id").get.getValue)
+    )) match {
+      case Success(trackingAction) => Some(trackingAction)
+      case Failure(ex) => {
+        m_log.error(s"failed to convert bson to case class [$trackingActionBson]",ex)
+        None
+      }
+    }
+  }
+
+  def toBson(trackingAction:TrackingAction):Document = {
     trackingAction.id match {
       case Some(objectId) => {
-        MongoDBObject(
-          "_id" -> objectId,
+        Document(
+          "_id" -> BsonObjectId(objectId),
           "ActionUuid" -> MongoHelper.toStandardBinaryUUID(trackingAction.actionUuid),
           "ActionType" -> trackingAction.actionType,
           "ReferenceType" -> trackingAction.referenceType,
           "ReferenceId" -> trackingAction.referenceId,
           "RawUrl" -> trackingAction.rawUrl,
-          "CreateDateTimeUTC" -> trackingAction.createDateTimeUTC
+          "CreateDate" -> trackingAction.createDate
         )
       }
       case None => {
-        MongoDBObject(
+        Document(
           "ActionUuid" -> MongoHelper.toStandardBinaryUUID(trackingAction.actionUuid),
           "ActionType" -> trackingAction.actionType,
           "ReferenceType" -> trackingAction.referenceType,
           "ReferenceId" -> trackingAction.referenceId,
           "RawUrl" -> trackingAction.rawUrl,
-          "CreateDateTimeUTC" -> trackingAction.createDateTimeUTC
+          "CreateDate" -> trackingAction.createDate
         )
       }
     }
   }
 }
-
