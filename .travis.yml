@@ -6,3 +6,4 @@ branches:
     - master
 jdk:
   - oraclejdk8
+before_script: cd home
