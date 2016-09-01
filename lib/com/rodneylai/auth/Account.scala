@@ -1,6 +1,7 @@
 /**
  *
  * Copyright (c) 2015-2016 Rodney S.K. Lai
+ * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -21,6 +22,8 @@ package com.rodneylai.auth
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
 import scala.util.{Try, Success, Failure}
+import javax.inject.{Inject,Singleton}
+import com.google.inject.AbstractModule
 import org.mongodb.scala._
 import jp.t2v.lab.play2.auth._
 import com.rodneylai.models.mongodb._
@@ -28,14 +31,21 @@ import com.rodneylai.util._
 
 case class Account(id: java.util.UUID, email: String, name: String, role: Role, roleList:Set[String])
 
-object Account {
+@Singleton
+class AccountDao @Inject() (userAccountDao:UserAccountDao) {
 
   def findById(id: java.util.UUID): Future[Option[Account]] = {
     for {
-      userAccountOption <- UserAccountDao.findByUserUuid(id)
+      userAccountOption <- userAccountDao.findByUserUuid(id)
     } yield {
       userAccountOption.map(userAccount => Account(userAccount.userUuid,userAccount.emailAddress,userAccount.name,if (userAccount.isAdmin) Role.Administrator else Role.NormalUser,userAccount.roleList))
     }
   }
 
+}
+
+class AccountDaoModule extends AbstractModule {
+  def configure() = {
+    bind(classOf[AccountDao]).asEagerSingleton
+  }
 }

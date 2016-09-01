@@ -1,4 +1,4 @@
-Rodney's Test Site v0.8.1
+Rodney's Test Site v0.8.2
 =========================
 
 [![Build Status](https://travis-ci.org/rodney-lai/test-site.svg?branch=master)](https://travis-ci.org/rodney-lai/test-site)
@@ -58,7 +58,7 @@ PLAY_MONGO_AUTHMECHANISM - mongo auth mechanism [ MONGODB-CR or SCRAM-SHA-1 ]
 Server Technology
 -----------------
 
-* Web Framework - [Play Framework v2.4.6](https://playframework.com/)
+* Web Framework - [Play Framework v2.4.8](https://playframework.com/)
 * Language - [Scala v2.11.8](http://scala-lang.org/)
 * NoSQL Database - [MongoDB](https://www.mongodb.org/)
 * Data Cache - [Memcached](http://memcached.org/)
@@ -85,10 +85,12 @@ Build, Deploy, Hosting
 
 * Build and Deploy - [Docker](https://www.docker.com/)
 * Web Server Hosting - [Amazon Web Services (AWS)](http://aws.amazon.com/)
+* Frontend Http Server - [Nginx](https://www.nginx.com/)
 * MongoDB Hosting - [mLab](https://mlab.com/)
 * MemCached Hosting - [RedisLabs](https://redislabs.com/)
 * Logging - [Papertrail](https://papertrailapp.com/)
 * Monitoring - [UptimeRobot](http://uptimerobot.com/)
+* SSL Certificate Authority - [LetsEncrypt](https://letsencrypt.org/)
 
 Copyright (c) 2015-2016 Rodney S.K. Lai
 

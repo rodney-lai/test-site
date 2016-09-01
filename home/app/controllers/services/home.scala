@@ -1,6 +1,7 @@
 /**
  *
  * Copyright (c) 2015-2016 Rodney S.K. Lai
+ * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -34,20 +35,22 @@ import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.auth._
 
 @Api(value = "/home", description = "home page services")
-class home @Inject() (environment: play.api.Environment, configuration: play.api.Configuration)(implicit app: play.api.Application) extends Controller with OptionalAuthElement with AuthConfigImpl {
+class home @Inject() (environment: play.api.Environment, configuration: play.api.Configuration,override val accountDao:AccountDao)(implicit app: play.api.Application) extends Controller with OptionalAuthElement with AuthConfigImpl {
 
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
   private val m_cache = play.api.cache.Cache
 
   private def scrapeImages(url:String,prefixUrl:String,excludeUrlList:Seq[String],list:Seq[String]):Seq[String] = {
-    println(url)
-    Try(Jsoup.connect(url).get) match {
+    Try(Jsoup.connect(url).validateTLSCertificates(false).get) match {
       case Success(doc:Document) => {
         val linkList:Seq[String] = doc.select("a[href]").iterator().asScala.toSeq.map(_.attr("abs:href")).filter(linkUrl => linkUrl.startsWith(prefixUrl)).filter(linkUrl => !excludeUrlList.contains(linkUrl))
 
         linkList.foldLeft(list)((r,linkUrl) => scrapeImages(linkUrl,prefixUrl,excludeUrlList ++ linkList,r)) ++ doc.select("img[src]").iterator().asScala.toSeq.map(_.attr("abs:src"))
       }
-      case Failure(x) => list
+      case Failure(ex) => {
+        m_log.error(s"failed to get url [$url]",ex)
+        list
+      }
     }
   }
 

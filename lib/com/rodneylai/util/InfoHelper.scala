@@ -1,6 +1,7 @@
 /**
  *
  * Copyright (c) 2015-2016 Rodney S.K. Lai
+ * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -20,20 +21,32 @@ package com.rodneylai.util
 
 import play.api._
 import play.api.mvc._
-import play.api.Play.current
 import play.core._
 import scala.collection.{JavaConversions}
 import scala.io._
+import javax.inject.{Inject,Singleton}
+import com.google.inject.AbstractModule
 
-object InfoHelper
+@Singleton
+class InfoHelper @Inject() (environment:Environment,configuration:Configuration)
 {
-  def getMachineInfo:Seq[(String,String)] = {
+  def getBuildDate:Option[String] = {
+    if (new java.io.File(environment.rootPath + "/BUILD_DATE").exists) {
+      Some(Source.fromFile(environment.rootPath + "/BUILD_DATE").getLines.mkString("\n"))
+    } else if (new java.io.File(environment.rootPath + "/../BUILD_DATE").exists) {
+      Some(Source.fromFile(environment.rootPath + "/../BUILD_DATE").getLines.mkString("\n"))
+    } else {
+      None
+    }
+  }
+
+  def getMachineInfo():Seq[(String,String)] = {
     Seq(
-      play.api.Play.current.configuration.getString("docker.home") match {
+      configuration.getString("docker.home") match {
         case Some(dockerHome) => Some(("docker home",dockerHome))
         case None => None
       },
-      play.api.Play.current.configuration.getString("docker.hostname") match {
+      configuration.getString("docker.hostname") match {
         case Some(dockerHostName) => Some(("docker hostname",dockerHostName))
         case None => None
       },
@@ -43,29 +56,35 @@ object InfoHelper
     JavaConversions.enumerationAsScalaIterator(java.net.NetworkInterface.getNetworkInterfaces()).flatMap(x => JavaConversions.enumerationAsScalaIterator(x.getInetAddresses).map(y => (" ",y.getHostAddress))).toSeq
   }
 
-  def getApplicationInfo:Seq[(String,String)] = {
+  def getApplicationInfo():Seq[(String,String)] = {
     Seq(
       ("play version",PlayVersion.current),
       ("play scala version",PlayVersion.scalaVersion),
       ("play sbt version",PlayVersion.sbtVersion),
       ("app scala version",scala.util.Properties.versionNumberString),
-      ("app mode",play.api.Play.current.mode.toString),
-      ("app path",play.api.Play.current.path.toString)
+      ("app mode",environment.mode.toString),
+      ("app path",environment.rootPath.toString)
     )
   }
 
-  def getMachineInfoString:String = {
-    InfoHelper.getMachineInfo.map({
+  def getMachineInfoString():String = {
+    getMachineInfo().map({
       case (label,value) if (label.trim.length == 0) => label + value
       case (label,value) if (label.trim.length != 0) => label + ": " + value
     }).mkString("","\n","\n")
   }
 
-  def getApplicationInfoString:String = {
-    InfoHelper.getApplicationInfo.map({
+  def getApplicationInfoString():String = {
+    getApplicationInfo().map({
       case (label,value) if (label.trim.length == 0) => label + value
       case (label,value) if (label.trim.length != 0) => label + ": " + value
     }).mkString("","\n","\n")
   }
 
+}
+
+class InfoHelperModule extends AbstractModule {
+  def configure() = {
+    bind(classOf[InfoHelper]).asEagerSingleton
+  }
 }

@@ -1,6 +1,7 @@
 /**
  *
  * Copyright (c) 2015-2016 Rodney S.K. Lai
+ * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -38,6 +39,7 @@ import org.mongodb.scala._
 import org.mongodb.scala.model.Sorts._
 import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.auth._
+import com.rodneylai.database._
 import com.rodneylai.models.mongodb._
 import com.rodneylai.security._
 import com.rodneylai.stackc.DevModeDelay
@@ -52,8 +54,8 @@ case class UserModel( @ApiModelProperty(position=1,value="friendly_url",required
                       @ApiModelProperty(position=6,required=true)added_date: String,
                       @ApiModelProperty(position=7,required=true)added_ago: String)
 
-@Api(value = "/admin/users", description = "admin users services")
-class users @Inject() (environment: play.api.Environment, deadbolt: DeadboltActions, actionBuilder: ActionBuilders) extends Controller with AuthElement with AuthConfigImpl with DevModeDelay {
+@Api(value = "/admin-users", description = "admin users services")
+class users @Inject() (environment:play.api.Environment,deadbolt:DeadboltActions,actionBuilder:ActionBuilders,mongoHelper:MongoHelper,userAccountDao:UserAccountDao,override val accountDao:AccountDao) extends Controller with AuthElement with AuthConfigImpl with DevModeDelay {
 
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
@@ -76,19 +78,19 @@ class users @Inject() (environment: play.api.Environment, deadbolt: DeadboltActi
       Action.async(parse.json[UserModel]) { _ =>
         val userModel:UserModel = request.body
 
-        if (MongoHelper.isActive) {
+        if (mongoHelper.isActive) {
           for {
-            userAccountOption <- UserAccountDao.findByFriendlyUrl(friendlyUrl)
+            userAccountOption <- userAccountDao.findByFriendlyUrl(friendlyUrl)
             result <- userAccountOption match {
               case Some(userAccount) => {
                 if ((userModel.email == userAccount.emailAddress) && (userModel.name == userAccount.name)) {
                   if ((userModel.status != userAccount.status) || (userModel.roles != userAccount.roleList)) {
                     {
                       for {
-                        collection <- UserAccountDao.collectionFuture
+                        collection <- userAccountDao.collectionFuture
                         replaceResult <- collection.replaceOne(
                           Document("FriendlyUrl" -> userAccount.friendlyUrl),
-                          UserAccountDao.toBson(userAccount.copy(status = userModel.status,roleList = userModel.roles,updateDate = Calendar.getInstance.getTime))
+                          userAccountDao.toBson(userAccount.copy(status = userModel.status,roleList = userModel.roles,updateDate = Calendar.getInstance.getTime))
                         ).toFuture
                       } yield Ok(Json.toJson("okay"))
                     } recoverWith { case ex =>
@@ -120,19 +122,19 @@ class users @Inject() (environment: play.api.Environment, deadbolt: DeadboltActi
       Action.async {
         val formatter:SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
 
-        if (MongoHelper.isActive) {
+        if (mongoHelper.isActive) {
           for {
-            collection <- UserAccountDao.collectionFuture
+            collection <- userAccountDao.collectionFuture
             userAccountsBson <- collection.find().sort(ascending("EmailAddressLowerCase")).skip(skip).limit(10).toFuture
           } yield {
             Ok(Json.toJson(userAccountsBson.flatMap(
-              userAccountBson => UserAccountDao.fromBson(userAccountBson).map { userAccount =>
+              userAccountBson => userAccountDao.fromBson(userAccountBson).map { userAccount =>
                 UserModel(userAccount.friendlyUrl,userAccount.emailAddress,userAccount.name,userAccount.roleList,userAccount.status,formatter.format(userAccount.createDate),UtilityHelper.getDateAgoString(userAccount.createDate))
               }
             )))
           }
         } else {
-          UserAccountDao.getTestAccounts match {
+          userAccountDao.getTestAccounts match {
             case Some(testAccountList) => Future.successful(Ok(Json.toJson(testAccountList.map(userAccount => UserModel(userAccount.friendlyUrl,userAccount.emailAddress,userAccount.name,userAccount.roleList,userAccount.status,formatter.format(userAccount.createDate),UtilityHelper.getDateAgoString(userAccount.createDate))))))
             case None => Future.successful(BadRequest(Json.toJson("fail")))
           }

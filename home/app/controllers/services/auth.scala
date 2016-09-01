@@ -1,6 +1,7 @@
 /**
  *
  * Copyright (c) 2015-2016 Rodney S.K. Lai
+ * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -29,6 +30,7 @@ import com.wordnik.swagger.annotations._
 import jp.t2v.lab.play2.auth._
 import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.auth._
+import com.rodneylai.database._
 import com.rodneylai.models.mongodb._
 import com.rodneylai.stackc.DevModeDelay
 import com.rodneylai.util._
@@ -44,7 +46,7 @@ case class JoinModel( @ApiModelProperty(position=1,required=true)full_name: Stri
                       @ApiModelProperty(position=4,required=true)password: String)
 
 @Api(value = "/auth", description = "authentication services")
-class auth @Inject() (environment: play.api.Environment) extends Controller with LoginLogout with AuthConfigImpl with DevModeDelay {
+class auth @Inject() (environment:play.api.Environment,authHelper:AuthHelper,mongoHelper:MongoHelper,userAccountDao:UserAccountDao,override val accountDao:AccountDao) extends Controller with LoginLogout with AuthConfigImpl with DevModeDelay {
 
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
   private val m_validateEmailAddressRegEx:String = """[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+"""
@@ -56,9 +58,9 @@ class auth @Inject() (environment: play.api.Environment) extends Controller with
 
   private def findUser(login:String):Future[Option[UserAccount]] = {
     if (login.contains("@")) {
-      UserAccountDao.findByEmailAddress(login)
+      userAccountDao.findByEmailAddress(login)
     } else {
-      UserAccountDao.findByFriendlyUrl(login)
+      userAccountDao.findByFriendlyUrl(login)
     }
   }
 
@@ -67,7 +69,7 @@ class auth @Inject() (environment: play.api.Environment) extends Controller with
       userAccountOption <- findUser(login)
     } yield {
       userAccountOption match {
-        case Some(userAccount) if (AuthHelper.validatePassword(password,userAccount.passwordHash)) => Some((userAccount.userUuid,userAccount.roleList))
+        case Some(userAccount) if (authHelper.validatePassword(password,userAccount.passwordHash)) => Some((userAccount.userUuid,userAccount.roleList))
         case _ => None
       }
     }
@@ -127,7 +129,7 @@ class auth @Inject() (environment: play.api.Environment) extends Controller with
           Future.successful(Some("Email address is not valid."))
         } else {
           for {
-            userAccountOption <- UserAccountDao.findByEmailAddress(joinModel.email.trim)
+            userAccountOption <- userAccountDao.findByEmailAddress(joinModel.email.trim)
           } yield {
             userAccountOption match {
               case Some(userAccount) => Some("Email address is already being used by another account.")
@@ -141,7 +143,7 @@ class auth @Inject() (environment: play.api.Environment) extends Controller with
           Future.successful(Some("User name is not valid.  User name MUST be at least three characters and can consist of lower case letters, digits, and dashes ONLY.  User name cannot start or end with a dash and there cannot be two consecutive dashes."))
         } else {
           for {
-            userAccountOption <- UserAccountDao.findByFriendlyUrl(joinModel.user_name.trim)
+            userAccountOption <- userAccountDao.findByFriendlyUrl(joinModel.user_name.trim)
           } yield {
             userAccountOption match {
               case Some(userAccount) => Some("User Name is already being used by another account.")
@@ -159,10 +161,10 @@ class auth @Inject() (environment: play.api.Environment) extends Controller with
       ))
       errors:Seq[String] = errorsOption.flatten
       result <- if (errors.isEmpty) {
-        if (MongoHelper.isActive) {
+        if (mongoHelper.isActive) {
           val now:java.util.Date = java.util.Calendar.getInstance.getTime
           val userAccount:UserAccount = UserAccount(java.util.UUID.randomUUID,
-                                                    AuthHelper.hashPassword(joinModel.password.trim),
+                                                    authHelper.hashPassword(joinModel.password.trim),
                                                     joinModel.email.trim,
                                                     joinModel.email.trim.toLowerCase,
                                                     joinModel.full_name.trim,
@@ -174,8 +176,8 @@ class auth @Inject() (environment: play.api.Environment) extends Controller with
 
           {
             for {
-              collection <- UserAccountDao.collectionFuture
-              _ <- collection.insertOne(UserAccountDao.toBson(userAccount)).toFuture
+              collection <- userAccountDao.collectionFuture
+              _ <- collection.insertOne(userAccountDao.toBson(userAccount)).toFuture
             } yield Ok(Json.toJson("okay"))
           } recoverWith { case ex =>
             m_log.error("failed to add new user",ex)

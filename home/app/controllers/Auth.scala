@@ -1,6 +1,7 @@
 /**
  *
  * Copyright (c) 2015-2016 Rodney S.K. Lai
+ * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -26,10 +27,11 @@ import scala.util.{Failure, Success, Try, Random}
 import javax.inject.Inject
 import jp.t2v.lab.play2.auth._
 import com.rodneylai.auth._
+import com.rodneylai.database._
 import com.rodneylai.stackc._
 import com.rodneylai.util._
 
-class Auth @Inject() (implicit environment: play.api.Environment) extends Controller with TrackingPageView with OptionalAuthElement with AuthConfigImpl with RequireSSL {
+class Auth @Inject() (override val accountDao:AccountDao,override val trackingHelper:TrackingHelper)(implicit environment: play.api.Environment) extends Controller with TrackingPageView with OptionalAuthElement with AuthConfigImpl with RequireSSL {
 
   def login = StackAction { implicit request =>
     loggedIn match {

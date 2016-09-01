@@ -1,6 +1,7 @@
 /**
  *
  * Copyright (c) 2015-2016 Rodney S.K. Lai
+ * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -23,6 +24,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure,Success,Try}
 import java.util.{Calendar,Date}
+import javax.inject.{Inject,Singleton}
+import com.google.inject.AbstractModule
 import org.bson.types.{ObjectId}
 import org.mongodb.scala._
 import org.mongodb.scala.bson.{BsonArray,BsonBinary,BsonDateTime,BsonObjectId,BsonString}
@@ -30,6 +33,7 @@ import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.{IndexModel,IndexOptions}
 import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.auth._
+import com.rodneylai.database._
 import com.rodneylai.util._
 
 case class UserAccount (
@@ -48,14 +52,15 @@ case class UserAccount (
   def isAdmin:Boolean = roleList.contains("admin")
 }
 
-object UserAccountDao {
+@Singleton
+class UserAccountDao @Inject() (testAccountHelper:TestAccountHelper,mongoHelper:MongoHelper) {
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
   private lazy val m_testAccountNow:java.util.Date = Calendar.getInstance.getTime
   private lazy val m_testNormalUserUuid:java.util.UUID = java.util.UUID.randomUUID
   private lazy val m_testAdminUserUuid:java.util.UUID = java.util.UUID.randomUUID
   private lazy val m_testDeveloperUserUuid:java.util.UUID = java.util.UUID.randomUUID
   private lazy val m_testNormalAccount:UserAccount = UserAccount( m_testNormalUserUuid,
-                                                                  AuthHelper.testPasswordHash,
+                                                                  testAccountHelper.testPasswordHash,
                                                                   "normal_user@rodneylai.com",
                                                                   "normal_user@rodneylai.com",
                                                                   "Test User",
@@ -66,7 +71,7 @@ object UserAccountDao {
                                                                   m_testAccountNow
                                                       )
   private lazy val m_testAdminAccount:UserAccount = UserAccount(m_testAdminUserUuid,
-                                                                AuthHelper.testPasswordHash,
+                                                                testAccountHelper.testPasswordHash,
                                                                 "admin_user@rodneylai.com",
                                                                 "admin_user@rodneylai.com",
                                                                 "Test Admin",
@@ -77,7 +82,7 @@ object UserAccountDao {
                                                                 m_testAccountNow
                                                   )
   private lazy val m_testDeveloperAccount:UserAccount = UserAccount(m_testDeveloperUserUuid,
-                                                                    AuthHelper.testPasswordHash,
+                                                                    testAccountHelper.testPasswordHash,
                                                                     "developer_user@rodneylai.com",
                                                                     "developer_user@rodneylai.com",
                                                                     "Test Developer",
@@ -101,7 +106,7 @@ object UserAccountDao {
                                                                               )
 
   def getTestAccounts:Option[Seq[UserAccount]] = {
-    if (MongoHelper.isActive) {
+    if (mongoHelper.isActive) {
       None  // do not use test accounts if mongo is active
     } else {
       Some(Seq[UserAccount](m_testAdminAccount,m_testDeveloperAccount,m_testNormalAccount))
@@ -109,7 +114,7 @@ object UserAccountDao {
   }
 
   lazy val collectionFuture:Future[MongoCollection[Document]] = {
-    val collection:MongoCollection[Document] = MongoHelper.getCollection("UserAccount")
+    val collection:MongoCollection[Document] = mongoHelper.getCollection("UserAccount")
 
     for {
       createIndexesResult <- collection.createIndexes(
@@ -126,7 +131,7 @@ object UserAccountDao {
   }
 
   def findByUserUuid(userUuid:java.util.UUID):Future[Option[UserAccount]] = {
-    if (MongoHelper.isActive) {
+    if (mongoHelper.isActive) {
       for {
         collection <- collectionFuture
         results <- collection.find(equal("UserUuid",MongoHelper.toStandardBinaryUUID(userUuid))).toFuture
@@ -145,7 +150,7 @@ object UserAccountDao {
   }
 
   def findByEmailAddress(emailAddress:String):Future[Option[UserAccount]] = {
-    if (MongoHelper.isActive) {
+    if (mongoHelper.isActive) {
       for {
         collection <- collectionFuture
         results <- collection.find(equal("EmailAddressLowerCase",emailAddress.toLowerCase)).toFuture
@@ -164,7 +169,7 @@ object UserAccountDao {
   }
 
   def findByFriendlyUrl(friendlyUrl:String):Future[Option[UserAccount]] = {
-    if (MongoHelper.isActive) {
+    if (mongoHelper.isActive) {
       for {
         collection <- collectionFuture
         results <- collection.find(equal("FriendlyUrl",friendlyUrl.toLowerCase)).toFuture
@@ -236,5 +241,11 @@ object UserAccountDao {
         )
       }
     }
+  }
+}
+
+class UserAccountDaoModule extends AbstractModule {
+  def configure() = {
+    bind(classOf[UserAccountDao]).asEagerSingleton
   }
 }

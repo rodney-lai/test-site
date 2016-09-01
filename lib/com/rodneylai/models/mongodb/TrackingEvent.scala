@@ -1,6 +1,7 @@
 /**
  *
  * Copyright (c) 2015-2016 Rodney S.K. Lai
+ * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -21,10 +22,13 @@ package com.rodneylai.models.mongodb
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure,Success,Try}
+import javax.inject.{Inject,Singleton}
+import com.google.inject.AbstractModule
 import org.bson.types.{ObjectId}
 import org.mongodb.scala._
 import org.mongodb.scala.bson.{BsonBinary,BsonDateTime,BsonObjectId,BsonString}
 import org.slf4j.{Logger,LoggerFactory}
+import com.rodneylai.database._
 import com.rodneylai.util._
 
 case class TrackingEvent (
@@ -41,11 +45,12 @@ case class TrackingEvent (
   id: Option[ObjectId] = None
 )
 
-object TrackingEventDao {
+@Singleton
+class TrackingEventDao @Inject() (mongoHelper:MongoHelper) {
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
   lazy val collectionFuture:Future[MongoCollection[Document]] = {
-    Future.successful(MongoHelper.getCollection("TrackingEvent"))
+    Future.successful(mongoHelper.getCollection("TrackingEvent"))
   }
 
   def fromBson(trackingEventBson:Document):Option[TrackingEvent] = {
@@ -102,5 +107,11 @@ object TrackingEventDao {
         )
       }
     }
+  }
+}
+
+class TrackingEventDaoModule extends AbstractModule {
+  def configure() = {
+    bind(classOf[TrackingEventDao]).asEagerSingleton
   }
 }

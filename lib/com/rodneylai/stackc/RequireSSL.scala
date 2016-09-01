@@ -1,6 +1,7 @@
 /**
  *
  * Copyright (c) 2015-2016 Rodney S.K. Lai
+ * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -37,7 +38,11 @@ trait RequireSSL extends StackableController {
         case None => super.proceed(req)(f)
       }
     } else if (play.api.Play.current.configuration.getBoolean("auth.cookie.secure").getOrElse(true)) {
-      Future(Redirect("https://" + req.domain + req.uri))
+      if (play.api.Play.current.configuration.getBoolean("frontend.http.server").getOrElse(false)) {
+        super.proceed(req)(f)
+      } else {
+        Future(Redirect("https://" + req.domain + req.uri))
+      }
     } else {
       super.proceed(req)(f)
     }

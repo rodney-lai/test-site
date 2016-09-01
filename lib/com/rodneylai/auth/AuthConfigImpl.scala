@@ -1,6 +1,7 @@
 /**
  *
  * Copyright (c) 2015-2016 Rodney S.K. Lai
+ * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -37,8 +38,10 @@ trait AuthConfigImpl extends AuthConfig {
 
   val sessionTimeoutInSeconds: Int = 3600
 
+  val accountDao:AccountDao
+
   def resolveUser(id: Id)(implicit ctx: ExecutionContext): Future[Option[User]] = {
-    Account.findById(id)
+    accountDao.findById(id)
   }
 
   def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = {

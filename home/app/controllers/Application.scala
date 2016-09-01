@@ -1,6 +1,7 @@
 /**
  *
  * Copyright (c) 2015-2016 Rodney S.K. Lai
+ * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -24,14 +25,19 @@ import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.io.{Source}
 import scala.util.{Failure, Success, Try}
+import java.io.{BufferedReader,InputStream,InputStreamReader}
 import javax.inject.Inject
 import com.github.rjeschke._
 import jp.t2v.lab.play2.auth._
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
+import com.amazonaws.services.s3.{AmazonS3,AmazonS3Client}
+import com.amazonaws.services.s3.model.{GetObjectRequest,ObjectMetadata,S3Object}
 import com.rodneylai.auth._
+import com.rodneylai.database._
 import com.rodneylai.stackc._
 import com.rodneylai.util._
 
-class Application @Inject() (app: play.api.Application)(implicit environment: play.api.Environment) extends Controller with TrackingPageView with OptionalAuthElement with LoginLogout with AuthConfigImpl {
+class Application @Inject() (app: play.api.Application,infoHelper:InfoHelper,override val accountDao:AccountDao,override val trackingHelper:TrackingHelper)(implicit environment: play.api.Environment, configuration: play.api.Configuration) extends Controller with TrackingPageView with OptionalAuthElement with LoginLogout with AuthConfigImpl {
 
   def index = StackAction { implicit request =>
     ExceptionHelper.checkForError(request,views.html.index(loggedIn))
@@ -55,18 +61,28 @@ class Application @Inject() (app: play.api.Application)(implicit environment: pl
     }
   }
 
-  private def getBuildDate:Option[String] = {
-    if (new java.io.File(app.path + "/BUILD_DATE").exists) {
-      Some(Source.fromFile(app.path + "/BUILD_DATE").getLines.mkString("\n"))
-    } else if (new java.io.File(app.path + "/../BUILD_DATE").exists) {
-      Some(Source.fromFile(app.path + "/../BUILD_DATE").getLines.mkString("\n"))
-    } else {
-      None
-    }
+  def about = StackAction { implicit request =>
+    Ok(views.html.about(loggedIn,getReadMeHtml,infoHelper.getBuildDate))
   }
 
-  def about = StackAction { implicit request =>
-    Ok(views.html.about(loggedIn,getReadMeHtml,getBuildDate))
+  def webcam = StackAction { implicit request =>
+    (configuration.getString("aws.s3.bucket"),configuration.getString("aws.s3.folder")) match {
+      case (Some(bucketName),Some(folderName)) => {
+        val s3Client:AmazonS3Client = new AmazonS3Client(new DefaultAWSCredentialsProviderChain)
+        val s3Object:S3Object = s3Client.getObject(new GetObjectRequest(bucketName, s"$folderName/current.txt"))
+        val objectDataStream:InputStream = s3Object.getObjectContent
+        val inputStreamReader:InputStreamReader = new InputStreamReader(objectDataStream)
+        val bufferedReader:BufferedReader = new BufferedReader(inputStreamReader)
+        val dateString:String = bufferedReader.readLine
+
+        bufferedReader.close
+        inputStreamReader.close
+        objectDataStream.close
+        Ok(views.html.webcam(loggedIn,dateString))
+      }
+      case _ => Ok(views.html.webcam_not_configured(loggedIn))
+    }
+
   }
 
 }

@@ -1,6 +1,7 @@
 /**
  *
  * Copyright (c) 2015-2016 Rodney S.K. Lai
+ * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -42,8 +43,8 @@ case class MemcachedValueModel(@ApiModelProperty(position=1,required=true)value:
 case class MemcachedResultsModel( @ApiModelProperty(position=1,required=true)id: String,
                                   @ApiModelProperty(position=2,required=true)value: String)
 
-@Api(value = "/developer/memcached", description = "developer memcached services")
-class memcached @Inject() (environment: play.api.Environment, deadbolt: DeadboltActions, actionBuilder: ActionBuilders)(implicit app: play.api.Application) extends Controller with AuthElement with AuthConfigImpl with DevModeDelay {
+@Api(value = "/developer-memcached", description = "developer memcached services")
+class memcached @Inject() (environment: play.api.Environment, deadbolt: DeadboltActions, actionBuilder: ActionBuilders,override val accountDao:AccountDao)(implicit app: play.api.Application) extends Controller with AuthElement with AuthConfigImpl with DevModeDelay {
 
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
   private val m_cache = play.api.cache.Cache

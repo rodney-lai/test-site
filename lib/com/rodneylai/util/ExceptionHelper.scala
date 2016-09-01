@@ -1,6 +1,7 @@
 /**
  *
  * Copyright (c) 2015-2016 Rodney S.K. Lai
+ * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -18,25 +19,29 @@
 
 package com.rodneylai.util
 
+import play.api.{Configuration,Environment}
 import play.api.libs.mailer._
 import play.api.mvc._
-import play.api.Play.current
 import play.core._
 import play.twirl.api.{Html}
+import scala.concurrent.duration._
 import scala.io._
+import javax.inject.{Inject,Singleton}
+import com.google.inject.AbstractModule
 import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.auth._
 
-object ExceptionHelper
+@Singleton
+class ExceptionHelper @Inject() (environment:Environment,configuration:Configuration,cache:play.api.cache.CacheApi,infoHelper:InfoHelper,mailerClient:MailerClient)
 {
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
-  private val m_mailer:MailerClient = new CommonsMailer(play.api.Play.current.configuration)
 
   def getRequestInfo(request: RequestHeader):String = {
     val msg:StringBuilder = new StringBuilder()
 
-    msg.append(InfoHelper.getMachineInfoString)
-    msg.append(InfoHelper.getApplicationInfoString)
+    infoHelper.getBuildDate.map(msg.append("build date: ").append(_).append("\n"))
+    msg.append(infoHelper.getMachineInfoString)
+    msg.append(infoHelper.getApplicationInfoString)
     msg.append("headers: ").append(request.headers.keys.size).append("\n")
     request.headers.keys.foreach { x => msg.append("  ").append(x).append(": ").append(request.headers.get(x).getOrElse("[ UNKNOWN ]")).append("\n") }
     msg.append("method: ").append(request.method).append("\n")
@@ -81,8 +86,8 @@ object ExceptionHelper
     request match {
       case Some(request) => msg.append(getRequestInfo(request))
       case None => {
-        msg.append(InfoHelper.getMachineInfoString)
-        msg.append(InfoHelper.getApplicationInfoString)
+        msg.append(infoHelper.getMachineInfoString)
+        msg.append(infoHelper.getApplicationInfoString)
       }
     }
     msg.append(ex).append("\n")
@@ -93,29 +98,26 @@ object ExceptionHelper
     }
     msg.append("\n\n")
     if (mailFlag) {
-      (play.api.Play.current.configuration.getString("email.exceptions"),play.api.Play.current.configuration.getString("email.from.exception")) match {
+      (configuration.getString("email.exceptions"),configuration.getString("email.from.exception")) match {
         case (Some(toEmailAddress),Some(fromEmailAddress)) => {
           val email = Email(
                         subject = Option(ex.getCause) match {
                           case Some(cause) => "Exception [" + cause + "]" + message.getOrElse("")
-                          case None => "Exception " + message.getOrElse("")
+                          case None => "Exception [" + ex.toString + "]" + message.getOrElse("")
                         },
                         from = request match {
-                          case Some(request) => "Admin [" + play.api.Play.current.mode.toString + "][" + request.path + "] <" + fromEmailAddress + ">"
-                          case None => "Admin [" + play.api.Play.current.mode.toString + "] <" + fromEmailAddress + ">"
+                          case Some(request) => "Admin [" + environment.mode.toString + "][" + request.path + "] <" + fromEmailAddress + ">"
+                          case None => "Admin [" + environment.mode.toString + "] <" + fromEmailAddress + ">"
                         },
                         to = Seq(toEmailAddress),
                         bodyText = Some(msg.toString)
                       )
-          m_mailer.send(email)
+          mailerClient.send(email)
         }
-        case _ => {
-          m_log.error(msg.toString)
-        }
+        case _ => {}
       }
-    } else {
-      m_log.error(msg.toString)
     }
+    m_log.error(msg.toString)
   }
 
   def log(ex:Throwable,message:Option[String],account: Option[Account],request: Option[RequestHeader]):Unit = {
@@ -147,22 +149,22 @@ object ExceptionHelper
   }
 
   def log_recurring(classObject:java.lang.Class[_ <: Any],id:String,ex:Throwable,account: Option[Account],request: Option[RequestHeader]):Unit = {
-    val recurringExceptionPeriod:Long = play.api.cache.Cache.get("RecurringExceptionLogPeriodSpy") match {
+    val recurringExceptionPeriod:Long = cache.get("RecurringExceptionLogPeriodSpy") match {
       case Some(x) => x.asInstanceOf[Long]
       case None => 15
     }
     if (recurringExceptionPeriod > 0) {
       val key:String = "[" + classObject.getName.replaceAll("[^A-Za-z0-9]","_").toLowerCase + "][" + id + "][" + getExceptionKey(ex) + "]"
-      val count:Int = play.api.cache.Cache.get("[recurring_exception_count]" + key) match {
+      val count:Int = cache.get("[recurring_exception_count]" + key) match {
         case Some(x) => {
           val newVal:Int = x.asInstanceOf[Int]+1
-          play.api.cache.Cache.set("[recurring_exception_count]" + key,newVal)
+          cache.set("[recurring_exception_count]" + key,newVal)
           newVal
         }
         case None => 0
       }
 
-      play.api.cache.Cache.get("[recurring_exception_time]" + key) match {
+      cache.get("[recurring_exception_time]" + key) match {
         case Some(x) => {
           if (count > 0) {
             log(classObject,ex,Some(" (recurring_count=" + count + ")"),account,request,false)
@@ -171,8 +173,8 @@ object ExceptionHelper
           }
         }
         case None => {
-          play.api.cache.Cache.set("[recurring_exception_time]" + key,"true",(recurringExceptionPeriod * 60).toInt)
-          play.api.cache.Cache.set("[recurring_exception_count]" + key,0)
+          cache.set("[recurring_exception_time]" + key,"true",Duration(recurringExceptionPeriod,MINUTES))
+          cache.set("[recurring_exception_count]" + key,0)
           if (count > 0) {
             log(classObject,ex,Some(" (recurring_count=" + count + ")"),account,request,true)
           } else {
@@ -185,7 +187,7 @@ object ExceptionHelper
     }
   }
 
-  def log_warning(classObject:java.lang.Class[_ <: Any],message:String,infoOption:Option[String],account: Option[Account],request: Option[RequestHeader]) = {
+  def log_warning(classObject:java.lang.Class[_ <: Any],message:String,infoOption:Option[String],account: Option[Account],request: Option[RequestHeader]):Unit = {
     val msg:StringBuilder = new StringBuilder()
 
     msg.append("General Information [").append(message).append("]\n\n")
@@ -204,28 +206,33 @@ object ExceptionHelper
     request match {
       case Some(request) => msg.append(getRequestInfo(request))
       case None => {
-        msg.append(InfoHelper.getMachineInfoString)
-        msg.append(InfoHelper.getApplicationInfoString)
+        msg.append(infoHelper.getMachineInfoString)
+        msg.append(infoHelper.getApplicationInfoString)
       }
     }
     infoOption map { info => msg.append(message).append("\n").append(info) }
     msg.append("\n\n")
-    (play.api.Play.current.configuration.getString("email.exceptions"),play.api.Play.current.configuration.getString("email.from.exception")) match {
+    (configuration.getString("email.exceptions"),configuration.getString("email.from.exception")) match {
       case (Some(toEmailAddress),Some(fromEmailAddress)) => {
           val email = Email(
                         subject = "Warning [" + message + "]",
                         from = request match {
-                          case Some(request) => "Admin [" + play.api.Play.current.mode.toString + "][" + request.path + "] <" + fromEmailAddress + ">"
-                          case None => "Admin [" + play.api.Play.current.mode.toString + "] <" + fromEmailAddress + ">"
+                          case Some(request) => "Admin [" + environment.mode.toString + "][" + request.path + "] <" + fromEmailAddress + ">"
+                          case None => "Admin [" + environment.mode.toString + "] <" + fromEmailAddress + ">"
                         },
                         to = Seq(toEmailAddress),
                         bodyText = Some(msg.toString)
                       )
-          m_mailer.send(email)
+          mailerClient.send(email)
       }
-      case _ => m_log.warn(msg.toString)
+      case _ => {}
     }
+    m_log.warn(msg.toString)
   }
+
+}
+
+object ExceptionHelper {
 
   def getTopMessage(request:RequestHeader):Option[(String,String)] = {
     request.flash.get("error") match {
@@ -242,8 +249,15 @@ object ExceptionHelper
       case Some(error) if (error == "exception") => Results.InternalServerError(html)
       case Some(error) if (error == "handler_not_found") => Results.NotFound(html)
       case Some(error) if (error == "bad_request") => Results.BadRequest(html)
+      case Some(error) if (error == "client_error") => Results.Ok(html)
       case None => Results.Ok(html)
     }
   }
 
+}
+
+class ExceptionHelperModule extends AbstractModule {
+  def configure() = {
+    bind(classOf[ExceptionHelper]).asEagerSingleton
+  }
 }

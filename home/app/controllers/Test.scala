@@ -1,6 +1,7 @@
 /**
  *
  * Copyright (c) 2015-2016 Rodney S.K. Lai
+ * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -24,7 +25,7 @@ import javax.inject.Inject
 import jp.t2v.lab.play2.auth._
 import com.rodneylai.auth._
 
-class Test @Inject() (implicit environment: play.api.Environment) extends Controller with OptionalAuthElement with AuthConfigImpl {
+class Test @Inject() (override val accountDao:AccountDao)(implicit environment: play.api.Environment) extends Controller with OptionalAuthElement with AuthConfigImpl {
 
   def isAdmin(accountOption:Option[Account]):Boolean = {
     accountOption match {

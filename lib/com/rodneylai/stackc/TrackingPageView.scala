@@ -1,6 +1,7 @@
 /**
  *
  * Copyright (c) 2015-2016 Rodney S.K. Lai
+ * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -24,15 +25,17 @@ import scala.concurrent.{Future}
 import jp.t2v.lab.play2.auth._
 import jp.t2v.lab.play2.stackc._
 import com.rodneylai.auth._
-import com.rodneylai.util._
+import com.rodneylai.database._
 
 trait TrackingPageView extends StackableController with TrackingCookie with OptionalAuthElement {
   self: Controller with AuthConfigImpl =>
 
+  val trackingHelper:TrackingHelper
+
   override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[Result]): Future[Result] = {
     super.proceed(req) { req =>
       for {
-        _ <- TrackingHelper.trackEventByTypeAndUrl(req,trackingId(req),loggedIn(req).map(_.id).getOrElse(MongoHelper.CONSTANTS.UUID.Empty),"page_view",req.path)
+        _ <- trackingHelper.trackEventByTypeAndUrl(req,trackingId(req),loggedIn(req).map(_.id).getOrElse(MongoHelper.CONSTANTS.UUID.Empty),"page_view",req.path)
         result <- f(req)
       } yield result
     }

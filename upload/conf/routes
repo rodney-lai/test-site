@@ -1,0 +1,28 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+GET     /                           controllers.ApiDocsController.index
+GET     /api-docs                   controllers.ApiDocsController.index
+
+PUT     /home-office/:file_name     controllers.UploadController.fileUpload(file_name:String)
+
+GET     /swagger.json               controllers.ApiHelpController.getResources
+
+GET     /throw-exception            controllers.TestController.throw_exception
+GET     /test-val/:x                controllers.TestController.test_val(x:Integer)
+GET     /build-date                 controllers.TestController.build_date
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /robots.txt                                   controllers.Assets.versioned(path="/public",file="robots.txt")
+GET     /favicon.png                                  controllers.Assets.versioned(path="/public",file="favicon.png")
+GET     /favicon.ico                                  controllers.Assets.versioned(path="/public",file="favicon.png")
+GET     /js/*file                                     controllers.Assets.versioned(path="/public/javascripts", file)
+GET     /js/swagger/*file                             controllers.Assets.versioned(path="/public/javascripts/swagger", file)
+GET     /js/swagger/lang/*file                        controllers.Assets.versioned(path="/public/javascripts/swagger/lang", file)
+GET     /css/*file                                    controllers.Assets.versioned(path="/public/stylesheets", file)
+GET     /css/swagger/*file                            controllers.Assets.versioned(path="/public/stylesheets/swagger", file)
+GET     /img/*file                                    controllers.Assets.versioned(path="/public/images", file)
+GET     /img/swagger/*file                            controllers.Assets.versioned(path="/public/images/swagger", file)
+GET     /fonts/*file                                  controllers.Assets.versioned(path="/public/fonts", file)
+GET     /fonts/swagger/*file                          controllers.Assets.versioned(path="/public/fonts/swagger", file)

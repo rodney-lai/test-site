@@ -1,6 +1,7 @@
 /**
  *
  * Copyright (c) 2015-2016 Rodney S.K. Lai
+ * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -27,7 +28,7 @@ import com.rodneylai.auth._
 import com.rodneylai.security._
 import com.rodneylai.stackc._
 
-class ApiDocs @Inject() (environment: play.api.Environment, deadbolt: DeadboltActions, actionBuilder: ActionBuilders) extends Controller with OptionalAuthElement with AuthConfigImpl with RequireSSL {
+class ApiDocs @Inject() (environment: play.api.Environment, deadbolt: DeadboltActions, actionBuilder: ActionBuilders,override val accountDao:AccountDao) extends Controller with OptionalAuthElement with AuthConfigImpl with RequireSSL {
 
   def index = if (environment.mode == Mode.Dev) {
     StackAction { implicit request =>

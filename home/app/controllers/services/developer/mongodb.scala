@@ -1,6 +1,7 @@
 /**
  *
  * Copyright (c) 2015-2016 Rodney S.K. Lai
+ * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -36,6 +37,7 @@ import com.wordnik.swagger.annotations._
 import jp.t2v.lab.play2.auth._
 import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.auth._
+import com.rodneylai.database._
 import com.rodneylai.models.mongodb._
 import com.rodneylai.security._
 import com.rodneylai.stackc.DevModeDelay
@@ -45,8 +47,8 @@ import com.rodneylai.util._
 case class MongoDBResultsModel( @ApiModelProperty(position=1,required=true)date: String,
                                 @ApiModelProperty(position=2,required=true)json: String)
 
-@Api(value = "/developer/mongodb", description = "developer mongodb services")
-class mongodb @Inject() (environment: play.api.Environment, deadbolt: DeadboltActions, actionBuilder: ActionBuilders) extends Controller with AuthElement with AuthConfigImpl with DevModeDelay {
+@Api(value = "/developer-mongodb", description = "developer mongodb services")
+class mongodb @Inject() (environment:play.api.Environment,deadbolt:DeadboltActions,actionBuilder:ActionBuilders,mongoHelper:MongoHelper,override val accountDao:AccountDao) extends Controller with AuthElement with AuthConfigImpl with DevModeDelay {
 
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
@@ -86,7 +88,7 @@ class mongodb @Inject() (environment: play.api.Environment, deadbolt: DeadboltAc
     deadbolt.Restrict(Array("developer"), new DefaultDeadboltHandler(Some(loggedIn))) {
       Action.async {
         for {
-          documents <- MongoHelper.getCollection(collectionName).find().skip(skip).limit(10).toFuture
+          documents <- mongoHelper.getCollection(collectionName).find().skip(skip).limit(10).toFuture
         } yield {
           Ok(Json.toJson(documents.toSeq.map({ x =>
             MongoDBResultsModel(

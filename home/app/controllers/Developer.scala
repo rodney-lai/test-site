@@ -1,6 +1,7 @@
 /**
  *
  * Copyright (c) 2015-2016 Rodney S.K. Lai
+ * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -31,18 +32,19 @@ import net.spy.memcached.{AddrUtil,ConnectionFactoryBuilder,MemcachedClient}
 import net.spy.memcached.ConnectionFactoryBuilder.{Protocol}
 import net.spy.memcached.auth.{AuthDescriptor,PlainCallbackHandler}
 import com.rodneylai.auth._
+import com.rodneylai.database._
 import com.rodneylai.security._
 import com.rodneylai.stackc._
 import com.rodneylai.util._
 
-class Developer @Inject() (configuration: play.api.Configuration, deadbolt: DeadboltActions, actionBuilder: ActionBuilders)(implicit environment: play.api.Environment) extends Controller with TrackingPageViewAuth with AuthElement with AuthConfigImpl with RequireSSL {
+class Developer @Inject() (configuration:Configuration,deadbolt:DeadboltActions,actionBuilder:ActionBuilders,infoHelper:InfoHelper,mongoHelper:MongoHelper,override val accountDao:AccountDao,override val trackingHelper:TrackingHelper)(implicit environment: play.api.Environment) extends Controller with TrackingPageViewAuth with AuthElement with AuthConfigImpl with RequireSSL {
 
   def index = server
 
   def server = AsyncStack(AuthorityKey -> Role.Administrator) { implicit request =>
     deadbolt.Restrict(Array("developer"), new DefaultDeadboltHandler(Some(loggedIn))) {
       Action {
-        Ok(views.html.developer.server(loggedIn,InfoHelper.getMachineInfo ++ InfoHelper.getApplicationInfo))
+        Ok(views.html.developer.server(loggedIn,infoHelper.getMachineInfo ++ infoHelper.getApplicationInfo))
       }
     }.apply(request)
   }
@@ -98,8 +100,8 @@ class Developer @Inject() (configuration: play.api.Configuration, deadbolt: Dead
     deadbolt.Restrict(Array("developer"), new DefaultDeadboltHandler(Some(loggedIn))) {
       Action.async {
         for {
-          statsOption <- MongoHelper.getDatabaseStats
-          collectionListOption <- MongoHelper.getCollectionList
+          statsOption <- mongoHelper.getDatabaseStats
+          collectionListOption <- mongoHelper.getCollectionList
         } yield Ok(views.html.developer.mongodb(loggedIn,statsOption,collectionListOption))
       }
     }.apply(request)
@@ -109,8 +111,8 @@ class Developer @Inject() (configuration: play.api.Configuration, deadbolt: Dead
     deadbolt.Restrict(Array("developer"), new DefaultDeadboltHandler(Some(loggedIn))) {
       Action.async {
         for {
-          statsOption <- MongoHelper.getCollectionStats(collectionName)
-          collectionListOption <- MongoHelper.getCollectionList
+          statsOption <- mongoHelper.getCollectionStats(collectionName)
+          collectionListOption <- mongoHelper.getCollectionList
         } yield Ok(views.html.developer.mongodb_collection(loggedIn,collectionName,statsOption,collectionListOption))
       }
     }.apply(request)

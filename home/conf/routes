@@ -9,6 +9,7 @@ GET     /login                                        controllers.Auth.login
 GET     /logout                                       controllers.Application.logout
 GET     /join                                         controllers.Auth.join
 GET     /about                                        controllers.Application.about
+GET     /webcam                                       controllers.Application.webcam
 GET     /admin                                        controllers.Admin.index
 GET     /admin/users                                  controllers.Admin.users
 GET     /developer                                    controllers.Developer.index
@@ -23,10 +24,10 @@ GET     /api-docs.json                                controllers.services.devel
 GET     /api-docs.json/home                           controllers.services.developer.api_docs.getResource(path:String = "/home")
 GET     /api-docs.json/auth                           controllers.services.developer.api_docs.getResource(path:String = "/auth")
 GET     /api-docs.json/developer                      controllers.services.developer.api_docs.getResource(path:String = "/developer")
-GET     /api-docs.json/developer/memcached            controllers.services.developer.api_docs.getResource(path:String = "/developer/memcached")
-GET     /api-docs.json/developer/mongodb              controllers.services.developer.api_docs.getResource(path:String = "/developer/mongodb")
+GET     /api-docs.json/developer-memcached            controllers.services.developer.api_docs.getResource(path:String = "/developer-memcached")
+GET     /api-docs.json/developer-mongodb              controllers.services.developer.api_docs.getResource(path:String = "/developer-mongodb")
 GET     /api-docs.json/admin                          controllers.services.developer.api_docs.getResource(path:String = "/admin")
-GET     /api-docs.json/admin/users                    controllers.services.developer.api_docs.getResource(path:String = "/admin/users")
+GET     /api-docs.json/admin-users                    controllers.services.developer.api_docs.getResource(path:String = "/admin-users")
 
 GET     /services/who_am_i                            controllers.services.home.who_am_i
 GET     /services/scraped_images                      controllers.services.home.get_scraped_images
@@ -42,6 +43,8 @@ PUT     /services/admin/user/:friendly_url            controllers.services.admin
 
 GET     /throw-exception                              controllers.Test.throw_exception
 GET     /test-val/:x                                  controllers.Test.test_val(x:Integer)
+
+GET     /img/webcam.jpg                               controllers.Image.webcam
 
 GET     /robots.txt                                   controllers.Assets.versioned(path="/public",file="robots.txt")
 GET     /favicon.png                                  controllers.Assets.versioned(path="/public",file="favicon.png")

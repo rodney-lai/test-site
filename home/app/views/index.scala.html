@@ -1,11 +1,20 @@
-@(accountOption:Option[com.rodneylai.auth.Account])(implicit request: Request[Any], environment: play.api.Environment)
+@(accountOption:Option[com.rodneylai.auth.Account])(implicit request: Request[Any], environment: play.api.Environment, configuration: play.api.Configuration)
 
 @main("Rodney's Test Server",accountOption,"home") {
 } {
 } {
 
-<div id="title-container">
-  <h2>Rodney's Test Server <img id="wait-img" src='@routes.Assets.versioned("/public/images","ajax-spinner-transparent.gif")' /></h2>
+<div id="title-bar-container">
+  <div id="title-container" style="float:left;">
+    <h2>Rodney's Test Server <img id="wait-img" src='@routes.Assets.versioned("/public/images","ajax-spinner-transparent.gif")' /></h2>
+  </div>
+@(configuration.getString("aws.s3.bucket"),configuration.getString("aws.s3.folder")) match {
+  case (Some(bucketName),Some(folderName)) => {
+    <div style="float:right;margin:5px;"><a href="/webcam"><img src="/img/webcam.jpg" width="75" alt="view from rodney's window" title="view from rodney's window" /></a></div>
+  }
+  case _ => {}
+}
+  <div style="clear:both;"></div>
 </div>
 <div id="primary-container" class="home-page">
   <div class="content">
@@ -29,13 +38,15 @@
           $.getJSON("@services.routes.home.get_scraped_images",null,function(data, status, xhr){
             $("#wait-img").hide();
             m_images = data;
-            setInterval(function(){
-              var x = (Math.random() * m_width);
-              var y = (Math.random() * m_height);
+            if (m_images.length) {
+              setInterval(function(){
+                var x = (Math.random() * m_width);
+                var y = (Math.random() * m_height);
 
-              $("<img src='" + m_images[m_imageIndex % m_images.length] + "' style='left:" + x + "px;top:" + y + "px;' />").appendTo("#primary-container .content");
-              m_imageIndex++;
-            },1000);
+                $("<img src='" + m_images[m_imageIndex % m_images.length] + "' style='left:" + x + "px;top:" + y + "px;' />").appendTo("#primary-container .content");
+                m_imageIndex++;
+              },1000);
+            }
           });
         }
       }
@@ -50,6 +61,7 @@
 @*
  *
  * Copyright (c) 2015-2016 Rodney S.K. Lai
+ * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
