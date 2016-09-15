@@ -23,8 +23,8 @@ import play.api.mvc.{Request, Result, Results}
 import play.api.mvc.Results._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
-import be.objectify.deadbolt.scala.{DynamicResourceHandler, DeadboltHandler}
-import be.objectify.deadbolt.core.models.Subject
+import be.objectify.deadbolt.scala.{AuthenticatedRequest, DynamicResourceHandler, DeadboltHandler}
+import be.objectify.deadbolt.scala.models.Subject
 import com.rodneylai.auth.Account
 import com.rodneylai.security.models.User
 
@@ -34,14 +34,14 @@ class DefaultDeadboltHandler(accountOption:Option[Account] = None,dynamicResourc
 
   override def getDynamicResourceHandler[A](request: Request[A]): Future[Option[DynamicResourceHandler]] = Future(None)
 
-  override def getSubject[A](request: Request[A]): Future[Option[Subject]] = {
+  override def getSubject[A](request: AuthenticatedRequest[A]): Future[Option[Subject]] = {
     accountOption match {
       case Some(account) => Future(Some(new User(account.email,account.roleList)))
       case None => Future(None)
     }
   }
 
-  def onAuthFailure[A](request: Request[A]): Future[Result] = {
+  def onAuthFailure[A](request: AuthenticatedRequest[A]): Future[Result] = {
     if ((request.path != null) && (request.path.contains("/services/"))) {
       Future(InternalServerError("kick"))
     } else {

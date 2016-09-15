@@ -18,7 +18,7 @@ Features
 Server Technology
 -----------------
 
-* Web Framework - [Play Framework v2.4.8](https://playframework.com/)
+* Web Framework - [Play Framework v2.5.7](https://playframework.com/)
 * Language - [Scala v2.11.8](http://scala-lang.org/)
 * NoSQL Database - [MongoDB](https://www.mongodb.org/)
 * Data Cache - [Memcached](http://memcached.org/)
@@ -51,3 +51,9 @@ Build, Deploy, Hosting
 * Logging - [Papertrail](https://papertrailapp.com/)
 * Monitoring - [UptimeRobot](http://uptimerobot.com/)
 * SSL Certificate Authority - [LetsEncrypt](https://letsencrypt.org/)
+
+Tools
+-----
+
+* Editor - [Atom](https://atom.io/)
+* Mongo GUI Client - [MongoChef](http://3t.io/)

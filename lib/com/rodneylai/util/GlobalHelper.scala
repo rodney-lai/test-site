@@ -91,7 +91,7 @@ class GlobalHelper @Inject() (environment:Environment,configuration:Configuratio
 
   def onHandlerNotFoundMsg(request:RequestHeader,accountOption:Option[Account] = None)(implicit ctx: ExecutionContext):Future[String] = {
     for {
-      trackingCountOption <- if (request.method == "GET") {
+      trackingCountOption <- if ((request.method == "GET") || (request.method == "HEAD")) {
         trackingHelper.trackEventByTypeAndUrl(
           request,
           request.cookies.get("tracking_id").map(trackingIdCookie => java.util.UUID.fromString(trackingIdCookie.value)).getOrElse(MongoHelper.CONSTANTS.UUID.Empty),

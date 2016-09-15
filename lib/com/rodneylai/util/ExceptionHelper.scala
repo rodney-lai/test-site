@@ -26,6 +26,7 @@ import play.core._
 import play.twirl.api.{Html}
 import scala.concurrent.duration._
 import scala.io._
+import scala.util.{Failure, Success, Try}
 import javax.inject.{Inject,Singleton}
 import com.google.inject.AbstractModule
 import org.slf4j.{Logger,LoggerFactory}
@@ -112,7 +113,11 @@ class ExceptionHelper @Inject() (environment:Environment,configuration:Configura
                         to = Seq(toEmailAddress),
                         bodyText = Some(msg.toString)
                       )
-          mailerClient.send(email)
+
+          Try(mailerClient.send(email)) match {
+            case Success(x) => {}
+            case Failure(ex) => m_log.error("failed to send exception email",ex)
+          }
         }
         case _ => {}
       }
@@ -214,16 +219,20 @@ class ExceptionHelper @Inject() (environment:Environment,configuration:Configura
     msg.append("\n\n")
     (configuration.getString("email.exceptions"),configuration.getString("email.from.exception")) match {
       case (Some(toEmailAddress),Some(fromEmailAddress)) => {
-          val email = Email(
-                        subject = "Warning [" + message + "]",
-                        from = request match {
-                          case Some(request) => "Admin [" + environment.mode.toString + "][" + request.path + "] <" + fromEmailAddress + ">"
-                          case None => "Admin [" + environment.mode.toString + "] <" + fromEmailAddress + ">"
-                        },
-                        to = Seq(toEmailAddress),
-                        bodyText = Some(msg.toString)
-                      )
-          mailerClient.send(email)
+        val email = Email(
+                      subject = "Warning [" + message + "]",
+                      from = request match {
+                        case Some(request) => "Admin [" + environment.mode.toString + "][" + request.path + "] <" + fromEmailAddress + ">"
+                        case None => "Admin [" + environment.mode.toString + "] <" + fromEmailAddress + ">"
+                      },
+                      to = Seq(toEmailAddress),
+                      bodyText = Some(msg.toString)
+                    )
+
+        Try(mailerClient.send(email)) match {
+          case Success(x) => {}
+          case Failure(ex) => m_log.error("failed to send warning email",ex)
+        }
       }
       case _ => {}
     }

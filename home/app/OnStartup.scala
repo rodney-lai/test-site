@@ -28,7 +28,7 @@ import com.rodneylai.auth._
 import com.rodneylai.util._
 
 @Singleton
-class OnStartup @Inject() (val app:Application,globalHelper:GlobalHelper,authHelper:AuthHelper)
+class OnStartup @Inject() (globalHelper:GlobalHelper,authHelper:AuthHelper)
 {
   globalHelper.onStartMsg
   TimeZone.setDefault(TimeZone.getTimeZone("GMT"))

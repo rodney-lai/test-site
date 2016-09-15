@@ -20,7 +20,7 @@
 package com.rodneylai.security.models
 
 import play.libs.Scala
-import be.objectify.deadbolt.core.models.Subject
+import be.objectify.deadbolt.scala.models.Subject
 import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.models.mongodb._
 import com.rodneylai.util._
@@ -29,13 +29,9 @@ class User(userName:String,roleList:Set[String]) extends Subject
 {
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
-  def getRoles: java.util.List[SecurityRole] = {
-    Scala.asJava(roleList.toSeq.map(role => new SecurityRole(role)))
-  }
+  def roles: List[SecurityRole] = roleList.toSeq.map(role => new SecurityRole(role)).toList
 
-  def getPermissions: java.util.List[UserPermission] = {
-    Scala.asJava(List())
-  }
+  def permissions: List[UserPermission] = List()
 
-  def getIdentifier: String = userName
+  def identifier: String = userName
 }

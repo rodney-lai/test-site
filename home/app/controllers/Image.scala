@@ -22,6 +22,8 @@ package controllers
 import play.api._
 import play.api.libs.iteratee.Enumerator
 import play.api.mvc._
+import akka.stream.scaladsl._
+import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure,Success,Try}
 import java.io.InputStream
@@ -40,7 +42,7 @@ class Image @Inject() (configuration: play.api.Configuration) extends Controller
         val s3Client:AmazonS3Client = new AmazonS3Client(new DefaultAWSCredentialsProviderChain)
         val s3Object:S3Object = s3Client.getObject(new GetObjectRequest(bucketName, s"$folderName/current.jpg"))
         val objectDataStream:InputStream = s3Object.getObjectContent
-        val dataContent:Enumerator[Array[Byte]] = Enumerator.fromStream(objectDataStream)
+        val dataContent:Source[akka.util.ByteString, Future[akka.stream.IOResult]] = StreamConverters.fromInputStream(() => objectDataStream)
 
         Ok.chunked(dataContent).as("image/jpeg")
       }

@@ -15,11 +15,11 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.10.77",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.33",
   "com.github.mumoshu" % "play2-memcached-play24_2.11" % "0.7.0",
   "com.github.rjeschke" % "txtmark" % "0.13",
-  "com.typesafe.play" %% "play-mailer" % "4.0.0",
-  "be.objectify" %% "deadbolt-scala" % "2.4.3",
+  "com.typesafe.play" %% "play-mailer" % "5.0.0",
+  "be.objectify" %% "deadbolt-scala" % "2.5.0",
   "ch.qos.logback" % "logback-classic" % "1.1.7",
   "ch.qos.logback" % "logback-core" % "1.1.7",
   "jp.t2v" %% "play2-auth" % "0.14.2",
@@ -30,11 +30,11 @@ libraryDependencies ++= Seq(
   "org.mindrot" % "jbcrypt" % "0.3m",
   "org.mongodb.scala" % "mongo-scala-driver_2.11" % "1.1.1",
   "org.slf4j" % "slf4j-api" % "1.7.21",
-  "pl.matisoft" %% "swagger-play24" % "1.4",
+  "io.swagger" %% "swagger-play2" % "1.5.2-SNAPSHOT",
   jdbc,
   cache,
   ws,
-  specs2 % Test
+  "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.0-RC1" % Test
 )
 
 resolvers += "Maven" at "https://repo1.maven.org/maven2"

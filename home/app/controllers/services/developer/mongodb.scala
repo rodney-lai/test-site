@@ -29,11 +29,10 @@ import scala.concurrent.{ExecutionContext,Future}
 import scala.concurrent.duration._
 import java.text.SimpleDateFormat
 import javax.inject.Inject
-import javax.ws.rs.{QueryParam, PathParam}
 import be.objectify.deadbolt.scala.{ActionBuilders,DeadboltActions}
 import org.mongodb.scala._
 import org.mongodb.scala.bson.{BsonArray,BsonBinary,BsonDateTime,BsonInt64,BsonObjectId,BsonString}
-import com.wordnik.swagger.annotations._
+import io.swagger.annotations._
 import jp.t2v.lab.play2.auth._
 import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.auth._
@@ -48,7 +47,7 @@ case class MongoDBResultsModel( @ApiModelProperty(position=1,required=true)date:
                                 @ApiModelProperty(position=2,required=true)json: String)
 
 @Api(value = "/developer-mongodb", description = "developer mongodb services")
-class mongodb @Inject() (environment:play.api.Environment,deadbolt:DeadboltActions,actionBuilder:ActionBuilders,mongoHelper:MongoHelper,override val accountDao:AccountDao) extends Controller with AuthElement with AuthConfigImpl with DevModeDelay {
+class mongodb @Inject() (override val environment:play.api.Environment,override val configuration:play.api.Configuration,deadbolt:DeadboltActions,actionBuilder:ActionBuilders,mongoHelper:MongoHelper,override val accountDao:AccountDao) extends Controller with AuthElement with AuthConfigImpl with DevModeDelay {
 
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
@@ -82,21 +81,19 @@ class mongodb @Inject() (environment:play.api.Environment,deadbolt:DeadboltActio
   }
 
   @ApiOperation(value = "get", notes = "returns value", nickname="get", response = classOf[MongoDBResultsModel], httpMethod = "GET")
-  def get(@ApiParam(value = "collection_name", required = true) @PathParam("collection_name") collectionName:String,
-          @ApiParam(value = "skip", required = false) @QueryParam("skip") skip:Int) =
+  def get(@ApiParam(value = "collection_name", required = true) collectionName:String,
+          @ApiParam(value = "skip", required = false) skip:Int) =
     AsyncStack(AuthorityKey -> Role.Administrator,EnvironmentKey -> environment) { implicit request =>
-    deadbolt.Restrict(Array("developer"), new DefaultDeadboltHandler(Some(loggedIn))) {
-      Action.async {
-        for {
-          documents <- mongoHelper.getCollection(collectionName).find().skip(skip).limit(10).toFuture
-        } yield {
-          Ok(Json.toJson(documents.toSeq.map({ x =>
-            MongoDBResultsModel(
-              x.get[BsonObjectId]("_id").get.getValue.getDate.toString,
-              JsObject(x.keySet.toSeq.map({ key => key -> mapMongoToJson(x.get(key)) })).toString
-            )
-          })))
-        }
+    deadbolt.Restrict(List(Array("developer")), new DefaultDeadboltHandler(Some(loggedIn)))() { authRequest =>
+      for {
+        documents <- mongoHelper.getCollection(collectionName).find().skip(skip).limit(10).toFuture
+      } yield {
+        Ok(Json.toJson(documents.toSeq.map({ x =>
+          MongoDBResultsModel(
+            x.get[BsonObjectId]("_id").get.getValue.getDate.toString,
+            JsObject(x.keySet.toSeq.map({ key => key -> mapMongoToJson(x.get(key)) })).toString
+          )
+        })))
       }
     }.apply(request)
   }

@@ -19,7 +19,6 @@
 
 package com.rodneylai.database
 
-import play.api.Application
 import play.api.libs.json._
 import play.libs.Scala
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -86,10 +85,9 @@ object MongoHelper {
 }
 
 @Singleton
-class MongoHelper @Inject() (app:Application) {
+class MongoHelper @Inject() (configuration:play.api.Configuration) {
   private val       m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
-  private val       configuration = app.configuration
   private val       m_host:String = configuration.getString("mongo.host").getOrElse("")
   private val       m_port:Int = configuration.getInt("mongo.port").getOrElse(27017)
   private val       m_database:String = configuration.getString("mongo.database").getOrElse("")

@@ -19,7 +19,6 @@
 
 package com.rodneylai.auth
 
-import play.api.Application
 import play.api.mvc._
 import scala.concurrent.{ExecutionContext,Future}
 import java.util.{Calendar,Date}
@@ -29,7 +28,7 @@ import org.mindrot.jbcrypt._
 import com.rodneylai.util._
 
 @Singleton
-class TestAccountHelper @Inject() (app:Application) {
+class TestAccountHelper @Inject() (configuration:play.api.Configuration) {
   case class TestAccount(email:String,name:String,friendlyUrl:String,roleList:Set[String])
 
   val testAccounts:Seq[TestAccount] = Seq(TestAccount("normal_user@rodneylai.com","Test User","test-user",Set[String]()),
@@ -38,7 +37,7 @@ class TestAccountHelper @Inject() (app:Application) {
                                         )
 
   private def testPassword:String =
-    app.configuration.getString("test.password") match {
+    configuration.getString("test.password") match {
       case Some(testPassword) if (testPassword != "changeme") => testPassword
       case Some(testPassword) if (testPassword == "changeme") => throw new Exception("Change default value of test.password config key.")
       case None => throw new Exception("Missing test.password config key.")

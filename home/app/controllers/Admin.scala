@@ -29,7 +29,7 @@ import com.rodneylai.database._
 import com.rodneylai.stackc._
 import com.rodneylai.util._
 
-class Admin @Inject() (implicit environment: play.api.Environment,override val accountDao:AccountDao,override val trackingHelper:TrackingHelper) extends Controller with TrackingPageViewAuth with AuthElement with AuthConfigImpl with RequireSSL {
+class Admin @Inject() (implicit override val environment:play.api.Environment,override val configuration:play.api.Configuration,override val accountDao:AccountDao,override val trackingHelper:TrackingHelper) extends Controller with TrackingPageViewAuth with AuthElement with AuthConfigImpl with RequireSSL {
 
   def index = users
 

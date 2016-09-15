@@ -27,9 +27,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext,Future}
 import scala.concurrent.duration._
 import javax.inject.Inject
-import javax.ws.rs.{QueryParam, PathParam}
 import be.objectify.deadbolt.scala.{ActionBuilders,DeadboltActions}
-import com.wordnik.swagger.annotations._
+import io.swagger.annotations._
 import jp.t2v.lab.play2.auth._
 import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.auth._
@@ -44,10 +43,9 @@ case class MemcachedResultsModel( @ApiModelProperty(position=1,required=true)id:
                                   @ApiModelProperty(position=2,required=true)value: String)
 
 @Api(value = "/developer-memcached", description = "developer memcached services")
-class memcached @Inject() (environment: play.api.Environment, deadbolt: DeadboltActions, actionBuilder: ActionBuilders,override val accountDao:AccountDao)(implicit app: play.api.Application) extends Controller with AuthElement with AuthConfigImpl with DevModeDelay {
+class memcached @Inject() (override val environment:play.api.Environment,override val configuration:play.api.Configuration,cache:play.api.cache.CacheApi,deadbolt:DeadboltActions,actionBuilder:ActionBuilders,override val accountDao:AccountDao) extends Controller with AuthElement with AuthConfigImpl with DevModeDelay {
 
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
-  private val m_cache = play.api.cache.Cache
 
   implicit val memcachedValueModelFormat = Json.format[MemcachedValueModel]
   implicit val memcachedResultsModelFormat = Json.format[MemcachedResultsModel]
@@ -61,11 +59,11 @@ class memcached @Inject() (environment: play.api.Environment, deadbolt: Deadbolt
   }
 
   @ApiOperation(value = "get", notes = "returns value", nickname="get", response = classOf[String], httpMethod = "GET")
-  def get(@ApiParam(value = "key", required = true) @PathParam("key") key:String) =
+  def get(@ApiParam(value = "key", required = true) key:String) =
     AsyncStack(AuthorityKey -> Role.Administrator,EnvironmentKey -> environment) { implicit request =>
-    deadbolt.Restrict(Array("developer"), new DefaultDeadboltHandler(Some(loggedIn))) {
-      Action {
-        m_cache.get(key) match {
+    deadbolt.Restrict(List(Array("developer")), new DefaultDeadboltHandler(Some(loggedIn)))() { authRequest =>
+      Future {
+        cache.get[Any](key) match {
           case Some(value) => Ok(Json.toJson(MemcachedResultsModel(key,value.toString)))
           case None => NotFound(Json.toJson(MemcachedResultsModel(key,"[not found]")))
         }
@@ -76,16 +74,16 @@ class memcached @Inject() (environment: play.api.Environment, deadbolt: Deadbolt
   @ApiOperation(value = "set", notes = "returns status", nickname="set", response = classOf[String], httpMethod = "POST")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(value = "key/value", required = true, dataType = "controllers.services.developer.MemcachedValueModel", paramType = "body")))
-  def set(@ApiParam(value = "key", required = true) @PathParam("key") key:String) =
+  def set(@ApiParam(value = "key", required = true) key:String) =
     AsyncStack(parse.json[MemcachedValueModel],AuthorityKey -> Role.Administrator) { implicit request =>
-    deadbolt.Restrict(Array("developer"), new DefaultDeadboltHandler(Some(loggedIn))) {
-      Action(parse.json[MemcachedValueModel]) { _ =>
+    deadbolt.Restrict(List(Array("developer")), new DefaultDeadboltHandler(Some(loggedIn)))(parse.json[MemcachedValueModel]) { authRequest =>
+      Future {
         val memcachedValueModel:MemcachedValueModel = request.body
 
         if (key.trim.isEmpty) {
           BadRequest(Json.toJson("fail"))
         } else {
-          m_cache.set(key,memcachedValueModel.value)
+          cache.set(key,memcachedValueModel.value)
           Ok(Json.toJson("okay"))
         }
       }
@@ -93,11 +91,11 @@ class memcached @Inject() (environment: play.api.Environment, deadbolt: Deadbolt
   }
 
   @ApiOperation(value = "clear", notes = "returns status", nickname="clear", response = classOf[String], httpMethod = "DELETE")
-  def clear(@ApiParam(value = "key", required = true) @PathParam("key") key:String) =
+  def clear(@ApiParam(value = "key", required = true) key:String) =
     AsyncStack(AuthorityKey -> Role.Administrator,EnvironmentKey -> environment) { implicit request =>
-    deadbolt.Restrict(Array("developer"), new DefaultDeadboltHandler(Some(loggedIn))) {
-      Action {
-        m_cache.remove(key)
+    deadbolt.Restrict(List(Array("developer")), new DefaultDeadboltHandler(Some(loggedIn)))() { authRequest =>
+      Future {
+        cache.remove(key)
         Ok(Json.toJson("okay"))
       }
     }.apply(request)

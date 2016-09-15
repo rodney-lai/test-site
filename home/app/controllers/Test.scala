@@ -25,7 +25,7 @@ import javax.inject.Inject
 import jp.t2v.lab.play2.auth._
 import com.rodneylai.auth._
 
-class Test @Inject() (override val accountDao:AccountDao)(implicit environment: play.api.Environment) extends Controller with OptionalAuthElement with AuthConfigImpl {
+class Test @Inject() (override val configuration:play.api.Configuration,override val accountDao:AccountDao)(implicit override val environment:play.api.Environment) extends Controller with OptionalAuthElement with AuthConfigImpl {
 
   def isAdmin(accountOption:Option[Account]):Boolean = {
     accountOption match {

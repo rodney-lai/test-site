@@ -19,7 +19,7 @@
 
 package com.rodneylai.security.models
 
-import be.objectify.deadbolt.core.models.Permission
+import be.objectify.deadbolt.scala.models.Permission
 
 class UserPermission(val value: String) extends Permission
 {

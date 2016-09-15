@@ -31,7 +31,7 @@ import com.rodneylai.database._
 import com.rodneylai.stackc._
 import com.rodneylai.util._
 
-class Auth @Inject() (override val accountDao:AccountDao,override val trackingHelper:TrackingHelper)(implicit environment: play.api.Environment) extends Controller with TrackingPageView with OptionalAuthElement with AuthConfigImpl with RequireSSL {
+class Auth @Inject() (implicit override val environment: play.api.Environment,override val configuration:Configuration,override val accountDao:AccountDao,override val trackingHelper:TrackingHelper) extends Controller with TrackingPageView with OptionalAuthElement with AuthConfigImpl with RequireSSL {
 
   def login = StackAction { implicit request =>
     loggedIn match {

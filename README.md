@@ -22,6 +22,11 @@ Features
 Quick Start
 -----------
 
+This project uses an implementation of the swagger-play library for the Play Framework v2.5 which
+has not been merged into the main project.  You will have to download and build the project locally.
+
+https://github.com/CreditCardsCom/swagger-play
+
 By default, site is configured to run WITHOUT MongoDB and MemCached.
 
 MongoDB is required to create and modify users.  The three default test users will still be available without MongoDB.
@@ -58,7 +63,7 @@ PLAY_MONGO_AUTHMECHANISM - mongo auth mechanism [ MONGODB-CR or SCRAM-SHA-1 ]
 Server Technology
 -----------------
 
-* Web Framework - [Play Framework v2.4.8](https://playframework.com/)
+* Web Framework - [Play Framework v2.5.7](https://playframework.com/)
 * Language - [Scala v2.11.8](http://scala-lang.org/)
 * NoSQL Database - [MongoDB](https://www.mongodb.org/)
 * Data Cache - [Memcached](http://memcached.org/)
@@ -91,6 +96,12 @@ Build, Deploy, Hosting
 * Logging - [Papertrail](https://papertrailapp.com/)
 * Monitoring - [UptimeRobot](http://uptimerobot.com/)
 * SSL Certificate Authority - [LetsEncrypt](https://letsencrypt.org/)
+
+Tools
+-----
+
+* Editor - [Atom](https://atom.io/)
+* Mongo GUI Client - [MongoChef](http://3t.io/)
 
 Copyright (c) 2015-2016 Rodney S.K. Lai
 

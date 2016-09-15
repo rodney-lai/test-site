@@ -29,16 +29,19 @@ import com.rodneylai.auth._
 trait RequireSSL extends StackableController {
   self: Controller =>
 
+  val configuration:play.api.Configuration
+  val environment:play.api.Environment
+
   override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[Result]): Future[Result] = {
     if (req.secure) {
       super.proceed(req)(f)
-    } else if (play.api.Play.isDev(play.api.Play.current)) {
-      play.api.Play.current.configuration.getInt("https.port") match {
+    } else if (environment.mode == play.api.Mode.Dev) {
+      configuration.getInt("https.port") match {
         case Some(port) => Future(Redirect("https://" + req.domain + ":" + port.toString + req.uri))
         case None => super.proceed(req)(f)
       }
-    } else if (play.api.Play.current.configuration.getBoolean("auth.cookie.secure").getOrElse(true)) {
-      if (play.api.Play.current.configuration.getBoolean("frontend.http.server").getOrElse(false)) {
+    } else if (configuration.getBoolean("auth.cookie.secure").getOrElse(true)) {
+      if (configuration.getBoolean("frontend.http.server").getOrElse(false)) {
         super.proceed(req)(f)
       } else {
         Future(Redirect("https://" + req.domain + req.uri))

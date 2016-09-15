@@ -24,6 +24,7 @@ import play.api.mvc._
 import scala.collection.{JavaConversions}
 import scala.collection.mutable.{Buffer}
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.util.matching.{Regex}
 import javax.inject.Inject
 import be.objectify.deadbolt.scala.{ActionBuilders,DeadboltActions}
@@ -37,21 +38,21 @@ import com.rodneylai.security._
 import com.rodneylai.stackc._
 import com.rodneylai.util._
 
-class Developer @Inject() (configuration:Configuration,deadbolt:DeadboltActions,actionBuilder:ActionBuilders,infoHelper:InfoHelper,mongoHelper:MongoHelper,override val accountDao:AccountDao,override val trackingHelper:TrackingHelper)(implicit environment: play.api.Environment) extends Controller with TrackingPageViewAuth with AuthElement with AuthConfigImpl with RequireSSL {
+class Developer @Inject() (implicit override val environment:Environment,override val configuration:Configuration,deadbolt:DeadboltActions,actionBuilder:ActionBuilders,infoHelper:InfoHelper,mongoHelper:MongoHelper,override val accountDao:AccountDao,override val trackingHelper:TrackingHelper) extends Controller with TrackingPageViewAuth with AuthElement with AuthConfigImpl with RequireSSL {
 
   def index = server
 
   def server = AsyncStack(AuthorityKey -> Role.Administrator) { implicit request =>
-    deadbolt.Restrict(Array("developer"), new DefaultDeadboltHandler(Some(loggedIn))) {
-      Action {
+    deadbolt.Restrict(List(Array("developer")), new DefaultDeadboltHandler(Some(loggedIn)))() { authRequest =>
+      Future {
         Ok(views.html.developer.server(loggedIn,infoHelper.getMachineInfo ++ infoHelper.getApplicationInfo))
       }
     }.apply(request)
   }
 
   def memcached = AsyncStack(AuthorityKey -> Role.Administrator) { implicit request =>
-    deadbolt.Restrict(Array("developer"), new DefaultDeadboltHandler(Some(loggedIn))) {
-      Action {
+    deadbolt.Restrict(List(Array("developer")), new DefaultDeadboltHandler(Some(loggedIn)))() { authRequest =>
+      Future {
         val moduleList:Buffer[String] = configuration.getList("play.modules.enabled") match {
                                           case Some(enabledList) => {
                                             configuration.getList("play.modules.disabled") match {
@@ -97,30 +98,26 @@ class Developer @Inject() (configuration:Configuration,deadbolt:DeadboltActions,
   }
 
   def mongodb = AsyncStack(AuthorityKey -> Role.Administrator) { implicit request =>
-    deadbolt.Restrict(Array("developer"), new DefaultDeadboltHandler(Some(loggedIn))) {
-      Action.async {
-        for {
-          statsOption <- mongoHelper.getDatabaseStats
-          collectionListOption <- mongoHelper.getCollectionList
-        } yield Ok(views.html.developer.mongodb(loggedIn,statsOption,collectionListOption))
-      }
+    deadbolt.Restrict(List(Array("developer")), new DefaultDeadboltHandler(Some(loggedIn)))() { authRequest =>
+      for {
+        statsOption <- mongoHelper.getDatabaseStats
+        collectionListOption <- mongoHelper.getCollectionList
+      } yield Ok(views.html.developer.mongodb(loggedIn,statsOption,collectionListOption))
     }.apply(request)
   }
 
   def mongodb_collection(collectionName:String) = AsyncStack(AuthorityKey -> Role.Administrator) { implicit request =>
-    deadbolt.Restrict(Array("developer"), new DefaultDeadboltHandler(Some(loggedIn))) {
-      Action.async {
-        for {
-          statsOption <- mongoHelper.getCollectionStats(collectionName)
-          collectionListOption <- mongoHelper.getCollectionList
-        } yield Ok(views.html.developer.mongodb_collection(loggedIn,collectionName,statsOption,collectionListOption))
-      }
+    deadbolt.Restrict(List(Array("developer")), new DefaultDeadboltHandler(Some(loggedIn)))() { authRequest =>
+      for {
+        statsOption <- mongoHelper.getCollectionStats(collectionName)
+        collectionListOption <- mongoHelper.getCollectionList
+      } yield Ok(views.html.developer.mongodb_collection(loggedIn,collectionName,statsOption,collectionListOption))
     }.apply(request)
   }
 
   def api = AsyncStack(AuthorityKey -> Role.Administrator) { implicit request =>
-    deadbolt.Restrict(Array("developer"), new DefaultDeadboltHandler(Some(loggedIn))) {
-      Action {
+    deadbolt.Restrict(List(Array("developer")), new DefaultDeadboltHandler(Some(loggedIn)))() { authRequest =>
+      Future {
         Ok(views.html.developer.api_docs(loggedIn))
       }
     }.apply(request)

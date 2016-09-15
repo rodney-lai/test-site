@@ -28,7 +28,7 @@ import com.rodneylai.auth._
 import com.rodneylai.security._
 import com.rodneylai.stackc._
 
-class ApiDocs @Inject() (environment: play.api.Environment, deadbolt: DeadboltActions, actionBuilder: ActionBuilders,override val accountDao:AccountDao) extends Controller with OptionalAuthElement with AuthConfigImpl with RequireSSL {
+class ApiDocs @Inject() (override val environment:play.api.Environment,override val configuration:play.api.Configuration,deadbolt: DeadboltActions, actionBuilder: ActionBuilders,override val accountDao:AccountDao) extends Controller with OptionalAuthElement with AuthConfigImpl with RequireSSL {
 
   def index = if (environment.mode == Mode.Dev) {
     StackAction { implicit request =>

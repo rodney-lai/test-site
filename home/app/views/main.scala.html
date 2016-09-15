@@ -108,7 +108,7 @@
             <a href="@routes.Admin.index">Admin<span></span></a>
     }
           </li>
-    @be.objectify.deadbolt.scala.views.html.restrict(new com.rodneylai.security.DefaultDeadboltHandler(accountOption),List(Array("developer"))) {
+    @if(account.roleList.contains("developer")) {
           <li>
       @if(tab == "developer") {
             <a href="@routes.Developer.server" class="selected">Developer<span></span></a>

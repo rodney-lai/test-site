@@ -27,7 +27,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext,Future}
 import scala.util.{Failure, Success, Try, Random}
 import javax.inject.Inject
-import com.wordnik.swagger.annotations._
+import io.swagger.annotations._
 import jp.t2v.lab.play2.auth._
 import org.jsoup.Jsoup
 import org.jsoup.nodes._
@@ -35,10 +35,9 @@ import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.auth._
 
 @Api(value = "/home", description = "home page services")
-class home @Inject() (environment: play.api.Environment, configuration: play.api.Configuration,override val accountDao:AccountDao)(implicit app: play.api.Application) extends Controller with OptionalAuthElement with AuthConfigImpl {
+class home @Inject() (override val environment:play.api.Environment,override val configuration:play.api.Configuration,cache:play.api.cache.CacheApi,override val accountDao:AccountDao) extends Controller with OptionalAuthElement with AuthConfigImpl {
 
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
-  private val m_cache = play.api.cache.Cache
 
   private def scrapeImages(url:String,prefixUrl:String,excludeUrlList:Seq[String],list:Seq[String]):Seq[String] = {
     Try(Jsoup.connect(url).validateTLSCertificates(false).get) match {
@@ -55,7 +54,7 @@ class home @Inject() (environment: play.api.Environment, configuration: play.api
   }
 
   private def doScrapeImages(url:String,prefixUrl:String):Seq[String] = {
-    m_cache.getOrElse("home:image_list") {
+    cache.getOrElse("home:image_list") {
       scrapeImages(url,prefixUrl,Seq[String](),Seq[String]())
     }
   }

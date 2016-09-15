@@ -31,9 +31,8 @@ import scala.util.{Try, Success, Failure}
 import java.text.SimpleDateFormat
 import java.util.{Calendar,Date}
 import javax.inject.Inject
-import javax.ws.rs.{QueryParam, PathParam}
 import be.objectify.deadbolt.scala.{ActionBuilders,DeadboltActions}
-import com.wordnik.swagger.annotations._
+import io.swagger.annotations._
 import jp.t2v.lab.play2.auth._
 import org.mongodb.scala._
 import org.mongodb.scala.model.Sorts._
@@ -55,7 +54,7 @@ case class UserModel( @ApiModelProperty(position=1,value="friendly_url",required
                       @ApiModelProperty(position=7,required=true)added_ago: String)
 
 @Api(value = "/admin-users", description = "admin users services")
-class users @Inject() (environment:play.api.Environment,deadbolt:DeadboltActions,actionBuilder:ActionBuilders,mongoHelper:MongoHelper,userAccountDao:UserAccountDao,override val accountDao:AccountDao) extends Controller with AuthElement with AuthConfigImpl with DevModeDelay {
+class users @Inject() (override val environment:play.api.Environment,override val configuration:play.api.Configuration,deadbolt:DeadboltActions,actionBuilder:ActionBuilders,mongoHelper:MongoHelper,userAccountDao:UserAccountDao,override val accountDao:AccountDao) extends Controller with AuthElement with AuthConfigImpl with DevModeDelay {
 
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
@@ -72,72 +71,68 @@ class users @Inject() (environment:play.api.Environment,deadbolt:DeadboltActions
   @ApiOperation(value = "save", notes = "returns status", nickname="save", response = classOf[String], httpMethod = "PUT")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(value = "user", required = true, dataType = "controllers.services.admin.UserModel", paramType = "body")))
-  def save(@ApiParam(value = "friendly_url", required = true) @PathParam("friendly_url") friendlyUrl:String) =
+  def save(@ApiParam(value = "friendly_url", required = true) friendlyUrl:String) =
     AsyncStack(parse.json[UserModel],AuthorityKey -> Role.Administrator,EnvironmentKey -> environment) { implicit request =>
-    deadbolt.Restrict(Array("admin"), new DefaultDeadboltHandler(Some(loggedIn))) {
-      Action.async(parse.json[UserModel]) { _ =>
-        val userModel:UserModel = request.body
+    deadbolt.Restrict(List(Array("admin")), new DefaultDeadboltHandler(Some(loggedIn)))(parse.json[UserModel]) { authRequest =>
+      val userModel:UserModel = request.body
 
-        if (mongoHelper.isActive) {
-          for {
-            userAccountOption <- userAccountDao.findByFriendlyUrl(friendlyUrl)
-            result <- userAccountOption match {
-              case Some(userAccount) => {
-                if ((userModel.email == userAccount.emailAddress) && (userModel.name == userAccount.name)) {
-                  if ((userModel.status != userAccount.status) || (userModel.roles != userAccount.roleList)) {
-                    {
-                      for {
-                        collection <- userAccountDao.collectionFuture
-                        replaceResult <- collection.replaceOne(
-                          Document("FriendlyUrl" -> userAccount.friendlyUrl),
-                          userAccountDao.toBson(userAccount.copy(status = userModel.status,roleList = userModel.roles,updateDate = Calendar.getInstance.getTime))
-                        ).toFuture
-                      } yield Ok(Json.toJson("okay"))
-                    } recoverWith { case ex =>
-                      m_log.error("failed to update user",ex)
-                      Future.successful(InternalServerError(Json.toJson("fail")))
-                    }
-                  } else {
-                    Future.successful(Ok(Json.toJson("okay")))
+      if (mongoHelper.isActive) {
+        for {
+          userAccountOption <- userAccountDao.findByFriendlyUrl(friendlyUrl)
+          result <- userAccountOption match {
+            case Some(userAccount) => {
+              if ((userModel.email == userAccount.emailAddress) && (userModel.name == userAccount.name)) {
+                if ((userModel.status != userAccount.status) || (userModel.roles != userAccount.roleList)) {
+                  {
+                    for {
+                      collection <- userAccountDao.collectionFuture
+                      replaceResult <- collection.replaceOne(
+                        Document("FriendlyUrl" -> userAccount.friendlyUrl),
+                        userAccountDao.toBson(userAccount.copy(status = userModel.status,roleList = userModel.roles,updateDate = Calendar.getInstance.getTime))
+                      ).toFuture
+                    } yield Ok(Json.toJson("okay"))
+                  } recoverWith { case ex =>
+                    m_log.error("failed to update user",ex)
+                    Future.successful(InternalServerError(Json.toJson("fail")))
                   }
                 } else {
-                  Future.successful(BadRequest(Json.toJson("fail")))
+                  Future.successful(Ok(Json.toJson("okay")))
                 }
+              } else {
+                Future.successful(BadRequest(Json.toJson("fail")))
               }
-              case None => Future.successful(NotFound(Json.toJson("fail")))
             }
-          } yield result
-        } else {
-          Future.successful(BadRequest(Json.toJson("fail")))
-        }
+            case None => Future.successful(NotFound(Json.toJson("fail")))
+          }
+        } yield result
+      } else {
+        Future.successful(BadRequest(Json.toJson("fail")))
       }
     }.apply(request)
   }
 
   @ApiOperation(value = "get", notes = "returns value", nickname="get", response = classOf[UserModel], httpMethod = "GET")
-  def get(@ApiParam(value = "filter", required = false) @QueryParam("filter") filter:String,
-          @ApiParam(value = "skip", required = false) @QueryParam("skip") skip:Int) =
+  def get(@ApiParam(value = "filter", required = false) filter:String,
+          @ApiParam(value = "skip", required = false) skip:Int) =
     AsyncStack(AuthorityKey -> Role.Administrator,EnvironmentKey -> environment) { implicit request =>
-    deadbolt.Restrict(Array("admin"), new DefaultDeadboltHandler(Some(loggedIn))) {
-      Action.async {
-        val formatter:SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+    deadbolt.Restrict(List(Array("admin")), new DefaultDeadboltHandler(Some(loggedIn)))() { authRequest =>
+      val formatter:SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
 
-        if (mongoHelper.isActive) {
-          for {
-            collection <- userAccountDao.collectionFuture
-            userAccountsBson <- collection.find().sort(ascending("EmailAddressLowerCase")).skip(skip).limit(10).toFuture
-          } yield {
-            Ok(Json.toJson(userAccountsBson.flatMap(
-              userAccountBson => userAccountDao.fromBson(userAccountBson).map { userAccount =>
-                UserModel(userAccount.friendlyUrl,userAccount.emailAddress,userAccount.name,userAccount.roleList,userAccount.status,formatter.format(userAccount.createDate),UtilityHelper.getDateAgoString(userAccount.createDate))
-              }
-            )))
-          }
-        } else {
-          userAccountDao.getTestAccounts match {
-            case Some(testAccountList) => Future.successful(Ok(Json.toJson(testAccountList.map(userAccount => UserModel(userAccount.friendlyUrl,userAccount.emailAddress,userAccount.name,userAccount.roleList,userAccount.status,formatter.format(userAccount.createDate),UtilityHelper.getDateAgoString(userAccount.createDate))))))
-            case None => Future.successful(BadRequest(Json.toJson("fail")))
-          }
+      if (mongoHelper.isActive) {
+        for {
+          collection <- userAccountDao.collectionFuture
+          userAccountsBson <- collection.find().sort(ascending("EmailAddressLowerCase")).skip(skip).limit(10).toFuture
+        } yield {
+          Ok(Json.toJson(userAccountsBson.flatMap(
+            userAccountBson => userAccountDao.fromBson(userAccountBson).map { userAccount =>
+              UserModel(userAccount.friendlyUrl,userAccount.emailAddress,userAccount.name,userAccount.roleList,userAccount.status,formatter.format(userAccount.createDate),UtilityHelper.getDateAgoString(userAccount.createDate))
+            }
+          )))
+        }
+      } else {
+        userAccountDao.getTestAccounts match {
+          case Some(testAccountList) => Future.successful(Ok(Json.toJson(testAccountList.map(userAccount => UserModel(userAccount.friendlyUrl,userAccount.emailAddress,userAccount.name,userAccount.roleList,userAccount.status,formatter.format(userAccount.createDate),UtilityHelper.getDateAgoString(userAccount.createDate))))))
+          case None => Future.successful(BadRequest(Json.toJson("fail")))
         }
       }
     }.apply(request)

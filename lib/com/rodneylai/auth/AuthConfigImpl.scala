@@ -38,6 +38,8 @@ trait AuthConfigImpl extends AuthConfig {
 
   val sessionTimeoutInSeconds: Int = 3600
 
+  val environment:play.api.Environment
+  val configuration:play.api.Configuration
   val accountDao:AccountDao
 
   def resolveUser(id: Id)(implicit ctx: ExecutionContext): Future[Option[User]] = {
@@ -73,7 +75,7 @@ trait AuthConfigImpl extends AuthConfig {
   }
 
   override lazy val tokenAccessor = new CookieTokenAccessor(
-    cookieSecureOption = play.api.Play.current.configuration.getBoolean("auth.cookie.secure").getOrElse(play.api.Play.isProd(play.api.Play.current)),
+    cookieSecureOption = configuration.getBoolean("auth.cookie.secure").getOrElse(environment.mode == play.api.Mode.Prod),
     cookieMaxAge       = Some(sessionTimeoutInSeconds)
   )
 

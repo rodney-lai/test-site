@@ -27,25 +27,24 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext,Future}
 import scala.concurrent.duration._
 import javax.inject.Inject
-import javax.ws.rs.{QueryParam, PathParam}
 import be.objectify.deadbolt.scala.{ActionBuilders,DeadboltActions}
-import com.wordnik.swagger.annotations._
+import io.swagger.annotations._
 import jp.t2v.lab.play2.auth._
 import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.auth._
 import com.rodneylai.security._
 
-class api_docs @Inject() (environment: play.api.Environment, deadbolt: DeadboltActions, actionBuilder: ActionBuilders,override val accountDao:AccountDao) extends Controller with AuthElement with AuthConfigImpl {
+class api_docs @Inject() (override val environment:play.api.Environment,override val configuration:play.api.Configuration,deadbolt: DeadboltActions, actionBuilder: ActionBuilders,override val accountDao:AccountDao) extends Controller with AuthElement with AuthConfigImpl {
 
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
-  private val m_apiHelpController = new pl.matisoft.swagger.ApiHelpController
+  private val m_apiHelpController = new controllers.ApiHelpController
 
   def getResources = if (environment.mode == Mode.Dev) {
     m_apiHelpController.getResources
   } else {
     AsyncStack(AuthorityKey -> Role.Administrator) { implicit request =>
-      deadbolt.Restrict(Array("developer"), new DefaultDeadboltHandler(Some(loggedIn))) {
-        m_apiHelpController.getResources
+      deadbolt.Restrict(List(Array("developer")), new DefaultDeadboltHandler(Some(loggedIn)))() { authRequest =>
+        m_apiHelpController.getResources.apply(request)
       }.apply(request)
     }
   }
@@ -54,8 +53,8 @@ class api_docs @Inject() (environment: play.api.Environment, deadbolt: DeadboltA
     m_apiHelpController.getResource(path)
   } else {
     AsyncStack(AuthorityKey -> Role.Administrator) { implicit request =>
-      deadbolt.Restrict(Array("developer"), new DefaultDeadboltHandler(Some(loggedIn))) {
-        m_apiHelpController.getResource(path)
+      deadbolt.Restrict(List(Array("developer")), new DefaultDeadboltHandler(Some(loggedIn)))() { authRequest =>
+        m_apiHelpController.getResource(path).apply(request)
       }.apply(request)
     }
   }

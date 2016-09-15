@@ -37,7 +37,7 @@ import com.rodneylai.database._
 import com.rodneylai.stackc._
 import com.rodneylai.util._
 
-class Application @Inject() (app: play.api.Application,infoHelper:InfoHelper,override val accountDao:AccountDao,override val trackingHelper:TrackingHelper)(implicit environment: play.api.Environment, configuration: play.api.Configuration) extends Controller with TrackingPageView with OptionalAuthElement with LoginLogout with AuthConfigImpl {
+class Application @Inject() (infoHelper:InfoHelper,override val accountDao:AccountDao,override val trackingHelper:TrackingHelper)(implicit override val environment: play.api.Environment, override val configuration: play.api.Configuration) extends Controller with TrackingPageView with OptionalAuthElement with LoginLogout with AuthConfigImpl {
 
   def index = StackAction { implicit request =>
     ExceptionHelper.checkForError(request,views.html.index(loggedIn))
@@ -48,12 +48,12 @@ class Application @Inject() (app: play.api.Application,infoHelper:InfoHelper,ove
   }
 
   private def getReadMeHtml:Option[String] = {
-    if (new java.io.File(app.path + "/README").exists) {
-      val readme = Source.fromFile(app.path + "/README").getLines.mkString("\n")
+    if (new java.io.File(environment.rootPath + "/README").exists) {
+      val readme = Source.fromFile(environment.rootPath + "/README").getLines.mkString("\n")
 
       Some(txtmark.Processor.process("[$PROFILE$]: extended\n" + readme))
-    } else if (new java.io.File(app.path + "/../README").exists) {
-      val readme = Source.fromFile(app.path + "/../README").getLines.mkString("\n")
+    } else if (new java.io.File(environment.rootPath + "/../README").exists) {
+      val readme = Source.fromFile(environment.rootPath + "/../README").getLines.mkString("\n")
 
       Some(txtmark.Processor.process("[$PROFILE$]: extended\n" + readme))
     } else {

@@ -19,7 +19,7 @@
 
 package com.rodneylai.auth
 
-import play.api.Application
+import play.api.{Application,Configuration,Environment}
 import play.api.mvc._
 import scala.concurrent.{ExecutionContext,Future}
 import java.util.{Calendar,Date}
@@ -32,7 +32,7 @@ import com.rodneylai.database._
 import com.rodneylai.util._
 
 @Singleton
-class AuthHelper @Inject() (app:Application,mongoHelper:MongoHelper,testAccountHelper:TestAccountHelper,userAccountDao:UserAccountDao,override val accountDao:AccountDao) extends AuthConfigImpl
+class AuthHelper @Inject() (override val environment:Environment,override val configuration:Configuration,mongoHelper:MongoHelper,testAccountHelper:TestAccountHelper,userAccountDao:UserAccountDao,override val accountDao:AccountDao) extends AuthConfigImpl
 {
 
   def hashPassword(password:String):String = {

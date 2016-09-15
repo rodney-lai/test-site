@@ -26,7 +26,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext,Future}
 import scala.util.{Failure, Success, Try}
 import javax.inject.Inject
-import com.wordnik.swagger.annotations._
+import io.swagger.annotations._
 import jp.t2v.lab.play2.auth._
 import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.auth._
@@ -46,7 +46,7 @@ case class JoinModel( @ApiModelProperty(position=1,required=true)full_name: Stri
                       @ApiModelProperty(position=4,required=true)password: String)
 
 @Api(value = "/auth", description = "authentication services")
-class auth @Inject() (environment:play.api.Environment,authHelper:AuthHelper,mongoHelper:MongoHelper,userAccountDao:UserAccountDao,override val accountDao:AccountDao) extends Controller with LoginLogout with AuthConfigImpl with DevModeDelay {
+class auth @Inject() (override val environment:play.api.Environment,override val configuration:play.api.Configuration,authHelper:AuthHelper,mongoHelper:MongoHelper,userAccountDao:UserAccountDao,override val accountDao:AccountDao) extends Controller with LoginLogout with AuthConfigImpl with DevModeDelay {
 
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
   private val m_validateEmailAddressRegEx:String = """[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+"""
