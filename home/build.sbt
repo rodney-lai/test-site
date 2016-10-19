@@ -15,7 +15,7 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.33",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.45",
   "com.github.mumoshu" % "play2-memcached-play24_2.11" % "0.7.0",
   "com.github.rjeschke" % "txtmark" % "0.13",
   "com.typesafe.play" %% "play-mailer" % "5.0.0",

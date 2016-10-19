@@ -15,7 +15,7 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.33",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.45",
   "com.typesafe.play" %% "play-mailer" % "5.0.0",
   "ch.qos.logback" % "logback-classic" % "1.1.7",
   "ch.qos.logback" % "logback-core" % "1.1.7",

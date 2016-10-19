@@ -61,7 +61,7 @@ PLAY_MONGO_AUTHMECHANISM - mongo auth mechanism [ MONGODB-CR or SCRAM-SHA-1 ]
 Server Technology
 -----------------
 
-* Web Framework - [Play Framework v2.5.7](https://playframework.com/)
+* Web Framework - [Play Framework v2.5.9](https://playframework.com/)
 * Language - [Scala v2.11.8](http://scala-lang.org/)
 * NoSQL Database - [MongoDB](https://www.mongodb.org/)
 * Data Cache - [Memcached](http://memcached.org/)
