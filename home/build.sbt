@@ -15,7 +15,7 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.45",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.48",
   "com.github.mumoshu" % "play2-memcached-play24_2.11" % "0.7.0",
   "com.github.rjeschke" % "txtmark" % "0.13",
   "com.typesafe.play" %% "play-mailer" % "5.0.0",
@@ -30,7 +30,7 @@ libraryDependencies ++= Seq(
   "org.mindrot" % "jbcrypt" % "0.3m",
   "org.mongodb.scala" % "mongo-scala-driver_2.11" % "1.1.1",
   "org.slf4j" % "slf4j-api" % "1.7.21",
-  "io.swagger" %% "swagger-play2" % "1.5.2-SNAPSHOT",
+  "io.swagger" % "swagger-play2_2.11" % "1.5.3",
   jdbc,
   cache,
   ws,

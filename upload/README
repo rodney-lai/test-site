@@ -9,11 +9,6 @@ This project provides a REST API service to upload an image to AWS S3
 This project is meant to run behind a firewall.  There is no security for authentication
 or authorization.
 
-This project uses an implementation of the swagger-play library for the Play Framework v2.5 which
-has not been merged into the main project.  You will have to download and build the project locally.
-
-https://github.com/CreditCardsCom/swagger-play
-
 Server Technology
 -----------------
 

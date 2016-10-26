@@ -1,6 +1,8 @@
 Rodney's Test Site v0.8.2
 =========================
 
+[![Build Status](https://travis-ci.org/rodney-lai/test-site.svg?branch=master)](https://travis-ci.org/rodney-lai/test-site)
+
 rlai [ at ] irismedia [ dot ] com
 
 [Live Test Site](http://test.rodneylai.com)
@@ -19,11 +21,6 @@ Features
 
 Quick Start
 -----------
-
-This project uses an implementation of the swagger-play library for the Play Framework v2.5 which
-has not been merged into the main project.  You will have to download and build the project locally.
-
-https://github.com/CreditCardsCom/swagger-play
 
 By default, site is configured to run WITHOUT MongoDB and MemCached.
 

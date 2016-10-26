@@ -37,10 +37,6 @@ RUN         mkdir /home/play-user/tmp && \
             cd /home/play-user/tmp && \
             wget https://dl.bintray.com/sbt/native-packages/sbt/$SBT_VERSION/sbt-$SBT_VERSION.zip && \
             unzip sbt-$SBT_VERSION.zip -d /home/play-user && \
-            wget https://github.com/CreditCardsCom/swagger-play/archive/master.zip && \
-            unzip master.zip -d /home/play-user/tmp && \
-            cd /home/play-user/tmp/swagger-play-master && \
-            /home/play-user/sbt/bin/sbt publishLocal && \
             cd /home/play-user && \
             rm -rf /home/play-user/tmp
 
