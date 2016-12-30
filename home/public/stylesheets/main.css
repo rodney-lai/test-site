@@ -186,6 +186,8 @@ body {
 }
 
 .login-page,
+.forgot-password-page,
+.reset-password-page,
 .join-page,
 .about-page,
 .webcam-page,
@@ -198,6 +200,8 @@ body {
 }
 
 .login-page label,
+.forgot-password-page label,
+.reset-password-page label,
 .join-page label,
 .manage-memcached-page label {
 	display:block;
@@ -209,7 +213,11 @@ body {
 
 .login-page .email-address-container,
 .login-page .password-container,
-.login-page .login-button-container,
+.login-page .button-container,
+.forgot-password-page .email-address-container,
+.forgot-password-page .send-reset-password-link-button-container,
+.reset-password-page .new-password-container,
+.reset-password-page .update-password-button-container,
 .join-page .full-name-container,
 .join-page .email-address-container,
 .join-page .user-name-container,
@@ -226,8 +234,18 @@ body {
 	padding-right:20px;
 }
 
+.login-page .login-button-container {
+  float:left;
+}
+
+.login-page .forgot-password-container {
+  float:right;
+}
+
 .login-page input[type=text],
 .login-page input[type=password],
+.forgot-password-page input[type=text],
+.reset-password-page input[type=text],
 .join-page input[type=text],
 .join-page input[type=password],
 .manage-memcached-page input[type=text] {
@@ -237,6 +255,8 @@ body {
 
 .login-page input[type=text],
 .login-page input[type=password],
+.forgot-password-page input[type=text],
+.reset-password-page input[type=text],
 .join-page input[type=text],
 .join-page input[type=password],
 .manage-memcached-page input[type=text],

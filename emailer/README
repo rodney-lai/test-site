@@ -1,0 +1,22 @@
+Rodney's Test Site Emailer v0.8.2
+==============================================
+
+rlai [ at ] irismedia [ dot ] com
+
+[GitHub Repository](https://github.com/rodney-lai)
+
+This project reads from a Redis queue and sents emails built from templates.
+
+Server Technology
+-----------------
+
+* Language - [Scala v2.11.8](http://scala-lang.org/)
+* NoSQL Database - [MongoDB](https://www.mongodb.org/)
+* Data Structure Store - [Redis](https://redis.io/)
+
+Build, Deploy, Hosting
+----------------------
+
+* Build and Deploy - [Docker](https://www.docker.com/)
+* Server Hosting - [Amazon Web Services (AWS)](http://aws.amazon.com/)
+* Logging - [Papertrail](https://papertrailapp.com/)

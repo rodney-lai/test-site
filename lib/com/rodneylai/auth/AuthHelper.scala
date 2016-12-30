@@ -27,6 +27,7 @@ import javax.inject.{Inject,Singleton}
 import com.google.inject.AbstractModule
 import org.mindrot.jbcrypt._
 import org.mongodb.scala._
+import com.rodneylai.auth.util._
 import com.rodneylai.models.mongodb._
 import com.rodneylai.database._
 import com.rodneylai.util._

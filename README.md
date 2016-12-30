@@ -18,6 +18,8 @@ Features
 * Admin Portal to manage users
 * Developer Portal to manage web server, memcached, and mongodb
 * Interactive API documentation
+* Email Queue (Redis)
+* Email Templates
 
 Quick Start
 -----------
@@ -50,7 +52,7 @@ Environment Variables for MongoDB:
 
 PLAY_MONGO_HOST - mongo host  
 PLAY_MONGO_PORT - mongo port  
-PLAY_MONGO_USER_NAME - mongo user name  
+PLAY_MONGO_USERNAME - mongo user name  
 PLAY_MONGO_PASSWORD - mongo user password  
 PLAY_MONGO_DATABASE - mongo database name  
 PLAY_MONGO_AUTHMECHANISM - mongo auth mechanism [ MONGODB-CR or SCRAM-SHA-1 ]  
@@ -58,10 +60,11 @@ PLAY_MONGO_AUTHMECHANISM - mongo auth mechanism [ MONGODB-CR or SCRAM-SHA-1 ]
 Server Technology
 -----------------
 
-* Web Framework - [Play Framework v2.5.9](https://playframework.com/)
+* Web Framework - [Play Framework v2.5.10](https://playframework.com/)
 * Language - [Scala v2.11.8](http://scala-lang.org/)
 * NoSQL Database - [MongoDB](https://www.mongodb.org/)
 * Data Cache - [Memcached](http://memcached.org/)
+* Data Structure Store - [Redis](https://redis.io/)
 
 Backend Libraries
 -----------------
@@ -87,7 +90,7 @@ Build, Deploy, Hosting
 * Web Server Hosting - [Amazon Web Services (AWS)](http://aws.amazon.com/)
 * Frontend Http Server - [Nginx](https://www.nginx.com/)
 * MongoDB Hosting - [mLab](https://mlab.com/)
-* MemCached Hosting - [RedisLabs](https://redislabs.com/)
+* MemCached/Redis Hosting - [RedisLabs](https://redislabs.com/)
 * Logging - [Papertrail](https://papertrailapp.com/)
 * Monitoring - [UptimeRobot](http://uptimerobot.com/)
 * SSL Certificate Authority - [LetsEncrypt](https://letsencrypt.org/)
@@ -97,6 +100,7 @@ Tools
 
 * Editor - [Atom](https://atom.io/)
 * Mongo GUI Client - [MongoChef](http://3t.io/)
+* Redis GUI Client - [Redis Desktop Manager](https://redisdesktop.com/)
 
 Copyright (c) 2015-2016 Rodney S.K. Lai
 

@@ -68,29 +68,15 @@ class TrackingActionDao @Inject() (mongoHelper:MongoHelper) {
   }
 
   def toBson(trackingAction:TrackingAction):Document = {
-    trackingAction.id match {
-      case Some(objectId) => {
-        Document(
-          "_id" -> BsonObjectId(objectId),
-          "ActionUuid" -> MongoHelper.toStandardBinaryUUID(trackingAction.actionUuid),
-          "ActionType" -> trackingAction.actionType,
-          "ReferenceType" -> trackingAction.referenceType,
-          "ReferenceId" -> trackingAction.referenceId,
-          "RawUrl" -> trackingAction.rawUrl,
-          "CreateDate" -> trackingAction.createDate
-        )
-      }
-      case None => {
-        Document(
-          "ActionUuid" -> MongoHelper.toStandardBinaryUUID(trackingAction.actionUuid),
-          "ActionType" -> trackingAction.actionType,
-          "ReferenceType" -> trackingAction.referenceType,
-          "ReferenceId" -> trackingAction.referenceId,
-          "RawUrl" -> trackingAction.rawUrl,
-          "CreateDate" -> trackingAction.createDate
-        )
-      }
-    }
+    Document(
+      "ActionUuid" -> MongoHelper.toStandardBinaryUUID(trackingAction.actionUuid),
+      "ActionType" -> trackingAction.actionType,
+      "ReferenceType" -> trackingAction.referenceType,
+      "ReferenceId" -> trackingAction.referenceId,
+      "RawUrl" -> trackingAction.rawUrl,
+      "CreateDate" -> trackingAction.createDate
+    ) ++
+    trackingAction.id.map(objectId => Document("_id" -> BsonObjectId(objectId))).getOrElse(Nil)
   }
 }
 

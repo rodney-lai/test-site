@@ -30,10 +30,17 @@
   <input id="password-input" type="password" data-bind="value:password,events:['keyup']">
   <div class="clearing">&nbsp;</div>
 </div>
-<div class="login-button-container">
+<div class="button-container">
   <label>&nbsp;</label>
-  <a class="button login-button button-default" style="float:left;">login</a>
-  <img class="login-wait-img" src='@routes.Assets.versioned("/public/images","ajax-spinner-transparent.gif")' style="display:none;float:left;margin-left:5px;" />
+  <div class="login-button-container">
+    <a class="button login-button button-default" style="float:left;">login</a>
+    <img class="login-wait-img" src='@routes.Assets.versioned("/public/images","ajax-spinner-transparent.gif")' style="display:none;float:left;margin-left:5px;" />
+    <div class="clearing">&nbsp;</div>
+  </div>
+  <div class="forgot-password-container">
+    <a href="@routes.Auth.forgot_password" style="float:left;">forgot password?</a>
+    <div class="clearing">&nbsp;</div>
+  </div>
   <div class="clearing">&nbsp;</div>
 </div>
 <div class="clearing">&nbsp;</div>

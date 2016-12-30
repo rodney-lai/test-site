@@ -42,7 +42,7 @@ import org.slf4j.{Logger,LoggerFactory}
 class UploadController @Inject() (configuration: play.api.Configuration) extends Controller {
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
-  private val ImageFileNameRegExString:String = "^image([0-9]{4})([0-9]{2})([0-9]{2})s([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{3}).jpg$"
+  private val ImageFileNameRegExString:String = "^image([0-9]{4})([0-9]{2})([0-9]{2})s?([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{3}).jpg$"
   private val ImageFileNameRegEx:Regex = ImageFileNameRegExString.r
 
   private def putCurrentTextFile( s3Client:AmazonS3Client,

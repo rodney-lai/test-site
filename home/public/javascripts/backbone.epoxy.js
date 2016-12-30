@@ -1,6 +1,6 @@
 // Backbone.Epoxy
 
-// (c) 2013 Greg MacWilliam
+// (c) 2015 Greg MacWilliam
 // Freely distributed under the MIT license
 // For usage and documentation:
 // http://epoxyjs.org
@@ -71,7 +71,7 @@
     constructor: function(attributes, options) {
       _.extend(this, _.pick(options||{}, modelProps));
       _super(this, 'constructor', arguments);
-      this.initComputeds(attributes, options);
+      this.initComputeds(this.attributes, options);
     },
 
     // Gets a copy of a model attribute value:
@@ -773,10 +773,14 @@
             html += self.opt(option, numOptions);
           });
         }
-
         // Set new HTML to the element and toggle disabled status:
         $element.html(html).prop('disabled', !enabled).val(currentValue);
 
+        // Forcibly set default selection:
+        if ($element[0].selectedIndex < 0 && $element.children().length) {
+          $element[0].selectedIndex = 0;
+        }
+        
         // Pull revised value with new options selection state:
         var revisedValue = $element.val();
 
@@ -1178,7 +1182,8 @@
       };
 
       // Compile all model attributes as accessors within the context:
-      _.each(source.toJSON({computed:true}), function(value, attribute) {
+      var modelAttributes = _.extend({}, source.attributes, _.isFunction(source.c) ? source.c() : {});
+      _.each(modelAttributes, function(value, attribute) {
 
         // Create named accessor functions:
         // -> Attributes from 'view.model' use their normal names.
@@ -1303,6 +1308,9 @@
     return values;
   }
 
+  var identifierRegex = /^[a-z_$][a-z0-9_$]*$/i;
+  var quotedStringRegex = /^\s*(["']).*\1\s*$/;
+
   // Converts a binding declaration object into a flattened string.
   // Input: {text: 'firstName', attr: {title: '"hello"'}}
   // Output: 'text:firstName,attr:{title:"hello"}'
@@ -1314,6 +1322,11 @@
 
       if (isObject(value)) {
         value = '{'+ flattenBindingDeclaration(value) +'}';
+      }
+
+      // non-identifier keys that aren't already quoted need to be quoted
+      if (!identifierRegex.test(key) && !quotedStringRegex.test(key)) {
+        key = '"' + key + '"';
       }
 
       result.push(key +':'+ value);

@@ -76,37 +76,19 @@ class TrackingEventDao @Inject() (mongoHelper:MongoHelper) {
   }
 
   def toBson(trackingEvent:TrackingEvent):Document = {
-    trackingEvent.id match {
-      case Some(objectId) => {
-        Document(
-          "_id" ->  BsonObjectId(objectId),
-          "TrackingUuid" -> MongoHelper.toStandardBinaryUUID(trackingEvent.trackingUuid),
-          "SourceUuid" -> MongoHelper.toStandardBinaryUUID(trackingEvent.sourceUuid),
-          "ActionType" -> trackingEvent.actionType,
-          "ActionUuid" -> MongoHelper.toStandardBinaryUUID(trackingEvent.actionUuid),
-          "UserUuid" -> MongoHelper.toStandardBinaryUUID(trackingEvent.userUuid),
-          "IpAddress" -> trackingEvent.ipAddress,
-          "SessionId" -> trackingEvent.sessionId,
-          "UserAgent" -> trackingEvent.userAgent,
-          "UrlReferrer" -> trackingEvent.urlReferrer,
-          "CreateDate" -> trackingEvent.createDate
-        )
-      }
-      case None => {
-        Document(
-          "TrackingUuid" -> MongoHelper.toStandardBinaryUUID(trackingEvent.trackingUuid),
-          "SourceUuid" -> MongoHelper.toStandardBinaryUUID(trackingEvent.sourceUuid),
-          "ActionType" -> trackingEvent.actionType,
-          "ActionUuid" -> MongoHelper.toStandardBinaryUUID(trackingEvent.actionUuid),
-          "UserUuid" -> MongoHelper.toStandardBinaryUUID(trackingEvent.userUuid),
-          "IpAddress" -> trackingEvent.ipAddress,
-          "SessionId" -> trackingEvent.sessionId,
-          "UserAgent" -> trackingEvent.userAgent,
-          "UrlReferrer" -> trackingEvent.urlReferrer,
-          "CreateDate" -> trackingEvent.createDate
-        )
-      }
-    }
+    Document(
+      "TrackingUuid" -> MongoHelper.toStandardBinaryUUID(trackingEvent.trackingUuid),
+      "SourceUuid" -> MongoHelper.toStandardBinaryUUID(trackingEvent.sourceUuid),
+      "ActionType" -> trackingEvent.actionType,
+      "ActionUuid" -> MongoHelper.toStandardBinaryUUID(trackingEvent.actionUuid),
+      "UserUuid" -> MongoHelper.toStandardBinaryUUID(trackingEvent.userUuid),
+      "IpAddress" -> trackingEvent.ipAddress,
+      "SessionId" -> trackingEvent.sessionId,
+      "UserAgent" -> trackingEvent.userAgent,
+      "UrlReferrer" -> trackingEvent.urlReferrer,
+      "CreateDate" -> trackingEvent.createDate
+    ) ++
+    trackingEvent.id.map(objectId => Document("_id" -> BsonObjectId(objectId))).getOrElse(Nil)
   }
 }
 

@@ -248,6 +248,7 @@ object ExceptionHelper {
       case Some(error) if (error == "exception") => Some(("error_icon","Unexpected error."))
       case Some(error) if (error == "handler_not_found") => Some(("error_icon","Page not found."))
       case Some(error) if (error == "bad_request") => Some(("error_icon","Invalid page."))
+      case Some(error) if (error == "forgot_password_sent") => Some(("info_icon","Password reset email sent."))
       case Some(error) => Some(("error_icon","Unknown error."))
       case None => None
     }
@@ -259,6 +260,7 @@ object ExceptionHelper {
       case Some(error) if (error == "handler_not_found") => Results.NotFound(html)
       case Some(error) if (error == "bad_request") => Results.BadRequest(html)
       case Some(error) if (error == "client_error") => Results.Ok(html)
+      case Some(error) if (error == "forgot_password_sent") => Results.Ok(html)
       case None => Results.Ok(html)
     }
   }

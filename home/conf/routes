@@ -8,6 +8,9 @@ HEAD    /                                             controllers.ApplicationDoN
 GET     /login                                        controllers.Auth.login
 GET     /logout                                       controllers.Application.logout
 GET     /join                                         controllers.Auth.join
+GET     /forgot-password                              controllers.Auth.forgot_password
+GET     /forgot-password-sent                         controllers.Auth.forgot_password_sent
+GET     /reset-password/:code                         controllers.Auth.reset_password(code:String)
 GET     /about                                        controllers.Application.about
 GET     /webcam                                       controllers.Application.webcam
 GET     /admin                                        controllers.Admin.index
@@ -32,6 +35,8 @@ GET     /api-docs.json/admin-users                    controllers.services.devel
 GET     /services/who_am_i                            controllers.services.home.who_am_i
 GET     /services/scraped_images                      controllers.services.home.get_scraped_images
 POST    /services/login                               controllers.services.auth.login
+POST    /services/forgot-password                     controllers.services.auth.sendResetPasswordLink
+POST    /services/reset-password                     controllers.services.auth.resetPassword
 POST    /services/join                                controllers.services.auth.join
 GET     /services/developer/memcached/:key            controllers.services.developer.memcached.get(key:String)
 PUT     /services/developer/memcached/:key            controllers.services.developer.memcached.set(key:String)

@@ -17,9 +17,8 @@
  *
  */
 
-package com.rodneylai.auth
+package com.rodneylai.auth.util
 
-import play.api.mvc._
 import scala.concurrent.{ExecutionContext,Future}
 import java.util.{Calendar,Date}
 import javax.inject.{Inject,Singleton}
@@ -28,7 +27,7 @@ import org.mindrot.jbcrypt._
 import com.rodneylai.util._
 
 @Singleton
-class TestAccountHelper @Inject() (configuration:play.api.Configuration) {
+class TestAccountHelper @Inject() (configuration:ConfigHelper) {
   case class TestAccount(email:String,name:String,friendlyUrl:String,roleList:Set[String])
 
   val testAccounts:Seq[TestAccount] = Seq(TestAccount("normal_user@rodneylai.com","Test User","test-user",Set[String]()),

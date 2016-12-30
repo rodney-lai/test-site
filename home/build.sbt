@@ -15,7 +15,7 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.48",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.74",
   "com.github.mumoshu" % "play2-memcached-play24_2.11" % "0.7.0",
   "com.github.rjeschke" % "txtmark" % "0.13",
   "com.typesafe.play" %% "play-mailer" % "5.0.0",
@@ -26,9 +26,10 @@ libraryDependencies ++= Seq(
   "jp.t2v" %% "play2-auth-social" % "0.14.2",
   "jp.t2v" %% "play2-auth-test" % "0.14.2" % "test",
   "jp.t2v" %% "stackable-controller" % "0.5.1",
+  "net.debasishg" %% "redisclient" % "3.3",
   "org.jsoup" % "jsoup" % "1.9.2",
   "org.mindrot" % "jbcrypt" % "0.3m",
-  "org.mongodb.scala" % "mongo-scala-driver_2.11" % "1.1.1",
+  "org.mongodb.scala" % "mongo-scala-driver_2.11" % "1.2.1",
   "org.slf4j" % "slf4j-api" % "1.7.21",
   "io.swagger" % "swagger-play2_2.11" % "1.5.3",
   jdbc,
@@ -47,12 +48,18 @@ routesGenerator := InjectedRoutesGenerator
 
 (unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/auth")
 
+(unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/auth/util")
+
 (unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/models/mongodb")
 
 (unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/stackc")
 
-(unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/database")
+(unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/database/common")
 
-(unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/util")
+(unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/database/play")
+
+(unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/util/common")
+
+(unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/util/play")
 
 (unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/org/mindrot/jbcrypt")

@@ -32,7 +32,7 @@ import org.mongodb.scala.bson.{BsonArray,BsonBinary,BsonDateTime,BsonObjectId,Bs
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.{IndexModel,IndexOptions}
 import org.slf4j.{Logger,LoggerFactory}
-import com.rodneylai.auth._
+import com.rodneylai.auth.util._
 import com.rodneylai.database._
 import com.rodneylai.util._
 
@@ -210,37 +210,19 @@ class UserAccountDao @Inject() (testAccountHelper:TestAccountHelper,mongoHelper:
   }
 
   def toBson(userAccount: UserAccount): Document = {
-    userAccount.id match {
-      case Some(objectId) => {
-        Document(
-          "_id" -> BsonObjectId(objectId),
-          "UserUuid" -> MongoHelper.toStandardBinaryUUID(userAccount.userUuid),
-          "PasswordHash" -> userAccount.passwordHash,
-          "EmailAddress" -> userAccount.emailAddress,
-          "EmailAddressLowerCase" -> userAccount.emailAddressLowerCase,
-          "Name" -> userAccount.name,
-          "FriendlyUrl" -> userAccount.friendlyUrl,
-          "RoleList" -> BsonArray(userAccount.roleList.map(BsonString(_)).toSeq),
-          "Status" -> userAccount.status,
-          "UpdateDate" -> userAccount.updateDate,
-          "CreateDate" -> userAccount.createDate
-        )
-      }
-      case None => {
-        Document(
-          "UserUuid" -> MongoHelper.toStandardBinaryUUID(userAccount.userUuid),
-          "PasswordHash" -> userAccount.passwordHash,
-          "EmailAddress" -> userAccount.emailAddress,
-          "EmailAddressLowerCase" -> userAccount.emailAddressLowerCase,
-          "Name" -> userAccount.name,
-          "FriendlyUrl" -> userAccount.friendlyUrl,
-          "RoleList" -> BsonArray(userAccount.roleList.map(BsonString(_)).toSeq),
-          "Status" -> userAccount.status,
-          "UpdateDate" -> userAccount.updateDate,
-          "CreateDate" -> userAccount.createDate
-        )
-      }
-    }
+    Document(
+      "UserUuid" -> MongoHelper.toStandardBinaryUUID(userAccount.userUuid),
+      "PasswordHash" -> userAccount.passwordHash,
+      "EmailAddress" -> userAccount.emailAddress,
+      "EmailAddressLowerCase" -> userAccount.emailAddressLowerCase,
+      "Name" -> userAccount.name,
+      "FriendlyUrl" -> userAccount.friendlyUrl,
+      "RoleList" -> BsonArray(userAccount.roleList.map(BsonString(_)).toSeq),
+      "Status" -> userAccount.status,
+      "UpdateDate" -> userAccount.updateDate,
+      "CreateDate" -> userAccount.createDate
+    ) ++
+    userAccount.id.map(objectId => Document("_id" -> BsonObjectId(objectId))).getOrElse(Nil)
   }
 }
 

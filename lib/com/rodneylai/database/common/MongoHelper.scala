@@ -19,16 +19,16 @@
 
 package com.rodneylai.database
 
-import play.api.libs.json._
-import play.libs.Scala
+import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import javax.inject.{Inject,Singleton}
 import com.google.inject.AbstractModule
 import org.mongodb.scala._
-import org.mongodb.scala.bson.{BsonBinary}
+import org.mongodb.scala.bson.{BsonBinary,BsonBoolean,BsonDouble,BsonInt32,BsonString}
 import org.mongodb.scala.connection._
 import org.slf4j.{Logger,LoggerFactory}
+import com.rodneylai.util._
 
 object MongoHelper {
 
@@ -85,17 +85,17 @@ object MongoHelper {
 }
 
 @Singleton
-class MongoHelper @Inject() (configuration:play.api.Configuration) {
+class MongoHelper @Inject() (configHelper:ConfigHelper) {
   private val       m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
-  private val       m_host:String = configuration.getString("mongo.host").getOrElse("")
-  private val       m_port:Int = configuration.getInt("mongo.port").getOrElse(27017)
-  private val       m_database:String = configuration.getString("mongo.database").getOrElse("")
-  private val       m_userName:String = configuration.getString("mongo.user.name").getOrElse("")
-  private val       m_password:String = configuration.getString("mongo.password").getOrElse("")
-  private val       m_authMechanism:String = configuration.getString("mongo.authmechanism").getOrElse("MONGODB-CR")
+  private val       m_host:String = configHelper.getString("mongo.host").getOrElse("")
+  private val       m_port:Int = configHelper.getInt("mongo.port").getOrElse(27017)
+  private val       m_database:String = configHelper.getString("mongo.database").getOrElse("")
+  private val       m_userName:String = configHelper.getString("mongo.username").getOrElse("")
+  private val       m_password:String = configHelper.getString("mongo.password").getOrElse("")
+  private val       m_authMechanism:String = configHelper.getString("mongo.authmechanism").getOrElse("MONGODB-CR")
   private lazy val  m_server:ServerAddress = new ServerAddress(m_host, m_port)
-  private lazy val  m_clusterSettings:ClusterSettings = ClusterSettings.builder().hosts(Scala.asJava(List(m_server))).build()
+  private lazy val  m_clusterSettings:ClusterSettings = ClusterSettings.builder().hosts(List(m_server).asJava).build()
   private lazy val  m_mongoCRCredentials:MongoCredential = MongoCredential.createMongoCRCredential(m_userName, m_database, m_password.toCharArray)
   private lazy val  m_scramSha1Credentials:MongoCredential = MongoCredential.createScramSha1Credential(m_userName, m_database, m_password.toCharArray)
   private lazy val  m_credentials:Map[String,MongoCredential] = Map("MONGODB-CR" -> m_mongoCRCredentials, "SCRAM-SHA-1" -> m_scramSha1Credentials)
@@ -105,7 +105,7 @@ class MongoHelper @Inject() (configuration:play.api.Configuration) {
 
                         MongoClient(m_settings)
                       } else {
-                        val m_settings:MongoClientSettings = MongoClientSettings.builder().clusterSettings(m_clusterSettings).credentialList(Scala.asJava(List(m_credentials.getOrElse(m_authMechanism,m_mongoCRCredentials)))).build()
+                        val m_settings:MongoClientSettings = MongoClientSettings.builder().clusterSettings(m_clusterSettings).credentialList(List(m_credentials.getOrElse(m_authMechanism,m_mongoCRCredentials)).asJava).build()
 
                         MongoClient(m_settings)
                       }
@@ -114,6 +114,10 @@ class MongoHelper @Inject() (configuration:play.api.Configuration) {
 
   val isActive:Boolean = {
     m_host.length > 0
+  }
+
+  def close():Unit = {
+    m_mongoClient.close()
   }
 
   def getCollection(collectionName:String):MongoCollection[Document] = {
@@ -137,19 +141,17 @@ class MongoHelper @Inject() (configuration:play.api.Configuration) {
       } yield {
         result.headOption match {
           case Some(document) => {
-            Json.parse(document.toJson.toString).asOpt[JsObject] match {
-              case Some(json) => Some(json.value.map({
-                case (key,value) => {
-                  (
-                    key -> { value match {
-                      case stringValue:JsString => stringValue.value
-                      case _ => value.toString
-                    } }
-                  )
-                }
-              }).toSeq.sortBy(_._1))
-              case None => Some(Seq[(String,String)]())
-            }
+            Some(document.map({
+              case (key,value) => {
+                key -> { value match {
+                  case stringValue:BsonString => stringValue.getValue
+                  case booleanValue:BsonBoolean => booleanValue.getValue.toString
+                  case int32Value:BsonInt32 => int32Value.getValue.toString
+                  case doubleValue:BsonDouble => doubleValue.getValue.toString
+                  case _ => value.toString
+                } }
+              }
+            }).toSeq.sortBy(_._1))
           }
           case None => None
         }
@@ -166,19 +168,17 @@ class MongoHelper @Inject() (configuration:play.api.Configuration) {
       } yield {
         result.headOption match {
           case Some(document) => {
-            Json.parse(document.toJson.toString).asOpt[JsObject] match {
-              case Some(json) => Some(json.value.map({
-                case (key,value) => {
-                  (
-                    key -> { value match {
-                      case stringValue:JsString => stringValue.value
-                      case _ => value.toString
-                    } }
-                  )
-                }
-              }).toSeq.sortBy(_._1))
-              case None => Some(Seq[(String,String)]())
-            }
+            Some(document.map({
+              case (key,value) => {
+                key -> { value match {
+                  case stringValue:BsonString => stringValue.getValue
+                  case booleanValue:BsonBoolean => booleanValue.getValue.toString
+                  case int32Value:BsonInt32 => int32Value.getValue.toString
+                  case doubleValue:BsonDouble => doubleValue.getValue.toString
+                  case _ => value.toString
+                } }
+              }
+            }).toSeq.sortBy(_._1))
           }
           case None => None
         }

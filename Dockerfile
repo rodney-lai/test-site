@@ -18,6 +18,8 @@ RUN         apt-get install -y openjdk-8-jre-headless
 
 RUN         apt-get install -y openjdk-8-jdk
 
+RUN         apt-get install -y scala
+
 RUN         update-ca-certificates -f
 
 RUN         useradd -ms /bin/bash play-user
@@ -56,6 +58,10 @@ ADD         upload/public /home/play-user/root/build/upload/public
 ADD         upload/build.sbt /home/play-user/root/build/upload/
 ADD         upload/project/plugins.sbt /home/play-user/root/build/upload/project/
 ADD         upload/project/build.properties /home/play-user/root/build/upload/project/
+ADD         emailer/src /home/play-user/root/build/emailer/src
+ADD         emailer/build.sbt /home/play-user/root/build/emailer/
+ADD         emailer/project/build.properties /home/play-user/root/build/emailer/project/
+ADD         emailer/project/assembly.sbt /home/play-user/root/build/emailer/project/
 
 RUN         cp -r /home/play-user/root/build/ /home/play-user
 
@@ -71,10 +77,17 @@ RUN         mv /home/play-user/build/home/target/universal/stage /home/play-user
 RUN         cd /home/play-user/build/upload; /home/play-user/activator/activator test stage
 RUN         rm /home/play-user/build/upload/target/universal/stage/bin/*.bat
 RUN         mv /home/play-user/build/upload/target/universal/stage /home/play-user/deploy-upload
+RUN         cd /home/play-user/build/emailer; /home/play-user/activator/activator assembly
+RUN         mkdir /home/play-user/deploy-emailer
+RUN         mv /home/play-user/build/emailer/target/scala-2.11/*.jar /home/play-user/deploy-emailer
 RUN         rm -rf /home/play-user/build
 
 RUN         date > /home/play-user/deploy-home/BUILD_DATE
 RUN         date > /home/play-user/deploy-upload/BUILD_DATE
+RUN         date > /home/play-user/deploy-emailer/BUILD_DATE
+RUN         echo -n "#!/usr/bin/scala " > /home/play-user/deploy-emailer/emailer
+RUN         ls /home/play-user/deploy-emailer/emailer*.jar >> /home/play-user/deploy-emailer/emailer
+RUN         chmod 755 /home/play-user/deploy-emailer/emailer
 
 WORKDIR     /home/play-user/deploy-home/bin
 ENTRYPOINT  ["./rodney-test-site-home","-Dhttps.port=9443"]

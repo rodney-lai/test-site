@@ -77,7 +77,7 @@ class TrackingHelper @Inject() (mongoHelper:MongoHelper,trackingActionDao:Tracki
           dateShortOffset.add(Calendar.DATE,-1)
           for {
             collection <- trackingEventDao.collectionFuture
-            trackingCountResult0 <- if (trackingAction.actionType == "page_not_found") {
+            trackingCountResult0 <- if ((trackingAction.actionType == "page_not_found") || (trackingAction.actionType == "invalid_post")) {
               collection.count(
                 and(
                   equal("ActionUuid", MongoHelper.toStandardBinaryUUID(trackingAction.actionUuid)),
@@ -87,10 +87,10 @@ class TrackingHelper @Inject() (mongoHelper:MongoHelper,trackingActionDao:Tracki
             } else {
               Future.successful(Nil)
             }
-            trackingCountResult1 <- if (trackingAction.actionType == "page_not_found") {
+            trackingCountResult1 <- if ((trackingAction.actionType == "page_not_found") || (trackingAction.actionType == "invalid_post")) {
               collection.count(
                 and(
-                  equal("ActionType","page_not_found"),
+                  equal("ActionType",trackingAction.actionType),
                   equal("IpAddress", ipAddress),
                   gt("CreateDate", dateShortOffset.getTime)
                 )

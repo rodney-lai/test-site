@@ -15,7 +15,7 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.48",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.74",
   "com.typesafe.play" %% "play-mailer" % "5.0.0",
   "ch.qos.logback" % "logback-classic" % "1.1.7",
   "ch.qos.logback" % "logback-core" % "1.1.7",
@@ -33,4 +33,6 @@ resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 
 (unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/stub/database")
 
-(unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/util")
+(unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/util/common")
+
+(unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/util/play")

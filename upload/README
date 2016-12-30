@@ -12,7 +12,7 @@ or authorization.
 Server Technology
 -----------------
 
-* Web Framework - [Play Framework v2.5.9](https://playframework.com/)
+* Web Framework - [Play Framework v2.5.10](https://playframework.com/)
 * Language - [Scala v2.11.8](http://scala-lang.org/)
 
 Build, Deploy, Hosting

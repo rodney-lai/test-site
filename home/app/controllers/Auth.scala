@@ -40,6 +40,31 @@ class Auth @Inject() (implicit override val environment: play.api.Environment,ov
     }
   }
 
+  def forgot_password = StackAction { implicit request =>
+    loggedIn match {
+      case Some(account) => Redirect(controllers.routes.Application.index)
+      case None => Ok(views.html.forgot_password(request,environment))
+    }
+  }
+
+  def forgot_password_sent = StackAction { implicit request =>
+    Redirect(controllers.routes.Application.index).flashing("error" -> "forgot_password_sent")
+  }
+
+  def reset_password(codeString:String) = StackAction { implicit request =>
+    loggedIn match {
+      case Some(account) => Redirect(controllers.routes.Application.index)
+      case None => {
+        Try(java.util.UUID.fromString(codeString)) match {
+          case Success(code) => {
+            Ok(views.html.reset_password(request,environment,code))
+          }
+          case Failure(ex) => Redirect(controllers.routes.Application.index).flashing("error" -> "handler_not_found")
+        }
+      }
+    }
+  }
+
   def join = StackAction { implicit request =>
     loggedIn match {
       case Some(account) => Redirect(controllers.routes.Application.index)
