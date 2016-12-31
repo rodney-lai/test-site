@@ -9,6 +9,8 @@ rlai [ at ] irismedia [ dot ] com
 
 [GitHub Repository](https://github.com/rodney-lai)
 
+[DockerHub Repository](https://hub.docker.com/u/rodneylai/)
+
 Features
 --------
 
@@ -43,6 +45,22 @@ To run the docker container:
 2. Run Docker Image  
 'docker run -p 80:9000 -p 443:9443 -e "PLAY_TEST_PASSWORD=[*my_password*]" -d [*my_docker_repository*]'
 
+Docker Image Entrypoints:
+
+All the projects are packaged in a single docker image.
+To change the project, change the working directory and
+entrypoint when running the docker image.
+
+By default the 'home' project runs.
+
+To run the 'upload' project,
+set work directory to /home/play-user/deploy-upload/bin
+and entrypoint to  ./rodney-test-site-upload
+
+To run the 'emailer' project
+set work directory to /home/play-user/deploy-emailer/bin
+and entrypoint to  ./emailer
+
 Environment Variables:
 
 PLAY_TEST_PASSWORD - password for test user accounts (required for ALL builds)  
@@ -50,12 +68,33 @@ PLAY_APPLICATION_SECRET - play crytographic secret.  Refer to Play Framework doc
 
 Environment Variables for MongoDB:
 
-PLAY_MONGO_HOST - mongo host  
-PLAY_MONGO_PORT - mongo port  
-PLAY_MONGO_USERNAME - mongo user name  
-PLAY_MONGO_PASSWORD - mongo user password  
-PLAY_MONGO_DATABASE - mongo database name  
-PLAY_MONGO_AUTHMECHANISM - mongo auth mechanism [ MONGODB-CR or SCRAM-SHA-1 ]  
+MONGO_HOST - mongo host  
+MONGO_PORT - mongo port  
+MONGO_USERNAME - mongo user name  
+MONGO_PASSWORD - mongo user password  
+MONGO_DATABASE - mongo database name  
+MONGO_AUTHMECHANISM - mongo auth mechanism [ MONGODB-CR or SCRAM-SHA-1 ]  
+
+Environment Variables for MemCached:
+
+MEMCACHED_HOST - memcached host
+MEMCACHED_USER - memcached user
+MEMCACHED_PASSWORD - memcached password
+
+Environment Variables for Redis:
+
+REDIS_HOST - redis host
+REDIS_PORT - redis port
+REDIS_PASSWORD - redis password
+
+Environment Variables for Emails:
+
+EMAIL_HOST - email smtp host
+EMAIL_PORT - email smtp port
+EMAIL_USERNAME - email smtp user name
+EMAIL_PASSWORD - email smtp password
+EMAIL_FROM_EMAIL - from email address
+EMAIL_FROM_NAME - from email name
 
 Server Technology
 -----------------
