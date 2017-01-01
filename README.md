@@ -77,24 +77,24 @@ MONGO_AUTHMECHANISM - mongo auth mechanism [ MONGODB-CR or SCRAM-SHA-1 ]
 
 Environment Variables for MemCached:
 
-MEMCACHED_HOST - memcached host
-MEMCACHED_USER - memcached user
-MEMCACHED_PASSWORD - memcached password
+MEMCACHED_HOST - memcached host  
+MEMCACHED_USER - memcached user  
+MEMCACHED_PASSWORD - memcached password  
 
 Environment Variables for Redis:
 
-REDIS_HOST - redis host
-REDIS_PORT - redis port
-REDIS_PASSWORD - redis password
+REDIS_HOST - redis host  
+REDIS_PORT - redis port  
+REDIS_PASSWORD - redis password  
 
 Environment Variables for Emails:
 
-EMAIL_HOST - email smtp host
-EMAIL_PORT - email smtp port
-EMAIL_USERNAME - email smtp user name
-EMAIL_PASSWORD - email smtp password
-EMAIL_FROM_EMAIL - from email address
-EMAIL_FROM_NAME - from email name
+EMAIL_HOST - email smtp host  
+EMAIL_PORT - email smtp port  
+EMAIL_USERNAME - email smtp user name  
+EMAIL_PASSWORD - email smtp password  
+EMAIL_FROM_EMAIL - from email address  
+EMAIL_FROM_NAME - from email name  
 
 Server Technology
 -----------------
