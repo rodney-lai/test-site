@@ -44,5 +44,3 @@ unmanagedSourceDirectories in Compile += baseDirectory.value / "../lib/com/rodne
 unmanagedSourceDirectories in Compile += baseDirectory.value / "../lib/com/rodneylai/stub/auth"
 
 unmanagedSourceDirectories in Compile += baseDirectory.value / "../lib/com/rodneylai/models/mongodb"
-
-unmanagedSourceDirectories in Compile += baseDirectory.value / "../lib/org/mindrot/jbcrypt"

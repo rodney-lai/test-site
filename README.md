@@ -141,7 +141,7 @@ Tools
 * Mongo GUI Client - [MongoChef](http://3t.io/)
 * Redis GUI Client - [Redis Desktop Manager](https://redisdesktop.com/)
 
-Copyright (c) 2015-2016 Rodney S.K. Lai
+Copyright (c) 2015-2017 Rodney S.K. Lai
 
 Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
 
