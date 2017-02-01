@@ -110,7 +110,7 @@ class MongoHelper @Inject() (configHelper:ConfigHelper) {
                         MongoClient(m_settings)
                       }
                     }
-  private val       m_mongoDatabase:MongoDatabase = m_mongoClient.getDatabase(m_database)
+  private lazy val  m_mongoDatabase:MongoDatabase = m_mongoClient.getDatabase(m_database)
 
   val isActive:Boolean = {
     m_host.length > 0

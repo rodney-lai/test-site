@@ -18,6 +18,10 @@ libraryDependencies ++= Seq(
   "net.debasishg" %% "redisclient" % "3.3",
   "ch.qos.logback" % "logback-classic" % "1.1.7",
   "ch.qos.logback" % "logback-core" % "1.1.7",
+  "com.typesafe.slick" %% "slick" % "3.2.0-M2",
+  "com.typesafe.slick" %% "slick-hikaricp" % "3.2.0-M2",
+  "com.typesafe.slick" %% "slick-codegen" % "3.2.0-M2",
+  "org.postgresql" % "postgresql" % "9.4.1212",
   "com.fasterxml.jackson.core" % "jackson-annotations" % "2.8.5",
   "com.fasterxml.jackson.core" % "jackson-databind" % "2.8.5",
   "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.8.4",
@@ -44,3 +48,16 @@ unmanagedSourceDirectories in Compile += baseDirectory.value / "../lib/com/rodne
 unmanagedSourceDirectories in Compile += baseDirectory.value / "../lib/com/rodneylai/stub/auth"
 
 unmanagedSourceDirectories in Compile += baseDirectory.value / "../lib/com/rodneylai/models/mongodb"
+
+lazy val slickCodeGen = taskKey[Seq[File]]("gen-tables")
+
+slickCodeGen := {
+  val outputDir = (sourceManaged.value / "slick").getPath // place generated files in sbt's managed sources folder
+  val url = "jdbc:postgresql://localhost:5432/codegen?user=postgres&password=postgres"
+  val jdbcDriver = "org.postgresql.Driver"
+  val slickDriver = "slick.jdbc.PostgresProfile"
+  val pkg = "com.rodneylai.database"
+  toError((runner in Compile).value.run("slick.codegen.SourceCodeGenerator", (dependencyClasspath in Compile).value.files, Array(slickDriver, jdbcDriver, url, outputDir, pkg), streams.value.log))
+  val fname = outputDir + "/com/rodneylai/database/Tables.scala"
+  Seq(file(fname))
+}

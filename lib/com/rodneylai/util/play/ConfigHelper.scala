@@ -31,6 +31,7 @@ class ConfigHelper @Inject() (configuration:Configuration)
 
   def getString(name:String):Option[String] = configuration.getString(name)
   def getInt(name:String):Option[Int] = configuration.getInt(name)
+  def getBoolean(name:String):Option[Boolean] = configuration.getBoolean(name)
 }
 
 class ConfigHelperModule extends AbstractModule {

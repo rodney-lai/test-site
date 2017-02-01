@@ -44,6 +44,13 @@ class ConfigHelper @Inject() ()
       case Failure(ex) => None
     }
   }
+
+  def getBoolean(name:String):Option[Boolean] = {
+    Try(m_config.getBoolean(name)) match {
+      case Success(value) => Some(value)
+      case Failure(ex) => None
+    }
+  }
 }
 
 class ConfigHelperModule extends AbstractModule {

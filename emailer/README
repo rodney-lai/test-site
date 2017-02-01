@@ -7,6 +7,44 @@ rlai [ at ] irismedia [ dot ] com
 
 This project reads from a Redis queue and sents emails built from templates.
 
+Environment Variables for MongoDB:
+
+MONGO_HOST - mongo host
+MONGO_PORT - mongo port
+MONGO_USERNAME - mongo user name
+MONGO_PASSWORD - mongo user password
+MONGO_DATABASE - mongo database name
+MONGO_AUTHMECHANISM - mongo auth mechanism [ MONGODB-CR or SCRAM-SHA-1 ]
+
+Environment Variables for PostgreSQL:
+
+SLICK_POSTGRESQL_URL - JDBC connection url
+SLICK_POSTGRESQL_DRIVER - JDBC driver (default = org.postgresql.Driver)
+SLICK_POSTGRESQL_CONNECTIONPOOL - connection pool (default = HikariCP)
+SLICK_POSTGRESQL_KEEPALIVECONNECTION - keep connection alive (default = true)
+
+POSTGRESQL_SCHEMANAME - schema name
+
+Environment Variables for Redis:
+
+REDIS_HOST - redis host
+REDIS_PORT - redis port
+REDIS_PASSWORD - redis password
+
+Environment Variables for Emails:
+
+EMAIL_HOST - email smtp host
+EMAIL_PORT - email smtp port
+EMAIL_USERNAME - email smtp user name
+EMAIL_PASSWORD - email smtp password
+EMAIL_FROM_EMAIL - from email address
+EMAIL_FROM_NAME - from email name
+
+Environment Variables for Threading:
+
+THREAD_POOL_SIZE - thread pool size
+THREAD_QUEUE_CAPACITY - maximum threads in queue
+
 Server Technology
 -----------------
 
