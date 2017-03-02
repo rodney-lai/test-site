@@ -29,7 +29,8 @@ import scala.util.{Failure,Success,Try}
 import java.io.InputStream
 import javax.inject._
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
-import com.amazonaws.services.s3.{AmazonS3,AmazonS3Client}
+import com.amazonaws.regions.{Regions}
+import com.amazonaws.services.s3.{AmazonS3,AmazonS3ClientBuilder}
 import com.amazonaws.services.s3.model.{GetObjectRequest,ObjectMetadata,S3Object}
 import org.slf4j.{Logger,LoggerFactory}
 
@@ -39,7 +40,11 @@ class Image @Inject() (configuration: play.api.Configuration) extends Controller
   def webcam = Action { implicit request =>
     (configuration.getString("aws.s3.bucket"),configuration.getString("aws.s3.folder")) match {
       case (Some(bucketName),Some(folderName)) => {
-        val s3Client:AmazonS3Client = new AmazonS3Client(new DefaultAWSCredentialsProviderChain)
+        val region:Regions = configuration.getString("aws.s3.region") match {
+          case Some(regionName) => Regions.fromName(regionName)
+          case None => Regions.US_EAST_1
+        }
+        val s3Client:AmazonS3 = AmazonS3ClientBuilder.standard().withRegion(region).withCredentials(new DefaultAWSCredentialsProviderChain).build()
         val s3Object:S3Object = s3Client.getObject(new GetObjectRequest(bucketName, s"$folderName/current.jpg"))
         val objectDataStream:InputStream = s3Object.getObjectContent
         val dataContent:Source[akka.util.ByteString, Future[akka.stream.IOResult]] = StreamConverters.fromInputStream(() => objectDataStream)

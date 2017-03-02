@@ -678,6 +678,10 @@ body {
 	line-height:1.5
 }
 
+.webcam-page {
+  min-width:1100px;
+}
+
 .webcam-page#primary-container {
   background-color:#aaa;
 }
@@ -689,4 +693,42 @@ body {
 .webcam-page .image {
   margin:auto;
   width:1024px;
+}
+
+.webcam-page .histogram-plot-container {
+  margin:auto;
+  width:1065px;
+  margin-top:20px;
+}
+
+.webcam-page #plot {
+  width:1065px;
+  height:350px;
+  margin-top:5px;
+}
+
+.webcam-page #plot-colors {
+  padding-top:75px;
+  padding-left:75px;
+}
+
+.webcam-page #plot-colors .color {
+  float:left;
+  width:15px;
+  height:50px;
+  transform-origin: left top 0;
+  -ms-transform: rotate(-90deg); /* IE 9 */
+  -webkit-transform: rotate(-90deg); /* Chrome, Safari, Opera */
+  transform: rotate(-90deg);
+  font-size:13px;
+  font-family:"Courier New";
+  padding:0px;
+  margin:0px;
+  border:0px;
+}
+
+.webcam-page #plot-colors .color span {
+  padding:0px 10px 0px 10px;
+  margin:0px;
+  border:0px;
 }

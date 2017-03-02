@@ -1,7 +1,15 @@
-@(accountOption:Option[com.rodneylai.auth.Account],dateString:String)(implicit request: Request[Any], environment: play.api.Environment)
+@(accountOption:Option[com.rodneylai.auth.Account],dateString:String,histogramData:String)(implicit request: Request[Any], environment: play.api.Environment)
 
 @main("webcam",accountOption,"about") {
   <meta http-equiv="refresh" content="90">
+  @if(environment.mode == play.api.Mode.Dev) {
+      <script src="@routes.Assets.versioned("/public/javascripts","jquery-1.11.3.js")" type="text/javascript"></script>
+  } else {
+      <script src="@routes.Assets.versioned("/public/javascripts","jquery-1.11.3.min.js")" type="text/javascript"></script>
+  }
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react-dom.js"></script>
 } {
 } {
 
@@ -12,7 +20,12 @@
 </div>
 <div id="primary-container" class="webcam-page">
   <div class="content">
-  <div class="image"><img src="/img/webcam.jpg" alt="view from rodney's window" title="view from rodney's window" /></div>
+    <div class="image"><img src="/img/webcam.jpg" alt="view from rodney's window" title="view from rodney's window" /></div>
+    <div class="histogram-plot-container">
+      <div>Color Histogram</div>
+      <div id="plot"></div>
+      <div id="plot-colors"></div>
+    </div>
   </div>
 </div>
 
@@ -25,6 +38,75 @@
 
       return {
         init: function() {
+          var lookup = [0x00,0x56,0xac,0xff];
+          function brightness(x) {
+            return((lookup[(0x0003 & x)] + lookup[((0x000c & x) >> 2)] + lookup[((0x0030 & x) >> 4)])/3);
+          }
+
+          var colorIndex = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63];
+          colorIndex.sort((a,b) => brightness(a) - brightness(b));
+
+          var data = [@histogramData];
+
+          var dataSorted = [];
+          for (var i = 0;i < 64;i++) {
+            dataSorted.push(data[colorIndex[i]])
+          }
+          var xVals = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63];
+          var trace = {
+            type: 'scatter',
+            x: xVals,
+            y: dataSorted
+          };
+
+          var layout = {
+            margin: {
+              t:20,
+              r:40
+            },
+            xaxis: {
+              title: "Color",
+              tickmode: "array",
+              tickvals: xVals,
+              ticktext: xVals.map(x => "0x" + ("000000" + (lookup[(0x0003 & colorIndex[x])] | (lookup[((0x000c & colorIndex[x]) >> 2)] << 8) | (lookup[((0x0030 & colorIndex[x]) >> 4)] << 16)).toString(16)).slice(-6)),
+              tickfont: {
+                family: "Courier New"
+              },
+              tickformat: "06x#",
+              tickangle: -90,
+              fixedrange: true
+            },
+            yaxis: {
+              range: [0,1.0],
+              tickformat: "%",
+              fixedrange: true
+            }
+          };
+
+          var dataList = [trace];
+          Plotly.newPlot('plot', dataList, layout,{modeBarButtonsToRemove: ['sendDataToCloud'],displayModeBar:false});
+
+          var colors = colorIndex.map(function (x) {
+            return "#" + ("000000" + (lookup[0x0003 & x] | lookup[(0x000c & x) >> 2] << 8 | lookup[(0x0030 & x) >> 4] << 16).toString(16)).slice(-6);
+          });
+          var listItems = colors.map(function (color) {
+            return React.createElement(
+              "div",
+              { className: "color", key: color },
+              React.createElement(
+                "span",
+                { style: { backgroundColor: color } },
+                color
+              )
+            );
+          });
+
+          ReactDOM.render(React.createElement(
+            "div",
+            null,
+            listItems,
+            React.createElement("div", { style: { clear: "both" } })
+          ), document.getElementById('plot-colors'));
         }
       }
     }();

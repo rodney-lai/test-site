@@ -99,7 +99,7 @@ EMAIL_FROM_NAME - from email name
 Server Technology
 -----------------
 
-* Web Framework - [Play Framework v2.5.10](https://playframework.com/)
+* Web Framework - [Play Framework v2.5.12](https://playframework.com/)
 * Language - [Scala v2.11.8](http://scala-lang.org/)
 * NoSQL Database - [MongoDB](https://www.mongodb.org/)
 * Data Cache - [Memcached](http://memcached.org/)
@@ -112,6 +112,7 @@ Backend Libraries
 * Authorization - [Deadbolt 2](https://github.com/schaloner/deadbolt-2)
 * Password Encryption - [jBCrypt](http://www.mindrot.org/projects/jBCrypt/)
 * API Documentation - [Swagger](http://swagger.io/)
+* Computer Vision - [OpenCV](http://opencv.org/)
 
 Frontend Libraries
 ------------------
@@ -121,6 +122,8 @@ Frontend Libraries
 * Utility Library - [underscore.js](http://underscorejs.org/)
 * Data Binding for Backbone - [epoxy.js](http://epoxyjs.org/)
 * Backbone Framework - [marionette.js](http://marionettejs.com/)
+* Data Visualization - [plotly](https://plot.ly)
+* React Framework - [React](https://facebook.github.io/react/)
 
 Build, Deploy, Hosting
 ----------------------
