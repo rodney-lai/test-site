@@ -1,2 +1,4 @@
 home/public/javascripts/* linguist-vendored
+home/public/stylesheets/swagger/* linguist-vendored
 upload/public/javascripts/* linguist-vendored
+upload/public/stylesheets/swagger/* linguist-vendored
