@@ -40,6 +40,12 @@ EMAIL_PASSWORD - email smtp password
 EMAIL_FROM_EMAIL - from email address
 EMAIL_FROM_NAME - from email name
 
+Environment Variables for AWS S3:
+
+AWS_S3_BUCKET - s3 bucket name
+AWS_S3_FOLDER - s3 folder in bucket
+AWS_S3_REGION - s3 bucket region (default = us-east-1)
+
 Environment Variables for Threading:
 
 THREAD_POOL_SIZE - thread pool size

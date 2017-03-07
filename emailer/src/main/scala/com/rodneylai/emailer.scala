@@ -35,20 +35,25 @@ import com.google.inject.Guice
 import com.redis._
 import org.apache.commons.mail._
 import org.slf4j.{Logger,LoggerFactory}
+import com.rodneylai.amazon.s3._
 import com.rodneylai.database._
 import com.rodneylai.util._
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "cmd")
 @JsonSubTypes(value = Array(
-    new Type(value = classOf[ResetPasswordEmailQueue], name = "reset-password")
+    new Type(value = classOf[ResetPasswordEmailQueue], name = "reset-password"),
+    new Type(value = classOf[InviteEmailQueue], name = "invite")
 ))
 trait EmailQueueCmd
 
 trait EmailQueue {
   def toEmailAddress:String
+  def fromName:Option[String]
+  def data:Option[Map[String,Any]]
 }
 
-case class ResetPasswordEmailQueue(val toEmailAddress:String,code:java.util.UUID,baseUrl:String,now:java.util.Date) extends EmailQueueCmd with EmailQueue
+case class ResetPasswordEmailQueue(val toEmailAddress:String,val fromName:Option[String],val data:Option[Map[String,Any]],code:java.util.UUID,baseUrl:String,now:java.util.Date) extends EmailQueueCmd with EmailQueue
+case class InviteEmailQueue(val toEmailAddress:String,val fromName:Option[String],val data:Option[Map[String,Any]],code:String,baseUrl:String,now:java.util.Date) extends EmailQueueCmd with EmailQueue
 
 object emailer {
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
@@ -86,10 +91,17 @@ object emailer {
   private val m_threadQueueCapacity:Int = m_configHelper.getInt("thread.queue.capacity").getOrElse(50)
   private val m_useExecutionContext:Boolean = m_configHelper.getBoolean("use.execution.context").getOrElse(true)
 
-  private val mongoAccessHelperInjector = Guice.createInjector(new MongoAccessHelperModule)
-  private val mongoAccessHelper = mongoAccessHelperInjector.getInstance(classOf[MongoAccessHelper])
+  private val m_mongoAccessHelperInjector = Guice.createInjector(new MongoAccessHelperModule)
+  private val m_mongoAccessHelper = m_mongoAccessHelperInjector.getInstance(classOf[MongoAccessHelper])
 
-  private def sendEmail(toEmailAddress:String,emailType:String,subjectEmailTemplateOption:Option[String],txtEmailTemplateOption:Option[String],htmlEmailTemplateOption:Option[String],values:Map[String,Any],now:java.util.Date):Future[Option[java.util.UUID]] = {
+  private val m_s3HelperInjector = Guice.createInjector(new S3HelperModule)
+  private val m_s3Helper = m_s3HelperInjector.getInstance(classOf[S3Helper])
+
+  private def getEmailTemplateNames(emailType:String) = Array(s"$emailType-subject.txt",s"$emailType.txt",s"$emailType.html")
+
+  private val m_templates:Array[String] = getEmailTemplateNames("invite") ++ getEmailTemplateNames("reset-password")
+
+  private def sendEmail(emailQueue:EmailQueue,emailType:String,subjectEmailTemplateOption:Option[String],txtEmailTemplateOption:Option[String],htmlEmailTemplateOption:Option[String],values:Map[String,Any],now:java.util.Date):Future[Option[java.util.UUID]] = {
     import scala.concurrent.ExecutionContext.Implicits.global
     (m_emailHostOption,subjectEmailTemplateOption) match {
       case (Some(emailHost),Some(subjectEmailTemplate)) if ((htmlEmailTemplateOption.isDefined) || (txtEmailTemplateOption.isDefined)) => {
@@ -113,7 +125,7 @@ object emailer {
             case _ => {}
           }
           email.setSSLOnConnect(true)
-          (m_emailFromEmailOption,m_emailFromNameOption) match {
+          (m_emailFromEmailOption,emailQueue.fromName.orElse(m_emailFromNameOption)) match {
             case (Some(emailFromEmail),Some(emailFromName)) => email.setFrom(emailFromEmail,emailFromName)
             case (Some(emailFromEmail),None) => email.setFrom(emailFromEmail)
             case _ => {}
@@ -125,12 +137,12 @@ object emailer {
           } else if (txtEmailContentOption.isDefined) {
             txtEmailContentOption.map { email.setMsg(_) }
           }
-          email.addTo(toEmailAddress);
+          email.addTo(emailQueue.toEmailAddress);
           email.setDebug(true)
           Try(email.send()) match {
             case Success(result) => {
-              val mongoFuture = mongoAccessHelper.insertToMessageLog(emailUuid,"email",emailType,toEmailAddress,now)
-              val postgresFuture = PostgresAccessHelper.insertToMessageHistory(emailUuid,"email",emailType,toEmailAddress,now)
+              val mongoFuture = m_mongoAccessHelper.insertToMessageLog(emailUuid,"email",emailType,emailQueue.toEmailAddress,now)
+              val postgresFuture = PostgresAccessHelper.insertToMessageHistory(emailUuid,"email",emailType,emailQueue.toEmailAddress,now)
 
               for {
                 mongoResult <- mongoFuture
@@ -140,7 +152,7 @@ object emailer {
               }
             }
             case Failure(ex) =>
-              m_log.error(s"sendEmail[$toEmailAddress]",ex)
+              m_log.error(s"sendEmail[$emailQueue.toEmailAddress]",ex)
               Future.successful(None)
           }
         }
@@ -153,12 +165,12 @@ object emailer {
     }
   }
 
-  private def sendEmailTemplate(emailType:String,toEmailAddress:String,params:Map[String,Any],now:java.util.Date):Future[Option[java.util.UUID]] = {
-    val subjectEmailTemplateOption:Option[String] = readResourceFile(s"/email-templates/$emailType-subject.txt")
-    val txtEmailTemplateOption:Option[String] = readResourceFile(s"/email-templates/$emailType.txt")
-    val htmlEmailTemplateOption:Option[String] = readResourceFile(s"/email-templates/$emailType.html")
+  private def sendEmailTemplate(emailType:String,templates:Map[String,String],emailQueue:EmailQueue,params:Map[String,Any],now:java.util.Date):Future[Option[java.util.UUID]] = {
+    val subjectEmailTemplateOption:Option[String] = templates.get(s"$emailType-subject.txt").orElse(readResourceFile(s"/email-templates/$emailType-subject.txt"))
+    val txtEmailTemplateOption:Option[String] = templates.get(s"$emailType.txt").orElse(readResourceFile(s"/email-templates/$emailType.txt"))
+    val htmlEmailTemplateOption:Option[String] = templates.get(s"$emailType.html").orElse(readResourceFile(s"/email-templates/$emailType.html"))
 
-    sendEmail(toEmailAddress,emailType,subjectEmailTemplateOption,txtEmailTemplateOption,htmlEmailTemplateOption,params,now)
+    sendEmail(emailQueue,emailType,subjectEmailTemplateOption,txtEmailTemplateOption,htmlEmailTemplateOption,params,now)
   }
 
   private def readResourceFile(resourcePath: String): Option[String] = {
@@ -167,7 +179,7 @@ object emailer {
       .map(_.getLines.toList.mkString("\n"))
   }
 
-  private def processCmd(json:String):Future[Option[(String,String,java.util.UUID)]] = {
+  private def processCmd(json:String,templates:Map[String,String]):Future[Option[(String,String,java.util.UUID)]] = {
     import scala.concurrent.ExecutionContext.Implicits.global
     val now:java.util.Date = Calendar.getInstance.getTime
 
@@ -176,13 +188,21 @@ object emailer {
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
     Try(objectMapper.readValue[EmailQueueCmd](json)) match {
+      case Success(inviteEmailQueue:InviteEmailQueue) => {
+        m_log.debug(s"invite[$inviteEmailQueue]")
+        for {
+          emailUuidOption <- sendEmailTemplate("invite",templates,inviteEmailQueue,(convertCaseClassToMap(inviteEmailQueue) - "data") ++ inviteEmailQueue.data.getOrElse(Nil),now)
+        } yield {
+          emailUuidOption map { emailUuid => ("invite",inviteEmailQueue.toEmailAddress,emailUuid) }
+        }
+      }
       case Success(resetPasswordEmailQueue:ResetPasswordEmailQueue) => {
         m_log.debug(s"reset-password[$resetPasswordEmailQueue]")
         for {
-          emailUuidOption <- sendEmailTemplate("reset-password",resetPasswordEmailQueue.toEmailAddress,convertCaseClassToMap(resetPasswordEmailQueue),now)
+          emailUuidOption <- sendEmailTemplate("reset-password",templates,resetPasswordEmailQueue,(convertCaseClassToMap(resetPasswordEmailQueue) - "data") ++ resetPasswordEmailQueue.data.getOrElse(Nil),now)
           result <- emailUuidOption match {
             case Some(emailUuid) => {
-              val mongoFuture = mongoAccessHelper.updateResetPassword(resetPasswordEmailQueue.code,emailUuid,now)
+              val mongoFuture = m_mongoAccessHelper.updateResetPassword(resetPasswordEmailQueue.code,emailUuid,now)
               val postgresFuture = PostgresAccessHelper.updateResetPassword(resetPasswordEmailQueue.code,emailUuid,now)
 
               for {
@@ -209,11 +229,11 @@ object emailer {
     }
   }
 
-  def doProcessCmd(json:String):Unit = {
+  def doProcessCmd(json:String,templates:Map[String,String]):Unit = {
     import scala.concurrent.ExecutionContext.Implicits.global
 
     for {
-      processCmdResult <- processCmd(json)
+      processCmdResult <- processCmd(json,templates)
     } yield {
       processCmdResult match {
         case Some((cmd:String,toEmailAddress:String,emailUuid:java.util.UUID)) => m_log.debug(s"success[$cmd][$toEmailAddress][$emailUuid]")
@@ -223,20 +243,27 @@ object emailer {
   }
 
   def main(args: Array[String]): Unit = {
+    val threadPoolExecutor = new ThreadPoolExecutor(
+                                m_threadPoolSize, m_threadPoolSize,
+                                0L, TimeUnit.SECONDS,
+                                new ArrayBlockingQueue[Runnable](m_threadQueueCapacity) {
+                                  override def offer(e: Runnable) = {
+                                    put(e); // may block if waiting for empty room
+                                    true
+                                  }
+                                }
+                              )
+    val templates:Map[String,String] = m_s3Helper.getS3TextFiles(m_templates) match {
+      case Some(templates) => m_templates.zip(templates).flatMap {
+        case (templateName,Some(templateContent)) => Some((templateName,templateContent))
+        case (templateName,None) => None
+      }.toMap
+      case None => Map.empty
+    }
+
     try {
       val redis = new RedisClient(m_redisHost,m_redisPort,secret = m_redisPassword)
-      implicit val ec = ExecutionContext.fromExecutorService(
-                          new ThreadPoolExecutor(
-                            m_threadPoolSize, m_threadPoolSize,
-                            0L, TimeUnit.SECONDS,
-                            new ArrayBlockingQueue[Runnable](m_threadQueueCapacity) {
-                              override def offer(e: Runnable) = {
-                                put(e); // may block if waiting for empty room
-                                true
-                              }
-                            }
-                          )
-                        )
+      implicit val ec = ExecutionContext.fromExecutorService(threadPoolExecutor)
 
       while (true) {
         val cmd = redis.brpop(1,"email-queue")
@@ -244,16 +271,17 @@ object emailer {
         if (m_useExecutionContext) {
           Future {
             cmd.map({
-              case (name,value) => doProcessCmd(value)
+              case (name,value) => doProcessCmd(value,templates)
             })
           }
         } else {
           cmd.map({
-            case (name,value) => doProcessCmd(value)
+            case (name,value) => doProcessCmd(value,templates)
           })
         }
       }
     } finally {
+      threadPoolExecutor.shutdown()
       PostgresAccessHelper.close()
     }
 

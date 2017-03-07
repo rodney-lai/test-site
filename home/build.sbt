@@ -28,7 +28,7 @@ libraryDependencies ++= Seq(
   "jp.t2v" %% "stackable-controller" % "0.5.1",
   "net.debasishg" %% "redisclient" % "3.3",
   "org.jsoup" % "jsoup" % "1.9.2",
-  "org.mindrot" % "jbcrypt" % "0.3m",
+  "org.mindrot" % "jbcrypt" % "0.4",
   "org.mongodb.scala" % "mongo-scala-driver_2.11" % "1.2.1",
   "org.slf4j" % "slf4j-api" % "1.7.24",
   "io.swagger" % "swagger-play2_2.11" % "1.5.3",
@@ -45,6 +45,8 @@ resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 // Play provides two styles of routers, one expects its actions to be injected, the
 // other, legacy style, accesses its actions statically.
 routesGenerator := InjectedRoutesGenerator
+
+(unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/amazon/s3")
 
 (unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/auth")
 

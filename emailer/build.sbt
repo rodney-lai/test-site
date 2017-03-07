@@ -15,27 +15,30 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.98",
   "net.debasishg" %% "redisclient" % "3.3",
-  "ch.qos.logback" % "logback-classic" % "1.1.7",
-  "ch.qos.logback" % "logback-core" % "1.1.7",
-  "com.typesafe.slick" %% "slick" % "3.2.0-M2",
-  "com.typesafe.slick" %% "slick-hikaricp" % "3.2.0-M2",
-  "com.typesafe.slick" %% "slick-codegen" % "3.2.0-M2",
+  "ch.qos.logback" % "logback-classic" % "1.2.1",
+  "ch.qos.logback" % "logback-core" % "1.2.1",
+  "com.typesafe.slick" %% "slick" % "3.2.0",
+  "com.typesafe.slick" %% "slick-hikaricp" % "3.2.0",
+  "com.typesafe.slick" %% "slick-codegen" % "3.2.0",
   "org.postgresql" % "postgresql" % "9.4.1212",
-  "com.fasterxml.jackson.core" % "jackson-annotations" % "2.8.5",
-  "com.fasterxml.jackson.core" % "jackson-databind" % "2.8.5",
-  "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.8.4",
+  "com.fasterxml.jackson.core" % "jackson-annotations" % "2.8.7",
+  "com.fasterxml.jackson.core" % "jackson-databind" % "2.8.7",
+  "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.8.7",
   "com.google.inject" % "guice" % "4.1.0",
   "com.typesafe" % "config" % "1.3.1",
   "org.apache.commons" % "commons-email" % "1.4",
-  "org.mindrot" % "jbcrypt" % "0.3m",
+  "org.mindrot" % "jbcrypt" % "0.4",
   "org.mongodb.scala" % "mongo-scala-driver_2.11" % "1.2.1",
-  "org.slf4j" % "slf4j-api" % "1.7.21",
+  "org.slf4j" % "slf4j-api" % "1.7.24",
   "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 )
 
 // Uncomment to use Akka
 //libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.3.11"
+
+unmanagedSourceDirectories in Compile += baseDirectory.value / "../lib/com/rodneylai/amazon/s3"
 
 unmanagedSourceDirectories in Compile += baseDirectory.value / "../lib/com/rodneylai/database/common"
 

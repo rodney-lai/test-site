@@ -110,14 +110,18 @@ class UploadController @Inject() (configuration: play.api.Configuration) extends
 
   private def doCalcHistogram(filePath:String):String = {
     val mat = opencv_imgcodecs.imread(filePath)
+    val histogram:String = calcHistogram(mat)
 
-    calcHistogram(mat)
+    mat.release()
+    histogram
   }
 
   private def doCalcHistogram(buffer:akka.util.ByteString):String = {
     val mat = opencv_imgcodecs.imdecode(new Mat(buffer.toArray,true),opencv_imgcodecs.CV_LOAD_IMAGE_UNCHANGED)
+    val histogram:String = calcHistogram(mat)
 
-    calcHistogram(mat)
+    mat.release()
+    histogram
   }
 
   private def putHistogram( s3Client:AmazonS3,
@@ -188,6 +192,13 @@ class UploadController @Inject() (configuration: play.api.Configuration) extends
             m_log.info(s"minutes = $minutes")
             m_log.info(s"seconds = $seconds")
             m_log.info(s"milliseconds = $milliseconds")
+            val mb = 1024*1024
+            val runtime = Runtime.getRuntime
+            m_log.info("memory")
+            m_log.info(s" used = ${(runtime.totalMemory - runtime.freeMemory) / mb}mb")
+            m_log.info(s" free = ${runtime.freeMemory / mb}mb")
+            m_log.info(s" total = ${runtime.totalMemory / mb}mb")
+            m_log.info(s" max = ${runtime.maxMemory / mb}mb")
             request.body match {
               case AnyContentAsMultipartFormData(mdf) => {
                 mdf.file("my_file").map { myFile =>
