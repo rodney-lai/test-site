@@ -19,7 +19,7 @@
 
 package controllers
 
-import play.api._
+import play.api.Configuration
 import play.api.mvc._
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global

@@ -1,10 +1,10 @@
 name := """rodney-test-site-upload"""
 
-version := "0.8.2"
+version := "0.8.3"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.11.12"
 
 scalacOptions ++= Seq(
   "-Xlint",
@@ -55,10 +55,10 @@ val platform = {
 }
 
 libraryDependencies ++= Seq(
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.98",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.773",
   "com.typesafe.play" %% "play-mailer" % "5.0.0",
-  "ch.qos.logback" % "logback-classic" % "1.2.1",
-  "ch.qos.logback" % "logback-core" % "1.2.1",
+  "ch.qos.logback" % "logback-classic" % "1.2.3",
+  "ch.qos.logback" % "logback-core" % "1.2.3",
   "io.swagger" % "swagger-play2_2.11" % "1.5.3",
   "org.bytedeco" % "javacv" % javacvVersion excludeAll(
     ExclusionRule(organization = "org.bytedeco.javacpp-presets"),
@@ -67,7 +67,7 @@ libraryDependencies ++= Seq(
   "org.bytedeco.javacpp-presets" % "opencv"  % ("3.1.0-" + javacppVersion) classifier "",
   "org.bytedeco.javacpp-presets" % "opencv"  % ("3.1.0-" + javacppVersion) classifier platform,
   "org.bytedeco" % "javacpp" % javacppVersion,
-  "org.slf4j" % "slf4j-api" % "1.7.24",
+  "org.slf4j" % "slf4j-api" % "1.7.30",
   jdbc,
   cache,
   ws,
@@ -76,10 +76,10 @@ libraryDependencies ++= Seq(
 
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 
-(unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/stub/auth")
+(unmanagedSourceDirectories in Compile) += baseDirectory.value / "../lib/com/rodneylai/stub/auth"
 
-(unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/stub/database")
+(unmanagedSourceDirectories in Compile) += baseDirectory.value / "../lib/com/rodneylai/stub/database"
 
-(unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/util/common")
+(unmanagedSourceDirectories in Compile) += baseDirectory.value / "../lib/com/rodneylai/util/common"
 
-(unmanagedSourceDirectories in Compile) <+= baseDirectory(_ / "../lib/com/rodneylai/util/play")
+(unmanagedSourceDirectories in Compile) += baseDirectory.value / "../lib/com/rodneylai/util/play"

@@ -1,4 +1,4 @@
-Rodney's Test Site Image Upload Service v0.8.2
+Rodney's Test Site Image Upload Service v0.8.3
 ==============================================
 
 rlai [ at ] irismedia [ dot ] com
@@ -12,8 +12,8 @@ or authorization.
 Server Technology
 -----------------
 
-* Web Framework - [Play Framework v2.5.12](https://playframework.com/)
-* Language - [Scala v2.11.8](http://scala-lang.org/)
+* Web Framework - [Play Framework v2.5.19](https://playframework.com/)
+* Language - [Scala v2.11.12](http://scala-lang.org/)
 
 Build, Deploy, Hosting
 ----------------------

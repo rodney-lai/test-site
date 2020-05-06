@@ -1,9 +1,9 @@
-FROM        ubuntu:16.04
+FROM        ubuntu:20.04
 
 MAINTAINER  Rodney Lai <rlai@irismedia.com>
 
 ENV         ACTIVATOR_VERSION 1.3.6
-ENV         SBT_VERSION 0.13.12
+ENV         SBT_VERSION 0.13.15
 ENV         DEBIAN_FRONTEND noninteractive
 
 RUN         apt-get update

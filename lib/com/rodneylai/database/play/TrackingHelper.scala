@@ -78,17 +78,17 @@ class TrackingHelper @Inject() (mongoHelper:MongoHelper,trackingActionDao:Tracki
           for {
             collection <- trackingEventDao.collectionFuture
             trackingCountResult0 <- if ((trackingAction.actionType == "page_not_found") || (trackingAction.actionType == "invalid_post")) {
-              collection.count(
+              collection.countDocuments(
                 and(
                   equal("ActionUuid", MongoHelper.toStandardBinaryUUID(trackingAction.actionUuid)),
                   gt("CreateDate", dateLongOffset.getTime)
                 )
               ).toFuture
             } else {
-              Future.successful(Nil)
+              Future.successful(0L)
             }
             trackingCountResult1 <- if ((trackingAction.actionType == "page_not_found") || (trackingAction.actionType == "invalid_post")) {
-              collection.count(
+              collection.countDocuments(
                 and(
                   equal("ActionType",trackingAction.actionType),
                   equal("IpAddress", ipAddress),
@@ -96,7 +96,7 @@ class TrackingHelper @Inject() (mongoHelper:MongoHelper,trackingActionDao:Tracki
                 )
               ).toFuture
             } else {
-              Future.successful(Nil)
+              Future.successful(0L)
             }
             insertResult <- collection.insertOne(trackingEventDao.toBson(
               TrackingEvent(
@@ -124,10 +124,7 @@ class TrackingHelper @Inject() (mongoHelper:MongoHelper,trackingActionDao:Tracki
               )
             )).toFuture
           } yield {
-            List(trackingCountResult0.headOption,trackingCountResult1.headOption).flatten match {
-              case Nil => None
-              case xs => LongOption(xs.max)
-            }
+            LongOption(List(trackingCountResult0,trackingCountResult1).max)
           }
         }
         case _ => Future.successful(None)

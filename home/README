@@ -1,11 +1,15 @@
-Rodney's Test Site v0.8.2
+Rodney's Test Site v0.8.3
 =========================
 
 rlai [ at ] irismedia [ dot ] com
 
 [GitHub Repository](https://github.com/rodney-lai)
 
+[BitBucket Repository](https://bitbucket.org/rodney-lai)
+
 [DockerHub Repository](https://hub.docker.com/u/rodneylai/)
+
+[Quay Docker Repository](https://quay.io/user/rodney-lai)
 
 Features
 --------
@@ -22,8 +26,8 @@ Features
 Server Technology
 -----------------
 
-* Web Framework - [Play Framework v2.5.12](https://playframework.com/)
-* Language - [Scala v2.11.8](http://scala-lang.org/)
+* Web Framework - [Play Framework v2.5.19](https://playframework.com/)
+* Language - [Scala v2.11.12](http://scala-lang.org/)
 * NoSQL Database - [MongoDB](https://www.mongodb.org/)
 * Data Cache - [Memcached](http://memcached.org/)
 * Data Structure Store - [Redis](https://redis.io/)

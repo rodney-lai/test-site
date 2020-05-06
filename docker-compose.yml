@@ -1,0 +1,37 @@
+version: '3'
+services:
+  memcached:
+    image: memcached
+    restart: always
+    ports:
+      - 11211:11211
+  redis:
+    image: redis
+    restart: always
+    volumes:
+      - ./docker-volumes/redis:/data
+    ports:
+      - 6379:6379
+  mongo:
+    image: mongo
+    restart: always
+    volumes:
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ./docker-volumes/mongo:/data/db
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: rodneylai-test-admin
+      MONGO_INITDB_ROOT_PASSWORD: rodneylai-test-admin
+      MONGO_INITDB_DATABASE: rodneylai-test
+  postgres:
+    image: postgres
+    restart: always
+    volumes:
+      - ./docker-volumes/postgres:/var/lib/postgresql/data/
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: rodneylai-test-admin
+      POSTGRES_PASSWORD: rodneylai-test-admin
+      POSTGRES_DB: rodneylai-test

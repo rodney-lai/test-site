@@ -1,4 +1,4 @@
-Rodney's Test Site v0.8.2
+Rodney's Test Site v0.8.3
 =========================
 
 [![Build Status](https://travis-ci.org/rodney-lai/test-site.svg?branch=master)](https://travis-ci.org/rodney-lai/test-site)
@@ -9,7 +9,11 @@ rlai [ at ] irismedia [ dot ] com
 
 [GitHub Repository](https://github.com/rodney-lai)
 
+[BitBucket Repository](https://bitbucket.org/rodney-lai)
+
 [DockerHub Repository](https://hub.docker.com/u/rodneylai/)
+
+[Quay Docker Repository](https://quay.io/user/rodney-lai)
 
 Features
 --------
@@ -61,6 +65,9 @@ To run the 'emailer' project
 set work directory to /home/play-user/deploy-emailer/bin
 and entrypoint to  ./emailer
 
+There is a docker compose file to startup a local memcached,
+redis, postgres and mongodb.
+
 Environment Variables:
 
 PLAY_TEST_PASSWORD - password for test user accounts (required for ALL builds)  
@@ -73,7 +80,7 @@ MONGO_PORT - mongo port
 MONGO_USERNAME - mongo user name  
 MONGO_PASSWORD - mongo user password  
 MONGO_DATABASE - mongo database name  
-MONGO_AUTHMECHANISM - mongo auth mechanism [ MONGODB-CR or SCRAM-SHA-1 ]  
+MONGO_AUTHMECHANISM - mongo auth mechanism [ SCRAM-SHA-1 or SCRAM-SHA-256 ]  
 
 Environment Variables for MemCached:
 
@@ -99,8 +106,8 @@ EMAIL_FROM_NAME - from email name
 Server Technology
 -----------------
 
-* Web Framework - [Play Framework v2.5.12](https://playframework.com/)
-* Language - [Scala v2.11.8](http://scala-lang.org/)
+* Web Framework - [Play Framework v2.5.19](https://playframework.com/)
+* Language - [Scala v2.11.12](http://scala-lang.org/)
 * NoSQL Database - [MongoDB](https://www.mongodb.org/)
 * Data Cache - [Memcached](http://memcached.org/)
 * Data Structure Store - [Redis](https://redis.io/)
@@ -144,7 +151,7 @@ Tools
 * Mongo GUI Client - [MongoChef](http://3t.io/)
 * Redis GUI Client - [Redis Desktop Manager](https://redisdesktop.com/)
 
-Copyright (c) 2015-2017 Rodney S.K. Lai
+Copyright (c) 2015-2020 Rodney S.K. Lai
 
 Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
 

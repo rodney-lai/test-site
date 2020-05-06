@@ -24,6 +24,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import javax.inject.{Inject,Singleton}
 import com.google.inject.AbstractModule
+import com.mongodb.Block
 import org.mongodb.scala._
 import org.mongodb.scala.bson.{BsonBinary,BsonBoolean,BsonDouble,BsonInt32,BsonString}
 import org.mongodb.scala.connection._
@@ -95,17 +96,34 @@ class MongoHelper @Inject() (configHelper:ConfigHelper) {
   private val       m_password:String = configHelper.getString("mongo.password").getOrElse("")
   private val       m_authMechanism:String = configHelper.getString("mongo.authmechanism").getOrElse("MONGODB-CR")
   private lazy val  m_server:ServerAddress = new ServerAddress(m_host, m_port)
-  private lazy val  m_clusterSettings:ClusterSettings = ClusterSettings.builder().hosts(List(m_server).asJava).build()
-  private lazy val  m_mongoCRCredentials:MongoCredential = MongoCredential.createMongoCRCredential(m_userName, m_database, m_password.toCharArray)
   private lazy val  m_scramSha1Credentials:MongoCredential = MongoCredential.createScramSha1Credential(m_userName, m_database, m_password.toCharArray)
-  private lazy val  m_credentials:Map[String,MongoCredential] = Map("MONGODB-CR" -> m_mongoCRCredentials, "SCRAM-SHA-1" -> m_scramSha1Credentials)
+  private lazy val  m_scramSha256Credentials:MongoCredential = MongoCredential.createScramSha256Credential(m_userName, m_database, m_password.toCharArray)
+  private lazy val  m_credentials:Map[String,MongoCredential] = Map(
+    "SCRAM-SHA-1" -> m_scramSha1Credentials,
+    "SCRAM-SHA-256" -> m_scramSha256Credentials
+  )
   private lazy val  m_mongoClient:MongoClient = {
                       if ((m_userName.isEmpty) || (m_password.isEmpty)) {
-                        val m_settings:MongoClientSettings = MongoClientSettings.builder().clusterSettings(m_clusterSettings).build()
+                        val m_settings:MongoClientSettings = MongoClientSettings.builder()
+                          .applyToClusterSettings(
+                            new Block[ClusterSettings.Builder]() {
+                              override def apply(builder: ClusterSettings.Builder): Unit = builder.hosts(List(m_server).asJava)
+                            }
+                          )
+                          .retryWrites(false)
+                          .build()
 
                         MongoClient(m_settings)
                       } else {
-                        val m_settings:MongoClientSettings = MongoClientSettings.builder().clusterSettings(m_clusterSettings).credentialList(List(m_credentials.getOrElse(m_authMechanism,m_mongoCRCredentials)).asJava).build()
+                        val m_settings:MongoClientSettings = MongoClientSettings.builder()
+                          .applyToClusterSettings(
+                            new Block[ClusterSettings.Builder]() {
+                              override def apply(builder: ClusterSettings.Builder): Unit = builder.hosts(List(m_server).asJava)
+                            }
+                          )
+                          .credential(m_credentials.getOrElse(m_authMechanism,m_scramSha1Credentials))
+                          .retryWrites(false)
+                          .build()
 
                         MongoClient(m_settings)
                       }
@@ -139,22 +157,17 @@ class MongoHelper @Inject() (configHelper:ConfigHelper) {
       for {
         result <- m_mongoDatabase.runCommand(Document("dbStats" -> 1 )).toFuture
       } yield {
-        result.headOption match {
-          case Some(document) => {
-            Some(document.map({
-              case (key,value) => {
-                key -> { value match {
-                  case stringValue:BsonString => stringValue.getValue
-                  case booleanValue:BsonBoolean => booleanValue.getValue.toString
-                  case int32Value:BsonInt32 => int32Value.getValue.toString
-                  case doubleValue:BsonDouble => doubleValue.getValue.toString
-                  case _ => value.toString
-                } }
-              }
-            }).toSeq.sortBy(_._1))
+        Some((result map {
+          case (key,value) => {
+            key -> { value match {
+              case stringValue:BsonString => stringValue.getValue
+              case booleanValue:BsonBoolean => booleanValue.getValue.toString
+              case int32Value:BsonInt32 => int32Value.getValue.toString
+              case doubleValue:BsonDouble => doubleValue.getValue.toString
+              case _ => value.toString
+            } }
           }
-          case None => None
-        }
+        }).toSeq.sortBy(_._1))
       }
     } else {
       Future.successful(None)
@@ -166,22 +179,17 @@ class MongoHelper @Inject() (configHelper:ConfigHelper) {
       for {
         result <- m_mongoDatabase.runCommand(Document("collStats" -> collectionName )).toFuture
       } yield {
-        result.headOption match {
-          case Some(document) => {
-            Some(document.map({
-              case (key,value) => {
-                key -> { value match {
-                  case stringValue:BsonString => stringValue.getValue
-                  case booleanValue:BsonBoolean => booleanValue.getValue.toString
-                  case int32Value:BsonInt32 => int32Value.getValue.toString
-                  case doubleValue:BsonDouble => doubleValue.getValue.toString
-                  case _ => value.toString
-                } }
-              }
-            }).toSeq.sortBy(_._1))
+        Some((result map {
+          case (key,value) => {
+            key -> { value match {
+              case stringValue:BsonString => stringValue.getValue
+              case booleanValue:BsonBoolean => booleanValue.getValue.toString
+              case int32Value:BsonInt32 => int32Value.getValue.toString
+              case doubleValue:BsonDouble => doubleValue.getValue.toString
+              case _ => value.toString
+            } }
           }
-          case None => None
-        }
+        }).toSeq.sortBy(_._1))
       }
     } else {
       Future.successful(None)

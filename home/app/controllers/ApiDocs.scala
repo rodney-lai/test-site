@@ -19,7 +19,7 @@
 
 package controllers
 
-import play.api._
+import play.api.Mode
 import play.api.mvc._
 import javax.inject.Inject
 import be.objectify.deadbolt.scala.{ActionBuilders,DeadboltActions}

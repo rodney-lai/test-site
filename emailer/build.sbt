@@ -1,8 +1,8 @@
 name := """emailer"""
 
-version := "v0.8.2"
+version := "v0.8.3"
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.11.12"
 
 mainClass in assembly := Some("com.rodneylai.emailer")
 
@@ -15,23 +15,23 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.98",
-  "net.debasishg" %% "redisclient" % "3.3",
-  "ch.qos.logback" % "logback-classic" % "1.2.1",
-  "ch.qos.logback" % "logback-core" % "1.2.1",
-  "com.typesafe.slick" %% "slick" % "3.2.0",
-  "com.typesafe.slick" %% "slick-hikaricp" % "3.2.0",
-  "com.typesafe.slick" %% "slick-codegen" % "3.2.0",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.773",
+  "net.debasishg" %% "redisclient" % "3.6",
+  "ch.qos.logback" % "logback-classic" % "1.2.3",
+  "ch.qos.logback" % "logback-core" % "1.2.3",
+  "com.typesafe.slick" %% "slick" % "3.2.3",
+  "com.typesafe.slick" %% "slick-hikaricp" % "3.2.3",
+  "com.typesafe.slick" %% "slick-codegen" % "3.2.3",
   "org.postgresql" % "postgresql" % "9.4.1212",
-  "com.fasterxml.jackson.core" % "jackson-annotations" % "2.8.7",
-  "com.fasterxml.jackson.core" % "jackson-databind" % "2.8.7",
-  "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.8.7",
+  "com.fasterxml.jackson.core" % "jackson-annotations" % "2.9.5",
+  "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.5",
+  "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.9.5",
   "com.google.inject" % "guice" % "4.1.0",
-  "com.typesafe" % "config" % "1.3.1",
-  "org.apache.commons" % "commons-email" % "1.4",
+  "com.typesafe" % "config" % "1.3.3",
+  "org.apache.commons" % "commons-email" % "1.5",
   "org.mindrot" % "jbcrypt" % "0.4",
-  "org.mongodb.scala" % "mongo-scala-driver_2.11" % "1.2.1",
-  "org.slf4j" % "slf4j-api" % "1.7.24",
+  "org.mongodb.scala" %% "mongo-scala-driver" % "4.0.2",
+  "org.slf4j" % "slf4j-api" % "1.7.30",
   "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 )
 

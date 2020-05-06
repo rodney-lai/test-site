@@ -40,7 +40,7 @@ class home @Inject() (override val environment:play.api.Environment,override val
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
   private def scrapeImages(url:String,prefixUrl:String,excludeUrlList:Seq[String],list:Seq[String]):Seq[String] = {
-    Try(Jsoup.connect(url).validateTLSCertificates(false).get) match {
+    Try(Jsoup.connect(url).get) match {
       case Success(doc:Document) => {
         val linkList:Seq[String] = doc.select("a[href]").iterator().asScala.toSeq.map(_.attr("abs:href")).filter(linkUrl => linkUrl.startsWith(prefixUrl)).filter(linkUrl => !excludeUrlList.contains(linkUrl))
 

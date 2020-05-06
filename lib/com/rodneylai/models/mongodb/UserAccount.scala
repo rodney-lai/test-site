@@ -217,7 +217,7 @@ class UserAccountDao @Inject() (testAccountHelper:TestAccountHelper,mongoHelper:
       "EmailAddressLowerCase" -> userAccount.emailAddressLowerCase,
       "Name" -> userAccount.name,
       "FriendlyUrl" -> userAccount.friendlyUrl,
-      "RoleList" -> BsonArray(userAccount.roleList.map(BsonString(_)).toSeq),
+      "RoleList" -> BsonArray.fromIterable(userAccount.roleList.map(BsonString(_)).toSeq),
       "Status" -> userAccount.status,
       "UpdateDate" -> userAccount.updateDate,
       "CreateDate" -> userAccount.createDate
