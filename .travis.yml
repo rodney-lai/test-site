@@ -4,6 +4,7 @@ scala:
 branches:
   only:
     - master
+dist: trusty
 jdk:
   - oraclejdk8
 before_script: cd home
