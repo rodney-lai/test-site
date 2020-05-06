@@ -1,6 +1,8 @@
 Rodney's Test Site v0.8.3
 =========================
 
+[![Build Status](https://travis-ci.org/rodney-lai/test-site.svg?branch=master)](https://travis-ci.org/rodney-lai/test-site)
+
 rlai [ at ] irismedia [ dot ] com
 
 [Live Test Site](http://test.rodneylai.com)
