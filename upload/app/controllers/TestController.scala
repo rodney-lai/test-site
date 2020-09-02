@@ -19,7 +19,6 @@
 
 package controllers
 
-import play.api._
 import play.api.mvc._
 import javax.inject._
 import io.swagger.annotations._
@@ -28,23 +27,29 @@ import com.rodneylai.util._
 
 @Singleton
 @Api(value = "test", description = "test services")
-class TestController @Inject() (configuration: play.api.Configuration,infoHelper:InfoHelper) extends Controller {
+class TestController @Inject() (
+  configuration: play.api.Configuration,
+  infoHelper:InfoHelper,
+  cc: ControllerComponents
+) extends AbstractController(cc) {
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
-  @ApiOperation(value = "throw exception", nickname="throw_exception", httpMethod = "GET")
-  def throw_exception = Action { implicit request =>
+  m_log.debug("init")
+
+  @ApiOperation(value = "throw exception", nickname = "throw_exception", httpMethod = "GET")
+  def throw_exception = Action {
     val x:Integer = 10
     val y:Integer = 0
     val z:Integer = x/y
-    Ok
+    Ok(z.toString)
   }
 
-  @ApiOperation(value = "test value", nickname="test_val", httpMethod = "GET")
+  @ApiOperation(value = "test value", nickname = "test_val", httpMethod = "GET")
   def test_val(x:Integer) = Action {
     Ok
   }
 
-  @ApiOperation(value = "build date", nickname="build_date", httpMethod = "GET")
+  @ApiOperation(value = "build date", nickname = "build_date", httpMethod = "GET")
   def build_date = Action {
     infoHelper.getBuildDate match {
       case Some(buildDate) => Ok(buildDate)

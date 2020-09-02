@@ -1,10 +1,12 @@
 name := """rodney-test-site-upload"""
 
-version := "0.8.3"
+maintainer := "rlai@irismedia.com"
+
+version := "0.8.4"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-scalaVersion := "2.11.12"
+scalaVersion := "2.12.12"
 
 scalacOptions ++= Seq(
   "-Xlint",
@@ -14,13 +16,17 @@ scalacOptions ++= Seq(
   "-Xfatal-warnings"
 )
 
+// hack to suppress unused import errors/warnings
+routesImport := Seq.empty
+TwirlKeys.templateImports := Seq.empty
+
 javaOptions in Universal ++= Seq(
   "-Dpidfile.path=/dev/null"
 )
 
-val javacvVersion = "1.3"
+val javacvVersion = "1.4.3"
 
-val javacppVersion = "1.3"
+val javacppVersion = "1.4.3"
 
 // Determine current platform
 val platform = {
@@ -55,26 +61,27 @@ val platform = {
 }
 
 libraryDependencies ++= Seq(
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.773",
-  "com.typesafe.play" %% "play-mailer" % "5.0.0",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.851",
+  "com.typesafe.play" %% "play-mailer-guice" % "7.0.2",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "ch.qos.logback" % "logback-core" % "1.2.3",
-  "io.swagger" % "swagger-play2_2.11" % "1.5.3",
+  "io.swagger" %% "swagger-play2" % "1.7.1",
   "org.bytedeco" % "javacv" % javacvVersion excludeAll(
     ExclusionRule(organization = "org.bytedeco.javacpp-presets"),
     ExclusionRule(organization = "org.bytedeco.javacpp")
     ),
-  "org.bytedeco.javacpp-presets" % "opencv"  % ("3.1.0-" + javacppVersion) classifier "",
-  "org.bytedeco.javacpp-presets" % "opencv"  % ("3.1.0-" + javacppVersion) classifier platform,
+  "org.bytedeco.javacpp-presets" % "opencv"  % ("3.4.3-" + javacppVersion) classifier "",
+  "org.bytedeco.javacpp-presets" % "opencv"  % ("3.4.3-" + javacppVersion) classifier platform,
   "org.bytedeco" % "javacpp" % javacppVersion,
   "org.slf4j" % "slf4j-api" % "1.7.30",
   jdbc,
-  cache,
+  ehcache,
+  guice,
   ws,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
+  "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % Test
 )
 
-resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
+resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
 
 (unmanagedSourceDirectories in Compile) += baseDirectory.value / "../lib/com/rodneylai/stub/auth"
 
@@ -82,4 +89,8 @@ resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 
 (unmanagedSourceDirectories in Compile) += baseDirectory.value / "../lib/com/rodneylai/util/common"
 
+(unmanagedSourceDirectories in Compile) += baseDirectory.value / "../lib/com/rodneylai/util" / ("scala_" + scalaBinaryVersion.value)
+
 (unmanagedSourceDirectories in Compile) += baseDirectory.value / "../lib/com/rodneylai/util/play"
+
+(unmanagedSourceDirectories in Compile) += baseDirectory.value / "../lib/com/rodneylai/util/play_2.x"

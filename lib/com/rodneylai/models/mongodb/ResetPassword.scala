@@ -30,7 +30,6 @@ import org.mongodb.scala.bson.{BsonBinary,BsonDateTime,BsonObjectId,BsonString}
 import org.mongodb.scala.model.{IndexModel,IndexOptions}
 import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.database._
-import com.rodneylai.util._
 
 case class ResetPassword (
   codeUuid: java.util.UUID,
@@ -54,7 +53,7 @@ class ResetPasswordDao @Inject() (mongoHelper:MongoHelper) {
         Seq(
           IndexModel(Document("CodeUuid" -> 1), (new IndexOptions).name("ResetPassword_CodeUuid").unique(true))
         )
-      ).toFuture
+      ).toFuture()
     } yield {
       m_log.trace(s"createIndexes[$createIndexesResult]")
       collection
@@ -93,7 +92,7 @@ class ResetPasswordDao @Inject() (mongoHelper:MongoHelper) {
 }
 
 class ResetPasswordDaoModule extends AbstractModule {
-  def configure() = {
+  override def configure() = {
     bind(classOf[ResetPasswordDao]).asEagerSingleton
   }
 }

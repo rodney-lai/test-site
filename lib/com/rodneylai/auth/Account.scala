@@ -45,7 +45,7 @@ class AccountDao @Inject() (userAccountDao:UserAccountDao) {
 }
 
 class AccountDaoModule extends AbstractModule {
-  def configure() = {
+  override def configure() = {
     bind(classOf[AccountDao]).asEagerSingleton
   }
 }

@@ -19,14 +19,11 @@
 
 package com.rodneylai
 
-import scala.io._
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await,ExecutionContext,Future}
-import scala.reflect.runtime.universe._
+import scala.concurrent.{ExecutionContext,Future}
 import scala.util.{Failure,Success,Try}
-import java.util.{Calendar,Date}
+import java.util.Calendar
 import java.util.concurrent.{ArrayBlockingQueue,ThreadPoolExecutor,TimeUnit}
-import com.fasterxml.jackson.annotation.{JsonTypeInfo,JsonSubTypes,JsonProperty}
+import com.fasterxml.jackson.annotation.{JsonTypeInfo,JsonSubTypes}
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.databind.{DeserializationFeature,ObjectMapper}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -86,6 +83,7 @@ object emailer {
   private val m_emailPasswordOption:Option[String] = m_configHelper.getString("email.password")
   private val m_emailFromEmailOption:Option[String] = m_configHelper.getString("email.from.email")
   private val m_emailFromNameOption:Option[String] = m_configHelper.getString("email.from.name")
+  private val m_emailToStartupOption:Option[String] = m_configHelper.getString("email.to.startup")
 
   private val m_threadPoolSize:Int = m_configHelper.getInt("thread.pool.size").getOrElse(10)
   private val m_threadQueueCapacity:Int = m_configHelper.getInt("thread.queue.capacity").getOrElse(50)
@@ -100,6 +98,51 @@ object emailer {
   private def getEmailTemplateNames(emailType:String) = Array(s"$emailType-subject.txt",s"$emailType.txt",s"$emailType.html")
 
   private val m_templates:Array[String] = getEmailTemplateNames("invite") ++ getEmailTemplateNames("reset-password")
+
+  private def getInfo(): String = {
+    val buildDate = Try(io.Source.fromFile("./BUILD_DATE").getLines.mkString("\n")) match {
+      case Success(result) => result
+      case Failure(ex) => "unknown"
+    }
+    val scalaVersion = scala.util.Properties.versionNumberString
+    val machineName = java.net.InetAddress.getLocalHost.getHostName
+    val machineIp = java.net.InetAddress.getLocalHost.getHostAddress
+
+    s"BuildDate: $buildDate\nScalaVersion: $scalaVersion\nMachineName: $machineName\nMachineIp: $machineIp"
+  }
+
+  private def sendStartupEmail(): Boolean = {
+    (m_emailHostOption, m_emailToStartupOption) match {
+      case (Some(emailHost), Some(emailToStartup)) =>
+        val email = new SimpleEmail()
+
+        email.setHostName(emailHost)
+        email.setSmtpPort(m_emailPort)
+        (m_emailUserNameOption,m_emailPasswordOption) match {
+          case (Some(emailUserName),Some(emailPassword)) =>
+            email.setAuthenticator(new DefaultAuthenticator(emailUserName, emailPassword))
+          case _ =>
+        }
+        email.setSSLOnConnect(true)
+        m_emailFromEmailOption.map { emailFromEmail =>
+          email.setFrom(emailFromEmail)
+        }
+        email.setSubject("Emailer Startup")
+        email.setMsg(getInfo())
+        email.addTo(emailToStartup)
+        email.setDebug(true)
+        Try(email.send()) match {
+          case Success(result) =>
+            true
+          case Failure(ex) =>
+            m_log.error(s"sendStartupEmail[send_failed]",ex)
+            false
+        }
+      case _ =>
+        m_log.error(s"sendStartupEmail[not_configured]")
+        false
+    }
+  }
 
   private def sendEmail(emailQueue:EmailQueue,emailType:String,subjectEmailTemplateOption:Option[String],txtEmailTemplateOption:Option[String],htmlEmailTemplateOption:Option[String],values:Map[String,Any],now:java.util.Date):Future[Option[java.util.UUID]] = {
     import scala.concurrent.ExecutionContext.Implicits.global
@@ -137,7 +180,7 @@ object emailer {
           } else if (txtEmailContentOption.isDefined) {
             txtEmailContentOption.map { email.setMsg(_) }
           }
-          email.addTo(emailQueue.toEmailAddress);
+          email.addTo(emailQueue.toEmailAddress)
           email.setDebug(true)
           Try(email.send()) match {
             case Success(result) => {
@@ -176,7 +219,7 @@ object emailer {
   private def readResourceFile(resourcePath: String): Option[String] = {
     Option(getClass.getResourceAsStream(resourcePath))
       .map(scala.io.Source.fromInputStream)
-      .map(_.getLines.toList.mkString("\n"))
+      .map(_.getLines().toList.mkString("\n"))
   }
 
   private def processCmd(json:String,templates:Map[String,String]):Future[Option[(String,String,java.util.UUID)]] = {
@@ -265,6 +308,7 @@ object emailer {
       val redis = new RedisClient(m_redisHost,m_redisPort,secret = m_redisPassword)
       implicit val ec = ExecutionContext.fromExecutorService(threadPoolExecutor)
 
+      sendStartupEmail()
       while (true) {
         val cmd = redis.brpop(1,"email-queue")
 

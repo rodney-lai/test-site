@@ -45,7 +45,7 @@ import com.rodneylai.stackc.DevModeDelay
 import com.rodneylai.util._
 
 @ApiModel("UserModel")
-case class UserModel( @ApiModelProperty(position=1,value="friendly_url",required=true)id: String,
+case class UserModel( @ApiModelProperty(position=1,value = "friendly_url",required=true)id: String,
                       @ApiModelProperty(position=2,required=true)email: String,
                       @ApiModelProperty(position=3,required=true)name: String,
                       @ApiModelProperty(position=4,required=true)roles: Set[String],
@@ -68,7 +68,7 @@ class users @Inject() (override val environment:play.api.Environment,override va
     Future.successful(Forbidden(Json.toJson("kick")))
   }
 
-  @ApiOperation(value = "save", notes = "returns status", nickname="save", response = classOf[String], httpMethod = "PUT")
+  @ApiOperation(value = "save", notes = "returns status", nickname = "save", response = classOf[String], httpMethod = "PUT")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(value = "user", required = true, dataType = "controllers.services.admin.UserModel", paramType = "body")))
   def save(@ApiParam(value = "friendly_url", required = true) friendlyUrl:String) =
@@ -111,7 +111,7 @@ class users @Inject() (override val environment:play.api.Environment,override va
     }.apply(request)
   }
 
-  @ApiOperation(value = "get", notes = "returns value", nickname="get", response = classOf[UserModel], httpMethod = "GET")
+  @ApiOperation(value = "get", notes = "returns value", nickname = "get", response = classOf[UserModel], httpMethod = "GET")
   def get(@ApiParam(value = "filter", required = false) filter:String,
           @ApiParam(value = "skip", required = false) skip:Int) =
     AsyncStack(AuthorityKey -> Role.Administrator,EnvironmentKey -> environment) { implicit request =>

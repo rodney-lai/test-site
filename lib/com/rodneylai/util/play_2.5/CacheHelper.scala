@@ -1,6 +1,6 @@
 /**
  *
- * Copyright (c) 2015-2017 Rodney S.K. Lai
+ * Copyright (c) 2015-2020 Rodney S.K. Lai
  * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
@@ -19,23 +19,27 @@
 
 package com.rodneylai.util
 
-import play.api.{Configuration,Environment}
 import javax.inject.{Inject,Singleton}
 import com.google.inject.AbstractModule
 import org.slf4j.{Logger,LoggerFactory}
+import scala.concurrent.duration.Duration
 
 @Singleton
-class ConfigHelper @Inject() (configuration:Configuration)
-{
+class CacheHelper @Inject() (
+  cache:play.api.cache.CacheApi
+) {
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
-  def getString(name:String):Option[String] = configuration.getString(name)
-  def getInt(name:String):Option[Int] = configuration.getInt(name)
-  def getBoolean(name:String):Option[Boolean] = configuration.getBoolean(name)
+  m_log.debug("init")
+
+  def get[T](key: String): Option[T] = cache.get(key)
+  def set(key: String, value: Any, expiration: Duration = Duration.Inf): Unit = {
+    cache.set(key, value, expiration)
+  }
 }
 
-class ConfigHelperModule extends AbstractModule {
-  def configure() = {
+class CacheHelperModule extends AbstractModule {
+  override def configure() = {
     bind(classOf[ConfigHelper]).asEagerSingleton
   }
 }

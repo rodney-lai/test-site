@@ -19,7 +19,6 @@
 
 package com.rodneylai.models.mongodb
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure,Success,Try}
 import javax.inject.{Inject,Singleton}
@@ -29,7 +28,6 @@ import org.mongodb.scala._
 import org.mongodb.scala.bson.{BsonBinary,BsonDateTime,BsonObjectId,BsonString}
 import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.database._
-import com.rodneylai.util._
 
 case class TrackingEvent (
   trackingUuid: java.util.UUID,
@@ -93,7 +91,7 @@ class TrackingEventDao @Inject() (mongoHelper:MongoHelper) {
 }
 
 class TrackingEventDaoModule extends AbstractModule {
-  def configure() = {
+  override def configure() = {
     bind(classOf[TrackingEventDao]).asEagerSingleton
   }
 }

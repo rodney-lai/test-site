@@ -30,7 +30,6 @@ import org.mongodb.scala.bson.{BsonBinary,BsonDateTime,BsonObjectId,BsonString}
 import org.mongodb.scala.model.{IndexModel,IndexOptions}
 import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.database._
-import com.rodneylai.util._
 
 case class MessageLog (
   messageUuid: java.util.UUID,
@@ -53,7 +52,7 @@ class MessageLogDao @Inject() (mongoHelper:MongoHelper) {
         Seq(
           IndexModel(Document("MessageUuid" -> 1), (new IndexOptions).name("MessageLog_MessageUuid").unique(true))
         )
-      ).toFuture
+      ).toFuture()
     } yield {
       m_log.trace(s"createIndexes[$createIndexesResult]")
       collection
@@ -90,7 +89,7 @@ class MessageLogDao @Inject() (mongoHelper:MongoHelper) {
 }
 
 class MessageLogDaoModule extends AbstractModule {
-  def configure() = {
+  override def configure() = {
     bind(classOf[MessageLogDao]).asEagerSingleton
   }
 }

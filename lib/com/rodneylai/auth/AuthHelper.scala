@@ -99,7 +99,7 @@ class AuthHelper @Inject() (override val environment:Environment,override val co
 }
 
 class AuthHelperModule extends AbstractModule {
-  def configure() = {
+  override def configure() = {
     bind(classOf[AuthHelper]).asEagerSingleton
   }
 }

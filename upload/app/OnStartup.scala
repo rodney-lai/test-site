@@ -18,24 +18,20 @@
  */
 
 import play.api.Application
-import play.api.libs.mailer._
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Future}
 import javax.inject.{Inject,Singleton}
 import com.google.inject.AbstractModule
 import java.util.{TimeZone}
-import com.rodneylai.auth._
 import com.rodneylai.util._
 
 @Singleton
 class OnStartup @Inject() (val app:Application,globalHelper:GlobalHelper)
 {
-  globalHelper.onStartMsg
+  globalHelper.onStartMsg()
   TimeZone.setDefault(TimeZone.getTimeZone("GMT"))
 }
 
 class OnStartupModule extends AbstractModule {
-  def configure() = {
+  override def configure() = {
     bind(classOf[OnStartup]).asEagerSingleton
   }
 }

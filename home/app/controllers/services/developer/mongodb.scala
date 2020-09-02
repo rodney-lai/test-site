@@ -80,7 +80,7 @@ class mongodb @Inject() (override val environment:play.api.Environment,override 
     }
   }
 
-  @ApiOperation(value = "get", notes = "returns value", nickname="get", response = classOf[MongoDBResultsModel], httpMethod = "GET")
+  @ApiOperation(value = "get", notes = "returns value", nickname = "get", response = classOf[MongoDBResultsModel], httpMethod = "GET")
   def get(@ApiParam(value = "collection_name", required = true) collectionName:String,
           @ApiParam(value = "skip", required = false) skip:Int) =
     AsyncStack(AuthorityKey -> Role.Administrator,EnvironmentKey -> environment) { implicit request =>

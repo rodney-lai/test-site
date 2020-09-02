@@ -20,21 +20,21 @@
 package com.rodneylai.util
 
 import play.api._
-import play.api.mvc._
 import play.core._
-import scala.collection.{JavaConversions}
 import scala.io._
 import javax.inject.{Inject,Singleton}
 import com.google.inject.AbstractModule
 
 @Singleton
-class InfoHelper @Inject() (environment:Environment,configuration:Configuration)
-{
+class InfoHelper @Inject() (
+  environment:Environment,
+  configuration:ConfigHelper
+) {
   def getBuildDate:Option[String] = {
-    if (new java.io.File(environment.rootPath + "/BUILD_DATE").exists) {
-      Some(Source.fromFile(environment.rootPath + "/BUILD_DATE").getLines.mkString("\n"))
-    } else if (new java.io.File(environment.rootPath + "/../BUILD_DATE").exists) {
-      Some(Source.fromFile(environment.rootPath + "/../BUILD_DATE").getLines.mkString("\n"))
+    if (new java.io.File(s"${environment.rootPath}/BUILD_DATE").exists) {
+      Some(Source.fromFile(s"${environment.rootPath}/BUILD_DATE").getLines().mkString("\n"))
+    } else if (new java.io.File(s"${environment.rootPath}/../BUILD_DATE").exists) {
+      Some(Source.fromFile(s"${environment.rootPath}/../BUILD_DATE").getLines().mkString("\n"))
     } else {
       None
     }
@@ -53,7 +53,7 @@ class InfoHelper @Inject() (environment:Environment,configuration:Configuration)
       Some(("machine name",java.net.InetAddress.getLocalHost.getHostName)),
       Some(("machine ip",java.net.InetAddress.getLocalHost.getHostAddress))
     ).flatten ++
-    JavaConversions.enumerationAsScalaIterator(java.net.NetworkInterface.getNetworkInterfaces()).flatMap(x => JavaConversions.enumerationAsScalaIterator(x.getInetAddresses).map(y => (" ",y.getHostAddress))).toSeq
+    ConversionHelper.enumerationAsScalaIterator(java.net.NetworkInterface.getNetworkInterfaces()).flatMap(x => ConversionHelper.enumerationAsScalaIterator(x.getInetAddresses).map(y => (" ",y.getHostAddress))).toSeq
   }
 
   def getApplicationInfo():Seq[(String,String)] = {
@@ -84,7 +84,7 @@ class InfoHelper @Inject() (environment:Environment,configuration:Configuration)
 }
 
 class InfoHelperModule extends AbstractModule {
-  def configure() = {
+  override def configure() = {
     bind(classOf[InfoHelper]).asEagerSingleton
   }
 }

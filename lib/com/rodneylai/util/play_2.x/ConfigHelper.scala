@@ -1,6 +1,6 @@
 /**
  *
- * Copyright (c) 2015-2017 Rodney S.K. Lai
+ * Copyright (c) 2015-2020 Rodney S.K. Lai
  * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
@@ -17,27 +17,31 @@
  *
  */
 
-package com.rodneylai.database
+package com.rodneylai.util
 
-import play.api.mvc._
-import scala.concurrent.Future
+import play.api.Configuration
 import javax.inject.{Inject,Singleton}
 import com.google.inject.AbstractModule
+import org.slf4j.{Logger,LoggerFactory}
 
 @Singleton
-class TrackingHelper @Inject() ()
+class ConfigHelper @Inject() (configuration:Configuration)
 {
-  def getTrackingActionByTypeAndUrl(actionType:String,rawUrl:String):Future[Option[Unit]] = {
-    Future.successful(None)
-  }
+  private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
-  def trackEventByTypeAndUrl(requestHeader:RequestHeader,trackingUuid:java.util.UUID,userUuid:java.util.UUID,actionType:String,rawUrl:String):Future[Option[Long]] = {
-    Future.successful(None)
-  }
+  m_log.debug("init")
+
+  val keys: Set[String] = configuration.keys
+  val entrySet = configuration.entrySet
+
+  def getString(name:String):Option[String] = configuration.getOptional[String](name)
+  def getInt(name:String):Option[Int] = configuration.getOptional[Int](name)
+  def getDouble(name:String):Option[Double] = configuration.getOptional[Double](name)
+  def getBoolean(name:String):Option[Boolean] = configuration.getOptional[Boolean](name)
 }
 
-class TrackingHelperStubModule extends AbstractModule {
+class ConfigHelperModule extends AbstractModule {
   override def configure() = {
-    bind(classOf[TrackingHelper]).asEagerSingleton
+    bind(classOf[ConfigHelper]).asEagerSingleton
   }
 }

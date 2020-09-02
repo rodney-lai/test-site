@@ -58,7 +58,7 @@ class memcached @Inject() (override val environment:play.api.Environment,overrid
     Future.successful(Forbidden(Json.toJson("kick")))
   }
 
-  @ApiOperation(value = "get", notes = "returns value", nickname="get", response = classOf[String], httpMethod = "GET")
+  @ApiOperation(value = "get", notes = "returns value", nickname = "get", response = classOf[String], httpMethod = "GET")
   def get(@ApiParam(value = "key", required = true) key:String) =
     AsyncStack(AuthorityKey -> Role.Administrator,EnvironmentKey -> environment) { implicit request =>
     deadbolt.Restrict(List(Array("developer")), new DefaultDeadboltHandler(Some(loggedIn)))() { authRequest =>
@@ -71,7 +71,7 @@ class memcached @Inject() (override val environment:play.api.Environment,overrid
     }.apply(request)
   }
 
-  @ApiOperation(value = "set", notes = "returns status", nickname="set", response = classOf[String], httpMethod = "POST")
+  @ApiOperation(value = "set", notes = "returns status", nickname = "set", response = classOf[String], httpMethod = "POST")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(value = "key/value", required = true, dataType = "controllers.services.developer.MemcachedValueModel", paramType = "body")))
   def set(@ApiParam(value = "key", required = true) key:String) =
@@ -90,7 +90,7 @@ class memcached @Inject() (override val environment:play.api.Environment,overrid
     }.apply(request)
   }
 
-  @ApiOperation(value = "clear", notes = "returns status", nickname="clear", response = classOf[String], httpMethod = "DELETE")
+  @ApiOperation(value = "clear", notes = "returns status", nickname = "clear", response = classOf[String], httpMethod = "DELETE")
   def clear(@ApiParam(value = "key", required = true) key:String) =
     AsyncStack(AuthorityKey -> Role.Administrator,EnvironmentKey -> environment) { implicit request =>
     deadbolt.Restrict(List(Array("developer")), new DefaultDeadboltHandler(Some(loggedIn)))() { authRequest =>

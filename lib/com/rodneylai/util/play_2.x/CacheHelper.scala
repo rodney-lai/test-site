@@ -1,6 +1,6 @@
 /**
  *
- * Copyright (c) 2015-2017 Rodney S.K. Lai
+ * Copyright (c) 2015-2020 Rodney S.K. Lai
  * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
@@ -17,24 +17,29 @@
  *
  */
 
- import org.scalatestplus.play._
- import org.scalatestplus.play.guice._
- import play.api.test._
- import play.api.test.Helpers._
+package com.rodneylai.util
 
-/**
- * add your integration spec here.
- * An integration test will fire up a whole play application in a real (or headless) browser
- */
-class IntegrationSpec extends PlaySpec with GuiceOneServerPerTest with OneBrowserPerTest with HtmlUnitFactory {
+import javax.inject.{Inject,Singleton}
+import com.google.inject.AbstractModule
+import org.slf4j.{Logger,LoggerFactory}
+import scala.concurrent.duration.Duration
 
-  "Application" should {
+@Singleton
+class CacheHelper @Inject() (
+  cache:play.api.cache.DefaultSyncCacheApi,
+) {
+  private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
-    "work from within a browser" in {
+  m_log.debug("init")
 
-      go to ("http://localhost:" + port)
+  def get[T](key: String): Option[T] = cache.get(key)
+  def set(key: String, value: Any, expiration: Duration = Duration.Inf): Unit = {
+    cache.set(key, value, expiration)
+  }
+}
 
-      pageSource must include ("Rodney's Test Server")
-    }
+class CacheHelperModule extends AbstractModule {
+  override def configure() = {
+    bind(classOf[ConfigHelper]).asEagerSingleton
   }
 }

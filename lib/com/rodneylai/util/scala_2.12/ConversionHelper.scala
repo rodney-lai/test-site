@@ -1,6 +1,6 @@
 /**
  *
- * Copyright (c) 2015-2017 Rodney S.K. Lai
+ * Copyright (c) 2015-2020 Rodney S.K. Lai
  * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
@@ -17,24 +17,18 @@
  *
  */
 
- import org.scalatestplus.play._
- import org.scalatestplus.play.guice._
- import play.api.test._
- import play.api.test.Helpers._
+package com.rodneylai.util
 
-/**
- * add your integration spec here.
- * An integration test will fire up a whole play application in a real (or headless) browser
- */
-class IntegrationSpec extends PlaySpec with GuiceOneServerPerTest with OneBrowserPerTest with HtmlUnitFactory {
+import scala.collection.JavaConverters
+import scala.collection.mutable.Buffer
 
-  "Application" should {
+object ConversionHelper
+{
+   def asScalaBuffer[A](list: java.util.List[A]): Buffer[A] = {
+     JavaConverters.asScalaBuffer(list)
+   }
 
-    "work from within a browser" in {
-
-      go to ("http://localhost:" + port)
-
-      pageSource must include ("Rodney's Test Server")
-    }
-  }
+   def enumerationAsScalaIterator[A](enumeration: java.util.Enumeration[A]): Iterator[A] = {
+     JavaConverters.enumerationAsScalaIterator(enumeration)
+   }
 }

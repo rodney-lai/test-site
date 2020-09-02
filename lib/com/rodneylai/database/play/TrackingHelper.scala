@@ -134,7 +134,7 @@ class TrackingHelper @Inject() (mongoHelper:MongoHelper,trackingActionDao:Tracki
 }
 
 class TrackingHelperModule extends AbstractModule {
-  def configure() = {
+  override def configure() = {
     bind(classOf[TrackingHelper]).asEagerSingleton
   }
 }

@@ -3,7 +3,6 @@ import play.api.http.{HttpErrorHandler,Status}
 import play.api.libs.json.Json
 import play.api.mvc._
 import play.api.mvc.Results._
-import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
 import javax.inject.Inject
 import org.slf4j.{Logger,LoggerFactory}
@@ -11,6 +10,8 @@ import com.rodneylai.util._
 
 class ErrorHandler @Inject() (globalHelper:GlobalHelper) extends HttpErrorHandler {
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
+
+  m_log.debug("init")
 
   def onClientError(request: RequestHeader, statusCode: Int, errorMessage: String) = {
     statusCode match {

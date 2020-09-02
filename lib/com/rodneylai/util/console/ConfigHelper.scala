@@ -31,6 +31,8 @@ class ConfigHelper @Inject() ()
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
   private val m_config = ConfigFactory.load()
 
+  m_log.debug("init")
+
   def getString(name:String):Option[String] = {
     Try(m_config.getString(name)) match {
       case Success(value) => Some(value)
@@ -54,7 +56,7 @@ class ConfigHelper @Inject() ()
 }
 
 class ConfigHelperModule extends AbstractModule {
-  def configure() = {
+  override def configure() = {
     bind(classOf[ConfigHelper]).asEagerSingleton
   }
 }

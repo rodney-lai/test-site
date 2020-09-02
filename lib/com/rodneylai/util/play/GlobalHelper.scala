@@ -19,7 +19,7 @@
 
 package com.rodneylai.util
 
-import play.api.{Configuration,Environment}
+import play.api.Environment
 import play.api.libs.mailer._
 import play.api.mvc._
 import scala.concurrent.{ExecutionContext,Future}
@@ -31,7 +31,7 @@ import com.rodneylai.auth._
 import com.rodneylai.database._
 
 @Singleton
-class GlobalHelper @Inject() (environment:Environment,configuration:Configuration,infoHelper:InfoHelper,exceptionHelper:ExceptionHelper,trackingHelper:TrackingHelper,mailerClient:MailerClient)
+class GlobalHelper @Inject() (environment:Environment,configuration:ConfigHelper,infoHelper:InfoHelper,exceptionHelper:ExceptionHelper,trackingHelper:TrackingHelper,mailerClient:MailerClient)
 {
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
@@ -210,12 +210,12 @@ class GlobalHelper @Inject() (environment:Environment,configuration:Configuratio
 
   def onErrorMsg(request: RequestHeader, ex: Throwable, accountOption:Option[Account] = None):Future[Unit] = {
     exceptionHelper.log(ex,accountOption,Some(request))
-    Future.successful(Unit)
+    Future.successful(())
   }
 }
 
 class GlobalHelperModule extends AbstractModule {
-  def configure() = {
+  override def configure() = {
     bind(classOf[GlobalHelper]).asEagerSingleton
   }
 }

@@ -1,4 +1,4 @@
-Rodney's Test Site v0.8.3
+Rodney's Test Site v0.8.4
 =========================
 
 [![Build Status](https://travis-ci.org/rodney-lai/test-site.svg?branch=master)](https://travis-ci.org/rodney-lai/test-site)
@@ -58,12 +58,12 @@ entrypoint when running the docker image.
 By default the 'home' project runs.
 
 To run the 'upload' project,
-set work directory to /home/play-user/deploy-upload/bin
-and entrypoint to  ./rodney-test-site-upload
+set work directory to /home/deploy-user/deploy-upload/bin
+and entrypoint to ./rodney-test-site-upload
 
 To run the 'emailer' project
-set work directory to /home/play-user/deploy-emailer/bin
-and entrypoint to  ./emailer
+set work directory to /home/deploy-user/deploy-emailer/bin
+and entrypoint to ./emailer
 
 There is a docker compose file to startup a local memcached,
 redis, postgres and mongodb.

@@ -24,13 +24,14 @@ import scala.concurrent.Future
 import slick.jdbc.PostgresProfile.backend.{Database}
 import com.google.inject.Guice
 import org.slf4j.{Logger,LoggerFactory}
-import com.rodneylai.database._
 import com.rodneylai.database.Tables._
 import com.rodneylai.database.Tables.profile.api._
 import com.rodneylai.util._
 
 object PostgresAccessHelper {
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
+
+  m_log.debug("init")
 
   private val m_configHelperInjector = Guice.createInjector(new ConfigHelperModule)
   private val m_configHelper = m_configHelperInjector.getInstance(classOf[ConfigHelper])

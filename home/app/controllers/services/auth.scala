@@ -126,7 +126,7 @@ class auth @Inject() (resetPasswordDao:ResetPasswordDao,configHelper:ConfigHelpe
     Future.successful(Ok(Json.toJson(controllers.routes.Admin.index.url)))
   }
 
-  @ApiOperation(value = "login", notes = "returns login redirect url", nickname="login", response = classOf[String], httpMethod = "POST")
+  @ApiOperation(value = "login", notes = "returns login redirect url", nickname = "login", response = classOf[String], httpMethod = "POST")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(value = "login credentials", required = true, dataType = "controllers.services.LoginModel", paramType = "body")))
   def login = Action.async(parse.json[LoginModel]) { implicit request =>
@@ -173,7 +173,7 @@ class auth @Inject() (resetPasswordDao:ResetPasswordDao,configHelper:ConfigHelpe
     }
   }
 
-  @ApiOperation(value = "send_reset_password_link", nickname="send_reset_password_link", response = classOf[String], httpMethod = "POST")
+  @ApiOperation(value = "send_reset_password_link", nickname = "send_reset_password_link", response = classOf[String], httpMethod = "POST")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(value = "email address to send reset password link", required = true, dataType = "controllers.services.EmailModel", paramType = "body")))
   def sendResetPasswordLink = Action.async(parse.json[EmailModel]) { implicit request =>
@@ -268,7 +268,7 @@ class auth @Inject() (resetPasswordDao:ResetPasswordDao,configHelper:ConfigHelpe
     }
   }
 
-  @ApiOperation(value = "join", notes = "returns join status", nickname="join", response = classOf[String], httpMethod = "POST")
+  @ApiOperation(value = "join", notes = "returns join status", nickname = "join", response = classOf[String], httpMethod = "POST")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(value = "join information", required = true, dataType = "controllers.services.JoinModel", paramType = "body")))
   def join = AsyncStack(parse.json[JoinModel],EnvironmentKey -> environment) { implicit request =>

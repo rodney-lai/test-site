@@ -19,13 +19,11 @@
 
 package com.rodneylai.util
 
-import play.api.{Configuration,Environment}
+import play.api.Environment
 import play.api.libs.mailer._
 import play.api.mvc._
-import play.core._
 import play.twirl.api.{Html}
 import scala.concurrent.duration._
-import scala.io._
 import scala.util.{Failure, Success, Try}
 import javax.inject.{Inject,Singleton}
 import com.google.inject.AbstractModule
@@ -33,16 +31,20 @@ import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.auth._
 
 @Singleton
-class ExceptionHelper @Inject() (environment:Environment,configuration:Configuration,cache:play.api.cache.CacheApi,infoHelper:InfoHelper,mailerClient:MailerClient)
-{
+class ExceptionHelper @Inject() (
+  environment:Environment,configuration:ConfigHelper,
+  cache:CacheHelper,
+  infoHelper:InfoHelper,
+  mailerClient:MailerClient
+) {
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
   def getRequestInfo(request: RequestHeader):String = {
     val msg:StringBuilder = new StringBuilder()
 
     infoHelper.getBuildDate.map(msg.append("build date: ").append(_).append("\n"))
-    msg.append(infoHelper.getMachineInfoString)
-    msg.append(infoHelper.getApplicationInfoString)
+    msg.append(infoHelper.getMachineInfoString())
+    msg.append(infoHelper.getApplicationInfoString())
     msg.append("headers: ").append(request.headers.keys.size).append("\n")
     request.headers.keys.foreach { x => msg.append("  ").append(x).append(": ").append(request.headers.get(x).getOrElse("[ UNKNOWN ]")).append("\n") }
     msg.append("method: ").append(request.method).append("\n")
@@ -87,8 +89,8 @@ class ExceptionHelper @Inject() (environment:Environment,configuration:Configura
     request match {
       case Some(request) => msg.append(getRequestInfo(request))
       case None => {
-        msg.append(infoHelper.getMachineInfoString)
-        msg.append(infoHelper.getApplicationInfoString)
+        msg.append(infoHelper.getMachineInfoString())
+        msg.append(infoHelper.getApplicationInfoString())
       }
     }
     msg.append(ex).append("\n")
@@ -211,8 +213,8 @@ class ExceptionHelper @Inject() (environment:Environment,configuration:Configura
     request match {
       case Some(request) => msg.append(getRequestInfo(request))
       case None => {
-        msg.append(infoHelper.getMachineInfoString)
-        msg.append(infoHelper.getApplicationInfoString)
+        msg.append(infoHelper.getMachineInfoString())
+        msg.append(infoHelper.getApplicationInfoString())
       }
     }
     infoOption map { info => msg.append(message).append("\n").append(info) }
@@ -268,7 +270,7 @@ object ExceptionHelper {
 }
 
 class ExceptionHelperModule extends AbstractModule {
-  def configure() = {
+  override def configure() = {
     bind(classOf[ExceptionHelper]).asEagerSingleton
   }
 }

@@ -19,12 +19,7 @@
 
 package controllers
 
-import play.api._
 import play.api.mvc._
-import scala.concurrent.Await
-import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.language.postfixOps
 import scala.util.{Try,Success,Failure}
 import scala.util.matching.{Regex}
 import java.io.{ByteArrayInputStream,FileInputStream}
@@ -36,14 +31,16 @@ import com.amazonaws.regions.{Regions}
 import com.amazonaws.services.s3.{AmazonS3,AmazonS3ClientBuilder}
 import com.amazonaws.services.s3.model.{ObjectMetadata,PutObjectRequest}
 import io.swagger.annotations._
-import org.bytedeco.javacpp.{FloatPointer,IntPointer,PointerPointer}
 import org.bytedeco.javacpp.opencv_core._
-import org.bytedeco.javacpp.{opencv_imgcodecs, opencv_core, opencv_highgui, opencv_imgproc}
+import org.bytedeco.javacpp.opencv_imgcodecs
 import org.slf4j.{Logger,LoggerFactory}
 
 @Singleton
 @Api(value = "upload", description = "upload services", consumes = "multipart/form-data")
-class UploadController @Inject() (configuration: play.api.Configuration) extends Controller {
+class UploadController @Inject() (
+  configuration: play.api.Configuration,
+  cc: ControllerComponents
+) extends AbstractController(cc) {
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
   private val ImageFileNameRegExString:String = "^image([0-9]{4})([0-9]{2})([0-9]{2})s?([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{3}).jpg$"
@@ -167,14 +164,14 @@ class UploadController @Inject() (configuration: play.api.Configuration) extends
     }
   }
 
-  @ApiOperation(value = "upload file", nickname="upload_file", httpMethod = "PUT")
+  @ApiOperation(value = "upload file", nickname = "upload_file", httpMethod = "PUT")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "my_file", value = "filex", required = false, dataType = "file", paramType = "formData")))
   def fileUpload(fileName:String) = Action { implicit request =>
 
-    (configuration.getString("aws.s3.bucket"),configuration.getString("aws.s3.folder")) match {
+    (configuration.getOptional[String]("aws.s3.bucket"),configuration.getOptional[String]("aws.s3.folder")) match {
       case (Some(bucketName),Some(folderName)) => {
-        val region:Regions = configuration.getString("aws.s3.region") match {
+        val region:Regions = configuration.getOptional[String]("aws.s3.region") match {
           case Some(regionName) => Regions.fromName(regionName)
           case None => Regions.US_EAST_1
         }
@@ -205,10 +202,10 @@ class UploadController @Inject() (configuration: play.api.Configuration) extends
                   val objectMetadata:ObjectMetadata = new ObjectMetadata()
                   myFile.contentType.map(contentType => objectMetadata.setContentType(contentType))
                   val s3Client:AmazonS3 = AmazonS3ClientBuilder.standard().withRegion(region).withCredentials(new DefaultAWSCredentialsProviderChain).build()
-                  putImage(s3Client,new PutObjectRequest(bucketName, s"$folderName/$year-$month-$day/$fileName", new FileInputStream(myFile.ref.file), objectMetadata))
-                  putImage(s3Client,new PutObjectRequest(bucketName, s"$folderName/current.jpg", new FileInputStream(myFile.ref.file), objectMetadata))
+                  putImage(s3Client,new PutObjectRequest(bucketName, s"$folderName/$year-$month-$day/$fileName", new FileInputStream(myFile.ref.path.toFile()), objectMetadata))
+                  putImage(s3Client,new PutObjectRequest(bucketName, s"$folderName/current.jpg", new FileInputStream(myFile.ref.path.toFile()), objectMetadata))
                   putCurrentTextFile(s3Client,bucketName,folderName,year.toInt,month.toInt,day.toInt,hours.toInt,minutes.toInt,seconds.toInt)
-                  createHistogram(s3Client,bucketName,Array(s"$folderName/$year-$month-$day/${fileName.replaceAll(".jpg","_histogram.csv")}",s"$folderName/histogram.csv"),myFile.ref.file.getAbsolutePath())
+                  createHistogram(s3Client,bucketName,Array(s"$folderName/$year-$month-$day/${fileName.replaceAll(".jpg","_histogram.csv")}",s"$folderName/histogram.csv"),myFile.ref.path.toFile().getAbsolutePath())
                 }
               }
               case AnyContentAsRaw(rawBuffer) => {

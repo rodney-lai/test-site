@@ -1,4 +1,4 @@
-Rodney's Test Site Emailer v0.8.3
+Rodney's Test Site Emailer v0.8.4
 ==============================================
 
 rlai [ at ] irismedia [ dot ] com
@@ -54,7 +54,7 @@ THREAD_QUEUE_CAPACITY - maximum threads in queue
 Server Technology
 -----------------
 
-* Language - [Scala v2.11.11](http://scala-lang.org/)
+* Language - [Scala v2.12.12](http://scala-lang.org/)
 * NoSQL Database - [MongoDB](https://www.mongodb.org/)
 * Data Structure Store - [Redis](https://redis.io/)
 

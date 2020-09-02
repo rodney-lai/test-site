@@ -26,7 +26,7 @@ import javax.inject.{Inject,Singleton}
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
 import com.amazonaws.regions.{Regions}
 import com.amazonaws.services.s3.{AmazonS3,AmazonS3ClientBuilder}
-import com.amazonaws.services.s3.model.{AmazonS3Exception,GetObjectRequest,ObjectMetadata,S3Object}
+import com.amazonaws.services.s3.model.{AmazonS3Exception,GetObjectRequest,S3Object}
 import com.google.inject.AbstractModule
 import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.util._
@@ -43,7 +43,7 @@ class S3Helper @Inject() (configHelper:ConfigHelper) {
         try {
           val bufferedSource:BufferedSource = new BufferedSource(objectDataStream)
 
-          Some(bufferedSource.getLines.mkString("\n"))
+          Some(bufferedSource.getLines().mkString("\n"))
         } catch {
           case ex:Exception =>
             m_log.error(s"Failed to read S3 file = $key",ex)
@@ -83,7 +83,7 @@ class S3Helper @Inject() (configHelper:ConfigHelper) {
 }
 
 class S3HelperModule extends AbstractModule {
-  def configure() = {
+  override def configure() = {
     bind(classOf[S3Helper]).asEagerSingleton
   }
 }

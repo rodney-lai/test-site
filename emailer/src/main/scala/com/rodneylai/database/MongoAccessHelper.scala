@@ -26,12 +26,13 @@ import com.google.inject.AbstractModule
 import org.mongodb.scala._
 import org.mongodb.scala.model.Filters._
 import org.slf4j.{Logger,LoggerFactory}
-import com.rodneylai.database._
 import com.rodneylai.models.mongodb._
 
 @Singleton
 class MongoAccessHelper @Inject() (mongoHelper:MongoHelper,messageLogDao:MessageLogDao,resetPasswordDao:ResetPasswordDao) {
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
+
+  m_log.debug("init")
 
   def insertToMessageLog(emailUuid:java.util.UUID,email:String,emailType:String,toEmailAddress:String,now:java.util.Date):Future[Option[java.util.UUID]] = {
     if (mongoHelper.isActive) {
@@ -45,7 +46,7 @@ class MongoAccessHelper @Inject() (mongoHelper:MongoHelper,messageLogDao:Message
             toEmailAddress,
             now
           )
-        )).toFuture
+        )).toFuture()
       } yield {
         Some(emailUuid)
       }
@@ -69,7 +70,7 @@ class MongoAccessHelper @Inject() (mongoHelper:MongoHelper,messageLogDao:Message
               "UpdateDate" -> now
             )
           )
-        ).toFuture
+        ).toFuture()
         updateStatusResult <- collection.updateOne(
           and(
             equal("CodeUuid",MongoHelper.toStandardBinaryUUID(codeUuid)),
@@ -81,7 +82,7 @@ class MongoAccessHelper @Inject() (mongoHelper:MongoHelper,messageLogDao:Message
               "UpdateDate" -> now
             )
           )
-        ).toFuture
+        ).toFuture()
       } yield {
         Some(emailUuid)
       }
@@ -92,7 +93,7 @@ class MongoAccessHelper @Inject() (mongoHelper:MongoHelper,messageLogDao:Message
 }
 
 class MongoAccessHelperModule extends AbstractModule {
-  def configure() = {
+  override def configure() = {
     bind(classOf[MongoAccessHelper]).asEagerSingleton
   }
 }

@@ -19,11 +19,10 @@
 
 package com.rodneylai.models.mongodb
 
-import scala.collection.JavaConversions
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure,Success,Try}
-import java.util.{Calendar,Date}
+import java.util.Calendar
 import javax.inject.{Inject,Singleton}
 import com.google.inject.AbstractModule
 import org.bson.types.{ObjectId}
@@ -33,8 +32,8 @@ import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.{IndexModel,IndexOptions}
 import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.auth.util._
-import com.rodneylai.database._
 import com.rodneylai.util._
+import com.rodneylai.database._
 
 case class UserAccount (
   userUuid: java.util.UUID,
@@ -123,7 +122,7 @@ class UserAccountDao @Inject() (testAccountHelper:TestAccountHelper,mongoHelper:
           IndexModel(Document("EmailAddressLowerCase" -> 1), (new IndexOptions).name("UserAccount_EmailAddressLowerCase").unique(true)),
           IndexModel(Document("FriendlyUrl" -> 1), (new IndexOptions).name("UserAccount_FriendlyUrl").unique(true))
         )
-      ).toFuture
+      ).toFuture()
     } yield {
       m_log.trace(s"createIndexes[$createIndexesResult]")
       collection
@@ -134,7 +133,7 @@ class UserAccountDao @Inject() (testAccountHelper:TestAccountHelper,mongoHelper:
     if (mongoHelper.isActive) {
       for {
         collection <- collectionFuture
-        results <- collection.find(equal("UserUuid",MongoHelper.toStandardBinaryUUID(userUuid))).toFuture
+        results <- collection.find(equal("UserUuid",MongoHelper.toStandardBinaryUUID(userUuid))).toFuture()
       } yield {
         if (results.isEmpty) {
           None
@@ -153,7 +152,7 @@ class UserAccountDao @Inject() (testAccountHelper:TestAccountHelper,mongoHelper:
     if (mongoHelper.isActive) {
       for {
         collection <- collectionFuture
-        results <- collection.find(equal("EmailAddressLowerCase",emailAddress.toLowerCase)).toFuture
+        results <- collection.find(equal("EmailAddressLowerCase",emailAddress.toLowerCase)).toFuture()
       } yield {
         if (results.isEmpty) {
           None
@@ -172,7 +171,7 @@ class UserAccountDao @Inject() (testAccountHelper:TestAccountHelper,mongoHelper:
     if (mongoHelper.isActive) {
       for {
         collection <- collectionFuture
-        results <- collection.find(equal("FriendlyUrl",friendlyUrl.toLowerCase)).toFuture
+        results <- collection.find(equal("FriendlyUrl",friendlyUrl.toLowerCase)).toFuture()
       } yield {
         if (results.isEmpty) {
           None
@@ -195,7 +194,7 @@ class UserAccountDao @Inject() (testAccountHelper:TestAccountHelper,mongoHelper:
       userAccountBson.get[BsonString]("EmailAddressLowerCase").get.getValue,
       userAccountBson.get[BsonString]("Name").get.getValue,
       userAccountBson.get[BsonString]("FriendlyUrl").get.getValue,
-      JavaConversions.asScalaBuffer(userAccountBson.get[BsonArray]("RoleList").get.getValues).map(_ match { case bsonString:BsonString => bsonString.getValue }).toSet,
+      ConversionHelper.asScalaBuffer(userAccountBson.get[BsonArray]("RoleList").get.getValues).map(_ match { case bsonString:BsonString => bsonString.getValue }).toSet,
       userAccountBson.get[BsonString]("Status").get.getValue,
       new java.util.Date(userAccountBson.get[BsonDateTime]("UpdateDate").get.getValue),
       new java.util.Date(userAccountBson.get[BsonDateTime]("CreateDate").get.getValue),
@@ -227,7 +226,7 @@ class UserAccountDao @Inject() (testAccountHelper:TestAccountHelper,mongoHelper:
 }
 
 class UserAccountDaoModule extends AbstractModule {
-  def configure() = {
+  override def configure() = {
     bind(classOf[UserAccountDao]).asEagerSingleton
   }
 }

@@ -89,6 +89,8 @@ object MongoHelper {
 class MongoHelper @Inject() (configHelper:ConfigHelper) {
   private val       m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
+  m_log.debug("init")
+
   private val       m_host:String = configHelper.getString("mongo.host").getOrElse("")
   private val       m_port:Int = configHelper.getInt("mongo.port").getOrElse(27017)
   private val       m_database:String = configHelper.getString("mongo.database").getOrElse("")
@@ -145,7 +147,7 @@ class MongoHelper @Inject() (configHelper:ConfigHelper) {
   def getCollectionList:Future[Option[Set[String]]] = {
     if (isActive) {
       for {
-        collectionNames <- m_mongoDatabase.listCollectionNames.toFuture
+        collectionNames <- m_mongoDatabase.listCollectionNames().toFuture()
       } yield Some(collectionNames.toSet)
     } else {
       Future.successful(None)
@@ -155,7 +157,7 @@ class MongoHelper @Inject() (configHelper:ConfigHelper) {
   def getDatabaseStats:Future[Option[Seq[(String,String)]]] = {
     if (isActive) {
       for {
-        result <- m_mongoDatabase.runCommand(Document("dbStats" -> 1 )).toFuture
+        result <- m_mongoDatabase.runCommand(Document("dbStats" -> 1 )).toFuture()
       } yield {
         Some((result map {
           case (key,value) => {
@@ -177,7 +179,7 @@ class MongoHelper @Inject() (configHelper:ConfigHelper) {
   def getCollectionStats(collectionName:String):Future[Option[Seq[(String,String)]]] = {
     if (isActive) {
       for {
-        result <- m_mongoDatabase.runCommand(Document("collStats" -> collectionName )).toFuture
+        result <- m_mongoDatabase.runCommand(Document("collStats" -> collectionName )).toFuture()
       } yield {
         Some((result map {
           case (key,value) => {
@@ -199,7 +201,7 @@ class MongoHelper @Inject() (configHelper:ConfigHelper) {
 }
 
 class MongoHelperModule extends AbstractModule {
-  def configure() = {
+  override def configure() = {
     bind(classOf[MongoHelper]).asEagerSingleton
   }
 }

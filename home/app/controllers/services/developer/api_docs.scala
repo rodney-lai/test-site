@@ -34,10 +34,16 @@ import org.slf4j.{Logger,LoggerFactory}
 import com.rodneylai.auth._
 import com.rodneylai.security._
 
-class api_docs @Inject() (override val environment:play.api.Environment,override val configuration:play.api.Configuration,deadbolt: DeadboltActions, actionBuilder: ActionBuilders,override val accountDao:AccountDao) extends Controller with AuthElement with AuthConfigImpl {
+class api_docs @Inject() (
+  override val environment:play.api.Environment,
+  override val configuration:play.api.Configuration,
+  deadbolt: DeadboltActions,
+  actionBuilder: ActionBuilders,
+  override val accountDao:AccountDao
+) extends Controller with AuthElement with AuthConfigImpl {
 
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
-  private val m_apiHelpController = new controllers.ApiHelpController
+  private val m_apiHelpController = new controllers.ApiHelpController()
 
   def getResources = if (environment.mode == Mode.Dev) {
     m_apiHelpController.getResources

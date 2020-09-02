@@ -19,8 +19,6 @@
 
 package com.rodneylai.auth.util
 
-import scala.concurrent.{ExecutionContext,Future}
-import java.util.{Calendar,Date}
 import javax.inject.{Inject,Singleton}
 import com.google.inject.AbstractModule
 import org.mindrot.jbcrypt._
@@ -47,7 +45,7 @@ class TestAccountHelper @Inject() (configuration:ConfigHelper) {
 }
 
 class TestAccountHelperModule extends AbstractModule {
-  def configure() = {
+  override def configure() = {
     bind(classOf[TestAccountHelper]).asEagerSingleton
   }
 }

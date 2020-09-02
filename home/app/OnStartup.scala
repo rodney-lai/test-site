@@ -36,7 +36,7 @@ class OnStartup @Inject() (globalHelper:GlobalHelper,authHelper:AuthHelper)
 }
 
 class OnStartupModule extends AbstractModule {
-  def configure() = {
+  override def configure() = {
     bind(classOf[OnStartup]).asEagerSingleton
   }
 }
