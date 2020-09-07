@@ -20,9 +20,10 @@
 package com.rodneylai.util
 
 import scala.collection.JavaConversions
+import scala.collection.JavaConverters._
 import scala.collection.mutable.Buffer
 
-object ConversionHelper
+class ConversionHelperImpl extends ConversionHelper
 {
    def asScalaBuffer[A](list: java.util.List[A]): Buffer[A] = {
      JavaConversions.asScalaBuffer(list)
@@ -30,5 +31,9 @@ object ConversionHelper
 
    def enumerationAsScalaIterator[A](enumeration: java.util.Enumeration[A]): Iterator[A] = {
      JavaConversions.enumerationAsScalaIterator(enumeration)
+   }
+
+   def asJavaList[A](list: List[A]): java.util.List[A] = {
+     list.asJava
    }
 }

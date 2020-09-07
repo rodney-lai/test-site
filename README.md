@@ -1,4 +1,4 @@
-Rodney's Test Site v0.8.4
+Rodney's Test Site v0.8.5
 =========================
 
 [![Build Status](https://travis-ci.org/rodney-lai/test-site.svg?branch=master)](https://travis-ci.org/rodney-lai/test-site)

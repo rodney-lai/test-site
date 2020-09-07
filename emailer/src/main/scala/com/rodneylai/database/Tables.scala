@@ -24,15 +24,14 @@ import com.rodneylai.util._
 
 // AUTO-GENERATED Slick data model
 /** Stand-alone Slick data model for immediate use */
-object Tables extends {
+object Tables extends Tables {
   private val m_configHelperInjector = Guice.createInjector(new ConfigHelperModule)
   private val m_configHelper = m_configHelperInjector.getInstance(classOf[ConfigHelper])
 
   val schemaName = m_configHelper.getString("postgresql.schemaname").getOrElse("public")
 
   val profile = slick.jdbc.PostgresProfile
-
-} with Tables
+}
 
 /** Slick data model trait for extension, choice of backend or usage in the cake pattern. (Make sure to initialize this late.) */
 trait Tables {
@@ -61,9 +60,9 @@ trait Tables {
   }
   /** Table description of table Message_History. Objects of this class serve as prototypes for rows in queries. */
   class MessageHistory(_tableTag: Tag) extends profile.api.Table[MessageHistoryRow](_tableTag, Some(schemaName), "Message_History") {
-    def * = (messageHistoryId, deliveryMethod, messageType, messageAddress, created) <> (MessageHistoryRow.tupled, MessageHistoryRow.unapply)
+    def * = (messageHistoryId, deliveryMethod, messageType, messageAddress, created).<>(MessageHistoryRow.tupled, MessageHistoryRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(messageHistoryId), Rep.Some(deliveryMethod), Rep.Some(messageType), Rep.Some(messageAddress), Rep.Some(created)).shaped.<>({r=>import r._; _1.map(_=> MessageHistoryRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = ((Rep.Some(messageHistoryId), Rep.Some(deliveryMethod), Rep.Some(messageType), Rep.Some(messageAddress), Rep.Some(created))).shaped.<>({r=>import r._; _1.map(_=> MessageHistoryRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column Message_History_Id SqlType(uuid), PrimaryKey */
     val messageHistoryId: Rep[java.util.UUID] = column[java.util.UUID]("Message_History_Id", O.PrimaryKey)
@@ -94,9 +93,9 @@ trait Tables {
   }
   /** Table description of table User_Reset_Password. Objects of this class serve as prototypes for rows in queries. */
   class UserResetPassword(_tableTag: Tag) extends profile.api.Table[UserResetPasswordRow](_tableTag, Some(schemaName), "User_Reset_Password") {
-    def * = (userResetPasswordId, userId, status, messageId, updated, created) <> (UserResetPasswordRow.tupled, UserResetPasswordRow.unapply)
+    def * = (userResetPasswordId, userId, status, messageId, updated, created).<>(UserResetPasswordRow.tupled, UserResetPasswordRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(userResetPasswordId), Rep.Some(userId), Rep.Some(status), messageId, Rep.Some(updated), Rep.Some(created)).shaped.<>({r=>import r._; _1.map(_=> UserResetPasswordRow.tupled((_1.get, _2.get, _3.get, _4, _5.get, _6.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = ((Rep.Some(userResetPasswordId), Rep.Some(userId), Rep.Some(status), messageId, Rep.Some(updated), Rep.Some(created))).shaped.<>({r=>import r._; _1.map(_=> UserResetPasswordRow.tupled((_1.get, _2.get, _3.get, _4, _5.get, _6.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column User_Reset_Password_Id SqlType(uuid), PrimaryKey */
     val userResetPasswordId: Rep[java.util.UUID] = column[java.util.UUID]("User_Reset_Password_Id", O.PrimaryKey)

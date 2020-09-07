@@ -64,10 +64,7 @@ object emailer {
   }
 
   private def convertCaseClassToMap(caseClass: Product):Map[String,Any] = {
-    caseClass.getClass
-      .getDeclaredFields.map(_.getName)   // all field names
-      .zip(caseClass.productIterator.to)  // zipped with all values
-      .toMap
+    (caseClass.productElementNames zip caseClass.productIterator).toMap
   }
 
   private val m_configHelperInjector = Guice.createInjector(new ConfigHelperModule)
@@ -89,7 +86,10 @@ object emailer {
   private val m_threadQueueCapacity:Int = m_configHelper.getInt("thread.queue.capacity").getOrElse(50)
   private val m_useExecutionContext:Boolean = m_configHelper.getBoolean("use.execution.context").getOrElse(true)
 
-  private val m_mongoAccessHelperInjector = Guice.createInjector(new MongoAccessHelperModule)
+  private val m_mongoAccessHelperInjector = Guice.createInjector(
+    new ConversionHelperModule,
+    new MongoAccessHelperModule
+  )
   private val m_mongoAccessHelper = m_mongoAccessHelperInjector.getInstance(classOf[MongoAccessHelper])
 
   private val m_s3HelperInjector = Guice.createInjector(new S3HelperModule)
@@ -100,7 +100,7 @@ object emailer {
   private val m_templates:Array[String] = getEmailTemplateNames("invite") ++ getEmailTemplateNames("reset-password")
 
   private def getInfo(): String = {
-    val buildDate = Try(io.Source.fromFile("./BUILD_DATE").getLines.mkString("\n")) match {
+    val buildDate = Try(io.Source.fromFile("./BUILD_DATE").getLines().mkString("\n")) match {
       case Success(result) => result
       case Failure(ex) => "unknown"
     }

@@ -1,8 +1,8 @@
 name := """emailer"""
 
-version := "v0.8.4"
+version := "v0.8.5"
 
-scalaVersion := "2.12.12"
+scalaVersion := "2.13.3"
 
 mainClass in assembly := Some("com.rodneylai.emailer")
 
@@ -15,7 +15,7 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.851",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.854",
   "net.debasishg" %% "redisclient" % "3.30",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "ch.qos.logback" % "logback-core" % "1.2.3",

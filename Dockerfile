@@ -79,7 +79,7 @@ RUN         rm /home/deploy-user/build/upload/target/universal/stage/bin/*.bat
 RUN         mv /home/deploy-user/build/upload/target/universal/stage /home/deploy-user/deploy-upload
 RUN         cd /home/deploy-user/build/emailer; /home/deploy-user/sbt/bin/sbt assembly
 RUN         mkdir /home/deploy-user/deploy-emailer
-RUN         mv /home/deploy-user/build/emailer/target/scala-2.12/*.jar /home/deploy-user/deploy-emailer
+RUN         mv /home/deploy-user/build/emailer/target/scala-2.13/*.jar /home/deploy-user/deploy-emailer
 RUN         rm -rf /home/deploy-user/build
 
 FROM        ubuntu:20.04

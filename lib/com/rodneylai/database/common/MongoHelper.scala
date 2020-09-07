@@ -19,7 +19,6 @@
 
 package com.rodneylai.database
 
-import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import javax.inject.{Inject,Singleton}
@@ -86,7 +85,10 @@ object MongoHelper {
 }
 
 @Singleton
-class MongoHelper @Inject() (configHelper:ConfigHelper) {
+class MongoHelper @Inject() (
+  configHelper:ConfigHelper,
+  conversionHelper:ConversionHelper
+) {
   private val       m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
 
   m_log.debug("init")
@@ -109,7 +111,7 @@ class MongoHelper @Inject() (configHelper:ConfigHelper) {
                         val m_settings:MongoClientSettings = MongoClientSettings.builder()
                           .applyToClusterSettings(
                             new Block[ClusterSettings.Builder]() {
-                              override def apply(builder: ClusterSettings.Builder): Unit = builder.hosts(List(m_server).asJava)
+                              override def apply(builder: ClusterSettings.Builder): Unit = builder.hosts(conversionHelper.asJavaList(List(m_server)))
                             }
                           )
                           .retryWrites(false)
@@ -120,7 +122,7 @@ class MongoHelper @Inject() (configHelper:ConfigHelper) {
                         val m_settings:MongoClientSettings = MongoClientSettings.builder()
                           .applyToClusterSettings(
                             new Block[ClusterSettings.Builder]() {
-                              override def apply(builder: ClusterSettings.Builder): Unit = builder.hosts(List(m_server).asJava)
+                              override def apply(builder: ClusterSettings.Builder): Unit = builder.hosts(conversionHelper.asJavaList(List(m_server)))
                             }
                           )
                           .credential(m_credentials.getOrElse(m_authMechanism,m_scramSha1Credentials))

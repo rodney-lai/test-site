@@ -28,7 +28,8 @@ import com.google.inject.AbstractModule
 @Singleton
 class InfoHelper @Inject() (
   environment:Environment,
-  configuration:ConfigHelper
+  configuration:ConfigHelper,
+  conversionHelper:ConversionHelper
 ) {
   def getBuildDate:Option[String] = {
     if (new java.io.File(s"${environment.rootPath}/BUILD_DATE").exists) {
@@ -53,7 +54,7 @@ class InfoHelper @Inject() (
       Some(("machine name",java.net.InetAddress.getLocalHost.getHostName)),
       Some(("machine ip",java.net.InetAddress.getLocalHost.getHostAddress))
     ).flatten ++
-    ConversionHelper.enumerationAsScalaIterator(java.net.NetworkInterface.getNetworkInterfaces()).flatMap(x => ConversionHelper.enumerationAsScalaIterator(x.getInetAddresses).map(y => (" ",y.getHostAddress))).toSeq
+    conversionHelper.enumerationAsScalaIterator(java.net.NetworkInterface.getNetworkInterfaces()).flatMap(x => conversionHelper.enumerationAsScalaIterator(x.getInetAddresses).map(y => (" ",y.getHostAddress))).toSeq
   }
 
   def getApplicationInfo():Seq[(String,String)] = {

@@ -2,11 +2,11 @@ name := """rodney-test-site-upload"""
 
 maintainer := "rlai@irismedia.com"
 
-version := "0.8.4"
+version := "0.8.5"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-scalaVersion := "2.12.12"
+scalaVersion := "2.13.3"
 
 scalacOptions ++= Seq(
   "-Xlint",
@@ -61,11 +61,11 @@ val platform = {
 }
 
 libraryDependencies ++= Seq(
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.851",
-  "com.typesafe.play" %% "play-mailer-guice" % "7.0.2",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.854",
+  "com.typesafe.play" %% "play-mailer-guice" % "8.0.1",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "ch.qos.logback" % "logback-core" % "1.2.3",
-  "io.swagger" %% "swagger-play2" % "1.7.1",
+  "com.iterable" %% "swagger-play" % "2.0.1",
   "org.bytedeco" % "javacv" % javacvVersion excludeAll(
     ExclusionRule(organization = "org.bytedeco.javacpp-presets"),
     ExclusionRule(organization = "org.bytedeco.javacpp")

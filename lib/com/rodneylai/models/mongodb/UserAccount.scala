@@ -52,7 +52,11 @@ case class UserAccount (
 }
 
 @Singleton
-class UserAccountDao @Inject() (testAccountHelper:TestAccountHelper,mongoHelper:MongoHelper) {
+class UserAccountDao @Inject() (
+  testAccountHelper:TestAccountHelper,
+  mongoHelper:MongoHelper,
+  conversionHelper:ConversionHelper
+) {
   private val m_log:Logger = LoggerFactory.getLogger(this.getClass.getName)
   private lazy val m_testAccountNow:java.util.Date = Calendar.getInstance.getTime
   private lazy val m_testNormalUserUuid:java.util.UUID = java.util.UUID.randomUUID
@@ -194,7 +198,7 @@ class UserAccountDao @Inject() (testAccountHelper:TestAccountHelper,mongoHelper:
       userAccountBson.get[BsonString]("EmailAddressLowerCase").get.getValue,
       userAccountBson.get[BsonString]("Name").get.getValue,
       userAccountBson.get[BsonString]("FriendlyUrl").get.getValue,
-      ConversionHelper.asScalaBuffer(userAccountBson.get[BsonArray]("RoleList").get.getValues).map(_ match { case bsonString:BsonString => bsonString.getValue }).toSet,
+      conversionHelper.asScalaBuffer(userAccountBson.get[BsonArray]("RoleList").get.getValues).map(_ match { case bsonString:BsonString => bsonString.getValue }).toSet,
       userAccountBson.get[BsonString]("Status").get.getValue,
       new java.util.Date(userAccountBson.get[BsonDateTime]("UpdateDate").get.getValue),
       new java.util.Date(userAccountBson.get[BsonDateTime]("CreateDate").get.getValue),
