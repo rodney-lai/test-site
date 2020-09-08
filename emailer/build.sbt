@@ -1,6 +1,6 @@
 name := """emailer"""
 
-version := "v0.8.5"
+version := "v0.9.0"
 
 scalaVersion := "2.13.3"
 

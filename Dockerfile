@@ -62,6 +62,7 @@ ADD         emailer/src /home/deploy-user/root/build/emailer/src
 ADD         emailer/build.sbt /home/deploy-user/root/build/emailer/
 ADD         emailer/project/build.properties /home/deploy-user/root/build/emailer/project/
 ADD         emailer/project/assembly.sbt /home/deploy-user/root/build/emailer/project/
+ADD         api /home/deploy-user/root/build/api
 
 RUN         cp -r /home/deploy-user/root/build/ /home/deploy-user
 
@@ -80,6 +81,11 @@ RUN         mv /home/deploy-user/build/upload/target/universal/stage /home/deplo
 RUN         cd /home/deploy-user/build/emailer; /home/deploy-user/sbt/bin/sbt assembly
 RUN         mkdir /home/deploy-user/deploy-emailer
 RUN         mv /home/deploy-user/build/emailer/target/scala-2.13/*.jar /home/deploy-user/deploy-emailer
+RUN         cd /home/deploy-user/build/api; /home/deploy-user/sbt/bin/sbt assembly
+RUN         mkdir /home/deploy-user/deploy-api
+RUN         mv /home/deploy-user/build/api/target/scala-2.13/*.jar /home/deploy-user/deploy-api
+RUN         mkdir /home/deploy-user/deploy-api/files
+RUN         mv /home/deploy-user/build/api/README /home/deploy-user/deploy-api/files/README.md
 RUN         rm -rf /home/deploy-user/build
 
 FROM        ubuntu:20.04
@@ -103,13 +109,18 @@ USER        deploy-user
 COPY        --from=BUILD_IMAGE --chown=deploy-user:deploy-user /home/deploy-user/deploy-home /home/deploy-user/deploy-home
 COPY        --from=BUILD_IMAGE --chown=deploy-user:deploy-user /home/deploy-user/deploy-upload /home/deploy-user/deploy-upload
 COPY        --from=BUILD_IMAGE --chown=deploy-user:deploy-user /home/deploy-user/deploy-emailer /home/deploy-user/deploy-emailer
+COPY        --from=BUILD_IMAGE --chown=deploy-user:deploy-user /home/deploy-user/deploy-api /home/deploy-user/deploy-api
 
 RUN         date > /home/deploy-user/deploy-home/BUILD_DATE
 RUN         date > /home/deploy-user/deploy-upload/BUILD_DATE
 RUN         date > /home/deploy-user/deploy-emailer/BUILD_DATE
+RUN         date > /home/deploy-user/deploy-api/BUILD_DATE
 RUN         echo -n "#!/usr/bin/scala " > /home/deploy-user/deploy-emailer/emailer
 RUN         ls /home/deploy-user/deploy-emailer/emailer*.jar >> /home/deploy-user/deploy-emailer/emailer
 RUN         chmod 755 /home/deploy-user/deploy-emailer/emailer
+RUN         echo -n "#!/usr/bin/scala " > /home/deploy-user/deploy-api/api
+RUN         ls /home/deploy-user/deploy-api/test-api*.jar >> /home/deploy-user/deploy-api/api
+RUN         chmod 755 /home/deploy-user/deploy-api/api
 
 RUN         ls -la /home/deploy-user
 RUN         ls -la /home/deploy-user/deploy-home
@@ -117,7 +128,9 @@ RUN         ls -la /home/deploy-user/deploy-home/bin
 RUN         ls -la /home/deploy-user/deploy-upload
 RUN         ls -la /home/deploy-user/deploy-upload/bin
 RUN         ls -la /home/deploy-user/deploy-emailer
+RUN         ls -la /home/deploy-user/deploy-api
+RUN         ls -la /home/deploy-user/deploy-api/files
 
 WORKDIR     /home/deploy-user/deploy-home/bin
 ENTRYPOINT  ["./rodney-test-site-home","-Dhttps.port=9443"]
-EXPOSE      9000 9443
+EXPOSE      9000 9443 8088

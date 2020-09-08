@@ -1,11 +1,13 @@
-Rodney's Test Site v0.8.5
+Rodney's Test Site v0.9.0
 =========================
 
 [![Build Status](https://travis-ci.org/rodney-lai/test-site.svg?branch=master)](https://travis-ci.org/rodney-lai/test-site)
 
 rlai [ at ] irismedia [ dot ] com
 
-[Live Test Site](http://test.rodneylai.com)
+[Live Test App](https://app.rodneylai.com)
+
+[Live Test Site](https://test.rodneylai.com)
 
 [GitHub Repository](https://github.com/rodney-lai)
 

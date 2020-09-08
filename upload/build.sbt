@@ -2,7 +2,7 @@ name := """rodney-test-site-upload"""
 
 maintainer := "rlai@irismedia.com"
 
-version := "0.8.5"
+version := "0.9.0"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
