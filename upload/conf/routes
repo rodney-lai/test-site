@@ -19,7 +19,6 @@ GET     /favicon.png                                  controllers.Assets.version
 GET     /favicon.ico                                  controllers.Assets.versioned(path="/public",file="favicon.png")
 GET     /js/*file                                     controllers.Assets.versioned(path="/public/javascripts", file)
 GET     /js/swagger/*file                             controllers.Assets.versioned(path="/public/javascripts/swagger", file)
-GET     /js/swagger/lang/*file                        controllers.Assets.versioned(path="/public/javascripts/swagger/lang", file)
 GET     /css/*file                                    controllers.Assets.versioned(path="/public/stylesheets", file)
 GET     /css/swagger/*file                            controllers.Assets.versioned(path="/public/stylesheets/swagger", file)
 GET     /img/*file                                    controllers.Assets.versioned(path="/public/images", file)

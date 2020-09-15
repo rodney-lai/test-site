@@ -11,7 +11,7 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerTest with OneBrowse
 
     "work from within a browser" in {
 
-      go to ("http://localhost:" + port)
+      go to ("http://localhost:" + port + "/swagger.json")
 
       pageSource must include ("swagger")
     }
