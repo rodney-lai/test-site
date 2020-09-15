@@ -9,12 +9,16 @@ This project reads from a Redis queue and sents emails built from templates.
 
 Environment Variables for MongoDB:
 
+MONGO_URL - mongo url  
+
+if not using MONGO_URL, then:
 MONGO_HOST - mongo host
 MONGO_PORT - mongo port
 MONGO_USERNAME - mongo user name
 MONGO_PASSWORD - mongo user password
-MONGO_DATABASE - mongo database name
 MONGO_AUTHMECHANISM - mongo auth mechanism [ MONGODB-CR or SCRAM-SHA-1 ]
+
+MONGO_DATABASE - mongo database name
 
 Environment Variables for PostgreSQL:
 

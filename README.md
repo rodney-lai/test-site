@@ -77,12 +77,16 @@ PLAY_APPLICATION_SECRET - play crytographic secret.  Refer to Play Framework doc
 
 Environment Variables for MongoDB:
 
+MONGO_URL - mongo url  
+
+if not using MONGO_URL, then:  
 MONGO_HOST - mongo host  
 MONGO_PORT - mongo port  
 MONGO_USERNAME - mongo user name  
 MONGO_PASSWORD - mongo user password  
-MONGO_DATABASE - mongo database name  
 MONGO_AUTHMECHANISM - mongo auth mechanism [ SCRAM-SHA-1 or SCRAM-SHA-256 ]  
+
+MONGO_DATABASE - mongo database name  
 
 Environment Variables for MemCached:
 
@@ -129,7 +133,7 @@ Frontend Libraries
 * DOM Library - [jQuery](http://jquery.com/)
 * MVC Framework - [backbone.js](http://backbonejs.org/)
 * Utility Library - [underscore.js](http://underscorejs.org/)
-* Data Binding for Backbone - [epoxy.js](http://epoxyjs.org/)
+* Data Binding for Backbone - [epoxy.js](https://github.com/gmac/backbone.epoxy)
 * Backbone Framework - [marionette.js](http://marionettejs.com/)
 * Data Visualization - [plotly](https://plot.ly)
 * React Framework - [React](https://facebook.github.io/react/)
@@ -140,7 +144,7 @@ Build, Deploy, Hosting
 * Build and Deploy - [Docker](https://www.docker.com/)
 * Web Server Hosting - [Amazon Web Services (AWS)](http://aws.amazon.com/)
 * Frontend Http Server - [Nginx](https://www.nginx.com/)
-* MongoDB Hosting - [mLab](https://mlab.com/)
+* MongoDB Hosting - [MongoDB Atlas](https://mongodb.com/)
 * MemCached/Redis Hosting - [RedisLabs](https://redislabs.com/)
 * Logging - [Papertrail](https://papertrailapp.com/)
 * Monitoring - [UptimeRobot](http://uptimerobot.com/)
@@ -150,7 +154,7 @@ Tools
 -----
 
 * Editor - [Atom](https://atom.io/)
-* Mongo GUI Client - [MongoChef](http://3t.io/)
+* Mongo GUI Client - [Robo 3T (formerly RoboMongo)](https://robomongo.org/)
 * Redis GUI Client - [Redis Desktop Manager](https://redisdesktop.com/)
 
 Copyright (c) 2015-2020 Rodney S.K. Lai

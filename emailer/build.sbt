@@ -28,7 +28,7 @@ libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.3.3",
   "org.apache.commons" % "commons-email" % "1.5",
   "org.mindrot" % "jbcrypt" % "0.4",
-  "org.mongodb.scala" %% "mongo-scala-driver" % "4.0.4",
+  "org.mongodb.scala" %% "mongo-scala-driver" % "4.1.0",
   "org.slf4j" % "slf4j-api" % "1.7.30",
   "org.scalatest" %% "scalatest" % "3.2.2" % "test"
 )

@@ -47,7 +47,7 @@ Frontend Libraries
 * DOM Library - [jQuery](http://jquery.com/)
 * MVC Framework - [backbone.js](http://backbonejs.org/)
 * Utility Library - [underscore.js](http://underscorejs.org/)
-* Data Binding for Backbone - [epoxy.js](http://epoxyjs.org/)
+* Data Binding for Backbone - [epoxy.js](https://github.com/gmac/backbone.epoxy)
 * Backbone Framework - [marionette.js](http://marionettejs.com/)
 * Data Visualization - [plotly](https://plot.ly)
 * React Framework - [React](https://facebook.github.io/react/)
@@ -58,7 +58,7 @@ Build, Deploy, Hosting
 * Build and Deploy - [Docker](https://www.docker.com/)
 * Web Server Hosting - [Amazon Web Services (AWS)](http://aws.amazon.com/)
 * Frontend Http Server - [Nginx](https://www.nginx.com/)
-* MongoDB Hosting - [mLab](https://mlab.com/)
+* MongoDB Hosting - [MongoDB Atlas](https://mongodb.com/)
 * MemCached/Redis Hosting - [RedisLabs](https://redislabs.com/)
 * Logging - [Papertrail](https://papertrailapp.com/)
 * Monitoring - [UptimeRobot](http://uptimerobot.com/)
@@ -68,5 +68,5 @@ Tools
 -----
 
 * Editor - [Atom](https://atom.io/)
-* Mongo GUI Client - [MongoChef](http://3t.io/)
+* Mongo GUI Client - [Robo 3T (formerly RoboMongo)](https://robomongo.org/)
 * Redis GUI Client - [Redis Desktop Manager](https://redisdesktop.com/)

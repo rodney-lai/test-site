@@ -93,6 +93,7 @@ class MongoHelper @Inject() (
 
   m_log.debug("init")
 
+  private val       m_url:String = configHelper.getString("mongo.url").getOrElse("")
   private val       m_host:String = configHelper.getString("mongo.host").getOrElse("")
   private val       m_port:Int = configHelper.getInt("mongo.port").getOrElse(27017)
   private val       m_database:String = configHelper.getString("mongo.database").getOrElse("")
@@ -107,35 +108,38 @@ class MongoHelper @Inject() (
     "SCRAM-SHA-256" -> m_scramSha256Credentials
   )
   private lazy val  m_mongoClient:MongoClient = {
-                      if ((m_userName.isEmpty) || (m_password.isEmpty)) {
-                        val m_settings:MongoClientSettings = MongoClientSettings.builder()
-                          .applyToClusterSettings(
-                            new Block[ClusterSettings.Builder]() {
-                              override def apply(builder: ClusterSettings.Builder): Unit = builder.hosts(conversionHelper.asJavaList(List(m_server)))
-                            }
-                          )
-                          .retryWrites(false)
-                          .build()
+    if (m_url.nonEmpty) {
+      System.setProperty("org.mongodb.async.type", "netty")
+      MongoClient(m_url)
+    } else if ((m_userName.isEmpty) || (m_password.isEmpty)) {
+      val m_settings:MongoClientSettings = MongoClientSettings.builder()
+        .applyToClusterSettings(
+          new Block[ClusterSettings.Builder]() {
+            override def apply(builder: ClusterSettings.Builder): Unit = builder.hosts(conversionHelper.asJavaList(List(m_server)))
+          }
+        )
+        .retryWrites(false)
+        .build()
 
-                        MongoClient(m_settings)
-                      } else {
-                        val m_settings:MongoClientSettings = MongoClientSettings.builder()
-                          .applyToClusterSettings(
-                            new Block[ClusterSettings.Builder]() {
-                              override def apply(builder: ClusterSettings.Builder): Unit = builder.hosts(conversionHelper.asJavaList(List(m_server)))
-                            }
-                          )
-                          .credential(m_credentials.getOrElse(m_authMechanism,m_scramSha1Credentials))
-                          .retryWrites(false)
-                          .build()
+      MongoClient(m_settings)
+    } else {
+      val m_settings:MongoClientSettings = MongoClientSettings.builder()
+        .applyToClusterSettings(
+          new Block[ClusterSettings.Builder]() {
+            override def apply(builder: ClusterSettings.Builder): Unit = builder.hosts(conversionHelper.asJavaList(List(m_server)))
+          }
+        )
+        .credential(m_credentials.getOrElse(m_authMechanism,m_scramSha1Credentials))
+        .retryWrites(false)
+        .build()
 
-                        MongoClient(m_settings)
-                      }
-                    }
+      MongoClient(m_settings)
+    }
+  }
   private lazy val  m_mongoDatabase:MongoDatabase = m_mongoClient.getDatabase(m_database)
 
   val isActive:Boolean = {
-    m_host.length > 0
+    (m_host.length > 0) || (m_url.length > 0)
   }
 
   def close():Unit = {
