@@ -9,14 +9,21 @@
 </div>
 <div id="primary-container" class="join-page">
   <div class="content">
-    <div class="message-container"></div>
 
-    <div class="join-container"></div>
+    <div id="main-content"></div>
 
     <div class="clearing">&nbsp;</div>
   </div>
 </div>
 
+
+<script type="text/html" id="container-template">
+
+<div class="message-container"></div>
+
+<div class="join-container"></div>
+
+</script>
 
 <script type="text/html" id="join-template">
 
@@ -79,136 +86,143 @@
     @views.html.components.namespace_init(Seq("home"))
     @views.html.components.epoxy_init()
     com.rodneylai.home.join = function() {
-      var m_app;
-
       return {
         init: function() {
-          m_app = new Backbone.Marionette.Application();
-
-          m_app.module('model', function (model, app, Backbone) {
-
-            model.Join = Backbone.Model.extend({
-              defaults: {
-                full_name:"",
-                email:"",
-                user_name:"",
-                password:""
-              },
-              url: '@controllers.services.routes.auth.join'
-            });
-
-            model.Errors = Backbone.Model.extend({
-              defaults: {
-                errors:[]
-              }
-            });
+          var App = Backbone.Marionette.Application.extend({
+            region: '#main-content',
+            model: {
+              Join: Backbone.Model.extend({
+                defaults: {
+                  full_name:"",
+                  email:"",
+                  user_name:"",
+                  password:""
+                },
+                url: '@controllers.services.routes.auth.join'
+              }),
+              Errors: Backbone.Model.extend({
+                defaults: {
+                  errors:[]
+                }
+              })
+            },
           });
 
-          m_app.module('view', function (view, app, Backbone, Marionette) {
+          var app = new App();
 
-            view.Join = com.rodneylai.EpoxyItemView.extend({
-              model: app.model.Join,
-              bindings: "data-bind",
-              template: Backbone.Marionette.TemplateCache.get("#join-template"),
-              ui: {
-                full_name_input:"#full-name-input",
-                email_input:"#email-input",
-                user_name_input:"#user-name-input",
-                password_input:"#password-input",
-                join_button:".join-button",
-                join_wait_img:".join-wait-img"
-              },
-              events: {
-                "click .join-button[disabled!=disabled]" : "join_click",
-                "blur #full-name-input" : "create_user_name",
-                "keyup #full-name-input" : "check_for_enter",
-                "keyup #email-input" : "check_for_enter",
-                "keyup #user-name-input" : "check_for_enter",
-                "keyup #password-input" : "check_for_enter"
-              },
-              check_for_enter:function(ev){
-                if (ev.keyCode == 13) {
-                  this.join_click();
-                }
-              },
-              create_user_name:function(ev){
-                if ((this.ui.full_name_input.val().length >= 3) && (this.ui.user_name_input.val().length == 0)) {
-                  this.ui.user_name_input.val(this.ui.full_name_input.val().toLowerCase().trim().replace(/\s\s+/g, ' ').replace(/ /g, '-').replace(/~[a-z0-9-]/g, ''));
-                }
-              },
-              join_click:function(){
-                var view = this;
+          app.view = {};
 
-                this.ui.join_wait_img.show();
-                this.ui.full_name_input.attr("disabled","disabled");
-                this.ui.email_input.attr("disabled","disabled");
-                this.ui.user_name_input.attr("disabled","disabled");
-                this.ui.password_input.attr("disabled","disabled");
-                this.ui.join_button.attr("disabled","disabled");
-                this.model.save(null,
-                  {
-                    success: function(model, response, options){
-                      if (response == 'fail') {
-                        view.ui.join_wait_img.hide();
-                        view.ui.full_name_input.removeAttr("disabled");
-                        view.ui.email_input.removeAttr("disabled");
-                        view.ui.user_name_input.removeAttr("disabled");
-                        view.ui.password_input.removeAttr("disabled");
-                        view.ui.join_button.removeAttr("disabled");
-                        m_app.message.show(new m_app.view.UnexpectedError());
-                      } else {
-                        document.location = '@routes.Auth.login';
-                      }
-                    },
-                    error: function(model, xhr, options){
+          app.view.Container = Marionette.View.extend({
+            template: Backbone.Marionette.TemplateCache.get("#container-template"),
+            regions: {
+              message: '.message-container',
+              join: '.join-container'
+            }
+          });
+
+          app.view.Join = com.rodneylai.EpoxyView.extend({
+            model: app.model.Join,
+            bindings: "data-bind",
+            template: Backbone.Marionette.TemplateCache.get("#join-template"),
+            ui: {
+              full_name_input:"#full-name-input",
+              email_input:"#email-input",
+              user_name_input:"#user-name-input",
+              password_input:"#password-input",
+              join_button:".join-button",
+              join_wait_img:".join-wait-img"
+            },
+            events: {
+              "click .join-button[disabled!=disabled]" : "join_click",
+              "blur #full-name-input" : "create_user_name",
+              "keyup #full-name-input" : "check_for_enter",
+              "keyup #email-input" : "check_for_enter",
+              "keyup #user-name-input" : "check_for_enter",
+              "keyup #password-input" : "check_for_enter"
+            },
+            check_for_enter:function(ev){
+              if (ev.keyCode == 13) {
+                this.join_click();
+              }
+            },
+            create_user_name:function(ev){
+              if ((this.ui.full_name_input.val().length >= 3) && (this.ui.user_name_input.val().length == 0)) {
+                var userName = this.ui.full_name_input.val().toLowerCase().trim().replace(/\s\s+/g, ' ').replace(/ /g, '-').replace(/~[a-z0-9-]/g, '');
+
+                this.model.set("user_name",userName);
+              }
+            },
+            join_click:function(){
+              var view = this;
+
+              this.ui.join_wait_img.show();
+              this.ui.full_name_input.attr("disabled","disabled");
+              this.ui.email_input.attr("disabled","disabled");
+              this.ui.user_name_input.attr("disabled","disabled");
+              this.ui.password_input.attr("disabled","disabled");
+              this.ui.join_button.attr("disabled","disabled");
+              this.model.save(null,
+                {
+                  success: function(model, response, options){
+                    if (response == 'fail') {
                       view.ui.join_wait_img.hide();
                       view.ui.full_name_input.removeAttr("disabled");
                       view.ui.email_input.removeAttr("disabled");
                       view.ui.user_name_input.removeAttr("disabled");
                       view.ui.password_input.removeAttr("disabled");
                       view.ui.join_button.removeAttr("disabled");
-                      if (xhr.responseJSON == "fail") {
-                        m_app.message.show(new m_app.view.UnexpectedError());
-                      } else {
-                        m_app.message.show(new m_app.view.Errors({ model : new m_app.model.Errors({errors:xhr.responseJSON})}));
-                      }
+                      app.getView().getRegion('message').show(new app.view.UnexpectedError());
+                    } else {
+                      document.location = '@routes.Auth.login';
+                    }
+                  },
+                  error: function(model, xhr, options){
+                    view.ui.join_wait_img.hide();
+                    view.ui.full_name_input.removeAttr("disabled");
+                    view.ui.email_input.removeAttr("disabled");
+                    view.ui.user_name_input.removeAttr("disabled");
+                    view.ui.password_input.removeAttr("disabled");
+                    view.ui.join_button.removeAttr("disabled");
+                    if (xhr.responseJSON == "fail") {
+                      app.getView().getRegion('message').show(new app.view.UnexpectedError());
+                    } else {
+                      app.getView().getRegion('message').show(new app.view.Errors({ model : new app.model.Errors({errors:xhr.responseJSON})}));
                     }
                   }
-                );
-              }
-            });
-
-            view.Errors = Marionette.ItemView.extend({
-              template: Backbone.Marionette.TemplateCache.get("#errors-template"),
-              model: app.model.Errors
-            });
-
-            view.UnexpectedError = Marionette.ItemView.extend({
-              template: Backbone.Marionette.TemplateCache.get("#unexpected-error-template"),
-              ui: {
-                error_box:".error-box"
-              },
-              onShow: function(){
-                var ui = this.ui;
-                setInterval(function(){$(ui.error_box).fadeOut()},5000);
-              }
-            });
-
-            view.Wait = Marionette.ItemView.extend({
-              template: Backbone.Marionette.TemplateCache.get("#wait-template")
-            });
-
+                }
+              );
+            }
           });
 
-          m_app.addRegions({message : '.message-container',
-                            join : '.join-container'
+          app.view.Errors = Marionette.View.extend({
+            template: Backbone.Marionette.TemplateCache.get("#errors-template"),
+            model: app.model.Errors
           });
 
-          m_app.addInitializer(function(options){
-            m_app.join.show(new m_app.view.Join({ model : new m_app.model.Join() }));
+          app.view.UnexpectedError = Marionette.View.extend({
+            template: Backbone.Marionette.TemplateCache.get("#unexpected-error-template"),
+            ui: {
+              error_box:".error-box"
+            },
+            onShow: function(){
+              var ui = this.ui;
+              setInterval(function(){$(ui.error_box).fadeOut()},5000);
+            }
           });
 
-          m_app.start();
+          app.view.Wait = Marionette.View.extend({
+            template: Backbone.Marionette.TemplateCache.get("#wait-template")
+          });
+
+          app.on('start', function() {
+            var containerView = new app.view.Container();
+            var joinView = new app.view.Join({ model : new app.model.Join() });
+
+            app.showView(containerView);
+            containerView.getRegion('join').show(joinView);
+          });
+
+          app.start();
         }
       }
     }();
@@ -221,7 +235,7 @@
 
 @*
  *
- * Copyright (c) 2015-2017 Rodney S.K. Lai
+ * Copyright (c) 2015-2020 Rodney S.K. Lai
  * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for

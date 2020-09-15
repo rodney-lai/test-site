@@ -59,7 +59,7 @@ class home @Inject() (override val environment:play.api.Environment,override val
     }
   }
 
-  @ApiOperation(value = "get_scraped_images", notes = "returns list of scraped images", nickname="get_scraped_images", response = classOf[String], responseContainer="List", httpMethod = "GET")
+  @ApiOperation(value = "get_scraped_images", notes = "returns list of scraped images", nickname = "get_scraped_images", response = classOf[String], responseContainer = "List", httpMethod = "GET")
   def get_scraped_images = Action {
     (configuration.getString("scrape.img.url"),configuration.getString("scrape.img.prefix.url")) match {
       case (Some(url),Some(prefixUrl)) => Ok(Json.toJson(Random.shuffle(doScrapeImages(url,prefixUrl))))
@@ -67,7 +67,7 @@ class home @Inject() (override val environment:play.api.Environment,override val
     }
   }
 
-  @ApiOperation(value = "who_am_i", notes = "returns who am i", nickname="who_am_i", response = classOf[String], httpMethod = "GET")
+  @ApiOperation(value = "who_am_i", notes = "returns who am i", nickname = "who_am_i", response = classOf[String], httpMethod = "GET")
   def who_am_i = StackAction { implicit request =>
     loggedIn match {
       case Some(account) if (environment.mode != Mode.Dev) => Ok(Json.toJson(account.email))

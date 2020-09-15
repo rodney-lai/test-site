@@ -9,14 +9,21 @@
 </div>
 <div id="primary-container" class="login-page">
   <div class="content">
-    <div class="message-container"></div>
 
-    <div class="login-container"></div>
+    <div id="main-content"></div>
 
     <div class="clearing">&nbsp;</div>
   </div>
 </div>
 
+
+<script type="text/html" id="container-template">
+
+<div class="message-container"></div>
+
+<div class="login-container"></div>
+
+</script>
 
 <script type="text/html" id="login-template">
 
@@ -72,122 +79,128 @@
     @views.html.components.namespace_init(Seq("home"))
     @views.html.components.epoxy_init()
     com.rodneylai.home.login = function() {
-      var m_app;
-
       return {
         init: function() {
-          m_app = new Backbone.Marionette.Application();
-
-          m_app.module('model', function (model, app, Backbone) {
-
-            model.Login = Backbone.Model.extend({
-              defaults: {
-                login : null,
-                password : null
-              },
-              url: '@controllers.services.routes.auth.login'
-            });
-
+          var App = Backbone.Marionette.Application.extend({
+            region: '#main-content'
           });
 
-          m_app.module('view', function (view, app, Backbone, Marionette) {
+          var app = new App();
 
-            view.Login = com.rodneylai.EpoxyItemView.extend({
-              model: app.model.Login,
-              bindings: "data-bind",
-              template: Backbone.Marionette.TemplateCache.get("#login-template"),
-              ui: {
-                login_input:"#login-input",
-                password_input:"#password-input",
-                login_button:".login-button",
-                login_wait_img:".login-wait-img"
-              },
-              events: {
-                "click .login-button[disabled!=disabled]" : "login_click",
-                "keyup #login-input" : "check_for_enter",
-                "keyup #password-input" : "check_for_enter"
-              },
-              check_for_enter:function(ev){
-                if (ev.keyCode == 13) {
-                  this.login_click();
-                }
-              },
-              login_click:function(){
-                var view = this;
+          app.model = {};
 
-                this.ui.login_wait_img.show();
-                this.ui.login_input.attr("disabled","disabled");
-                this.ui.password_input.attr("disabled","disabled");
-                this.ui.login_button.attr("disabled","disabled");
-                this.model.save(null,
-                  {
-                    success: function(model, response, options){
-                      if (response == 'fail') {
-                        m_app.message.show(new m_app.view.LoginFailedError());
-                      } else {
+          app.model.Login = Backbone.Model.extend({
+            defaults: {
+              login : null,
+              password : null
+            },
+            url: '@controllers.services.routes.auth.login'
+          });
+
+          app.view = {};
+
+          app.view.Container = Marionette.View.extend({
+            template: Backbone.Marionette.TemplateCache.get("#container-template"),
+            regions: {
+              message: '.message-container',
+              login: '.login-container'
+            }
+          });
+
+          app.view.Login = com.rodneylai.EpoxyView.extend({
+            model: app.model.Login,
+            bindings: "data-bind",
+            template: Backbone.Marionette.TemplateCache.get("#login-template"),
+            ui: {
+              login_input:"#login-input",
+              password_input:"#password-input",
+              login_button:".login-button",
+              login_wait_img:".login-wait-img"
+            },
+            events: {
+              "click .login-button[disabled!=disabled]" : "login_click",
+              "keyup #login-input" : "check_for_enter",
+              "keyup #password-input" : "check_for_enter"
+            },
+            check_for_enter:function(ev){
+              if (ev.keyCode == 13) {
+                this.login_click();
+              }
+            },
+            login_click:function(){
+              var view = this;
+
+              this.ui.login_wait_img.show();
+              this.ui.login_input.attr("disabled","disabled");
+              this.ui.password_input.attr("disabled","disabled");
+              this.ui.login_button.attr("disabled","disabled");
+              this.model.save(null,
+                {
+                  success: function(model, response, options){
+                    if (response == 'fail') {
+                      app.getView().getRegion('message').show(new app.view.LoginFailedError());
+                    } else {
 @request.queryString.get("return_url") match {
   case Some(returnUrl) => {
-                        document.location = '@returnUrl';
+                      document.location = '@returnUrl';
   }
   case None => {
-                        document.location = response;
+                      document.location = response;
   }
 }
-                      }
-                    },
-                    error: function(model, xhr, options){
-                      view.ui.login_input.removeAttr("disabled");
-                      view.ui.password_input.removeAttr("disabled");
-                      view.ui.login_button.removeAttr("disabled");
-                      view.ui.login_wait_img.hide();
-                      if (xhr.status == 403) {
-                        m_app.message.show(new m_app.view.LoginFailedError());
-                      } else {
-                        m_app.message.show(new m_app.view.UnexpectedError());
-                      }
+                    }
+                  },
+                  error: function(model, xhr, options){
+                    view.ui.login_input.removeAttr("disabled");
+                    view.ui.password_input.removeAttr("disabled");
+                    view.ui.login_button.removeAttr("disabled");
+                    view.ui.login_wait_img.hide();
+                    if (xhr.status == 403) {
+                      app.getView().getRegion('message').show(new app.view.LoginFailedError());
+                    } else {
+                      app.getView().getRegion('message').show(new app.view.UnexpectedError());
                     }
                   }
-                );
-              }
-            });
-
-            view.UnexpectedError = Marionette.ItemView.extend({
-              template: Backbone.Marionette.TemplateCache.get("#unexpected-error-template"),
-              ui: {
-                error_box:".error-box"
-              },
-              onShow: function(){
-                var ui = this.ui;
-                setInterval(function(){$(ui.error_box).fadeOut()},5000);
-              }
-            });
-
-            view.LoginFailedError = Marionette.ItemView.extend({
-              template: Backbone.Marionette.TemplateCache.get("#login-failed-error-template"),
-              ui: {
-                error_box:".error-box"
-              },
-              onShow: function(){
-                var ui = this.ui;
-                setInterval(function(){$(ui.error_box).fadeOut()},5000);
-              }
-            });
-
-            view.Wait = Marionette.ItemView.extend({
-              template: Backbone.Marionette.TemplateCache.get("#wait-template")
-            });
-
+                }
+              );
+            }
           });
 
-          m_app.addRegions({message : '.message-container',
-                            login : '.login-container'
+          app.view.UnexpectedError = Marionette.View.extend({
+            template: Backbone.Marionette.TemplateCache.get("#unexpected-error-template"),
+            ui: {
+              error_box:".error-box"
+            },
+            onShow: function(){
+              var ui = this.ui;
+              setInterval(function(){$(ui.error_box).fadeOut()},5000);
+            }
           });
 
-          m_app.addInitializer(function(options){
-            m_app.login.show(new m_app.view.Login({ model : new m_app.model.Login() }));
+          app.view.LoginFailedError = Marionette.View.extend({
+            template: Backbone.Marionette.TemplateCache.get("#login-failed-error-template"),
+            ui: {
+              error_box:".error-box"
+            },
+            onShow: function(){
+              var ui = this.ui;
+              setInterval(function(){$(ui.error_box).fadeOut()},5000);
+            }
           });
 
-          m_app.start();
+          app.view.Wait = Marionette.View.extend({
+            template: Backbone.Marionette.TemplateCache.get("#wait-template")
+          });
+
+          app.on('start', function() {
+            var containerView = new app.view.Container();
+            var loginView = new app.view.Login({ model : new app.model.Login() });
+
+            app.showView(containerView);
+            containerView.getRegion('login').show(loginView);
+          });
+
+          app.start();
         }
       }
     }();
@@ -200,7 +213,7 @@
 
 @*
  *
- * Copyright (c) 2015-2017 Rodney S.K. Lai
+ * Copyright (c) 2015-2020 Rodney S.K. Lai
  * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for

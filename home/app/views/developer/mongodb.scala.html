@@ -65,31 +65,26 @@
     @views.html.components.namespace_init(Seq("developer"))
     @views.html.components.epoxy_init()
     com.rodneylai.developer.mongodb = function() {
-      var m_app;
-
       return {
         init: function() {
-          m_app = new Backbone.Marionette.Application();
-
-          m_app.module('model', function (model, app, Backbone) {
-
+          var App = Backbone.Marionette.Application.extend({
+            region: '#main-content'
           });
 
-          m_app.module('view', function (view, app, Backbone, Marionette) {
+          var app = new App();
 
-            view.Wait = Marionette.ItemView.extend({
-              template: Backbone.Marionette.TemplateCache.get("#wait-template")
-            });
+          app.model = {};
 
+          app.view = {};
+
+          app.view.Wait = Marionette.View.extend({
+            template: Backbone.Marionette.TemplateCache.get("#wait-template")
           });
 
-          m_app.addRegions({
+          app.on('start', function() {
           });
 
-          m_app.addInitializer(function(options){
-          });
-
-          m_app.start();
+          app.start();
         }
       }
     }();
@@ -102,7 +97,7 @@
 
 @*
  *
- * Copyright (c) 2015-2017 Rodney S.K. Lai
+ * Copyright (c) 2015-2020 Rodney S.K. Lai
  * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for

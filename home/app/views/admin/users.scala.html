@@ -9,13 +9,20 @@
 </div>
 <div id="primary-container" class="manage-users-page">
   <div class="content">
-    <div class="message-container"></div>
+    <div id="main-content"></div>
 
-    <div class="user-list-container"></div>
-    <div class="loading-container"></div>
     <div class="clearing">&nbsp;</div>
   </div>
 </div>
+
+<script type="text/html" id="container-template">
+
+<div class="message-container"></div>
+
+<div class="user-list-container"></div>
+<div class="loading-container"></div>
+
+</script>
 
 <script type="text/html" id="unexpected-error-template">
 
@@ -96,168 +103,173 @@
     @views.html.components.namespace_init(Seq("admin"))
     @views.html.components.epoxy_init()
     com.rodneylai.admin.users = function() {
-      var m_app;
       var m_userList = null;
       var m_prevScrollPos = 0;
 
       return {
         init: function() {
-          m_app = new Backbone.Marionette.Application();
-
-          m_app.module('model', function (model, app, Backbone) {
-
-            model.User = Backbone.Model.extend({
-              defaults: {
-                id: null,
-                email: null,
-                name: null,
-                roles: null,
-                status: null,
-                added_date: null,
-                added_ago: null
-              },
-              urlRoot:'/services/admin/user'
-            });
-
-                      model.UserCollection = Backbone.Collection.extend({
-                          model: m_app.model.User
-                      });
-
+          var App = Backbone.Marionette.Application.extend({
+            region: '#main-content',
           });
 
-          m_app.module('view', function (view, app, Backbone, Marionette) {
+          var app = new App();
 
-            view.User = Marionette.ItemView.extend({
-              template: Backbone.Marionette.TemplateCache.get("#user-template"),
-              model: app.model.User,
-              className: "user-item-container",
-              templateHelpers: function () {
-                return {
-                  mode: this.options.mode
-                };
-              },
-              ui: {
-                status_selector:".status-selector",
-                role_selector:".role-selector",
-                button_wait_img:".button-wait-img",
-                edit_button:".edit-button",
-                update_button:".update-button",
-                cancel_button:".cancel-button"
-              },
-              events: {
-                "click .edit-button[disabled!=disabled]" : "edit_click",
-                "click .update-button[disabled!=disabled]" : "update_click",
-                "click .cancel-button[disabled!=disabled]" : "cancel_click"
-              },
-              onDomRefresh: function(){
-                this.ui.role_selector.tokenize({
-                  newElements:false,
-                  displayDropdownOnFocus:true,
-                  placeholder:"normal user"
-                });
-              },
-              edit_click:function(ev) {
-                this.options.mode = "edit";
-                this.render();
-              },
-              update_click:function(ev) {
-                var view = this;
-                var saveStatus = this.model.get("status");
-                var saveRoles = this.model.get("roles");
+          app.model = {};
 
-                this.ui.status_selector.attr("disabled","disabled");
-                this.ui.role_selector.tokenize().disable();
-                this.ui.button_wait_img.show();
-                this.ui.update_button.attr("disabled","disabled");
-                this.ui.cancel_button.attr("disabled","disabled");
+          app.model.User = Backbone.Model.extend({
+            defaults: {
+              id: null,
+              email: null,
+              name: null,
+              roles: null,
+              status: null,
+              added_date: null,
+              added_ago: null
+            },
+            urlRoot:'/services/admin/user'
+          });
 
-                this.model.set("status",this.ui.status_selector.val());
-                this.model.set("roles",this.ui.role_selector.val() || []);
-                this.model.save(null,
-                  {
-                    success: function(model, response, options){
-                      view.options.mode = "view";
-                      view.render();
-                    },
-                    error: function(model, xhr, options){
-                      view.model.set("status",saveStatus);
-                      view.model.set("roles",saveRoles);
-                      m_app.message.show(new m_app.view.UnexpectedError());
-                      view.options.mode = "view";
-                      view.render();
-                    }
+          app.model.UserCollection = Backbone.Collection.extend({
+            model: app.model.User
+          });
+
+          app.view = {};
+
+          app.view.Container = Marionette.View.extend({
+            template: Backbone.Marionette.TemplateCache.get("#container-template"),
+            regions: {
+              message: '.message-container',
+              userList: '.user-list-container',
+              loading: '.loading-container'
+            }
+          });
+
+          app.view.User = Marionette.View.extend({
+            template: Backbone.Marionette.TemplateCache.get("#user-template"),
+            model: app.model.User,
+            className: "user-item-container",
+            templateContext: function () {
+              return {
+                mode: this.options.mode
+              };
+            },
+            ui: {
+              status_selector:".status-selector",
+              role_selector:".role-selector",
+              button_wait_img:".button-wait-img",
+              edit_button:".edit-button",
+              update_button:".update-button",
+              cancel_button:".cancel-button"
+            },
+            events: {
+              "click .edit-button[disabled!=disabled]" : "edit_click",
+              "click .update-button[disabled!=disabled]" : "update_click",
+              "click .cancel-button[disabled!=disabled]" : "cancel_click"
+            },
+            onDomRefresh: function(){
+              this.ui.role_selector.tokenize({
+                newElements:false,
+                displayDropdownOnFocus:true,
+                placeholder:"normal user"
+              });
+            },
+            edit_click:function(ev) {
+              this.options.mode = "edit";
+              this.render();
+            },
+            update_click:function(ev) {
+              var view = this;
+              var saveStatus = this.model.get("status");
+              var saveRoles = this.model.get("roles");
+
+              this.ui.status_selector.attr("disabled","disabled");
+              this.ui.role_selector.tokenize().disable();
+              this.ui.button_wait_img.show();
+              this.ui.update_button.attr("disabled","disabled");
+              this.ui.cancel_button.attr("disabled","disabled");
+
+              this.model.set("status",this.ui.status_selector.val());
+              this.model.set("roles",this.ui.role_selector.val() || []);
+              this.model.save(null,
+                {
+                  success: function(model, response, options){
+                    view.options.mode = "view";
+                    view.render();
+                  },
+                  error: function(model, xhr, options){
+                    view.model.set("status",saveStatus);
+                    view.model.set("roles",saveRoles);
+                    app.getView().getRegion('message').show(new app.view.UnexpectedError());
+                    view.options.mode = "view";
+                    view.render();
                   }
-                );
-              },
-              cancel_click:function(ev) {
-                this.options.mode = "view";
-                this.render();
-              }
-            });
-
-            view.UserList = Marionette.CollectionView.extend({
-              collection: app.model.UserCollection,
-              childView: view.User,
-              childViewOptions: function(model, index) {
-                return {
-                  childIndex: index,
-                  mode: "view"
                 }
-              }
-            });
-
-            view.UnexpectedError = Marionette.ItemView.extend({
-              template: Backbone.Marionette.TemplateCache.get("#unexpected-error-template"),
-              ui: {
-                error_box:".error-box"
-              },
-              onShow: function(){
-                var ui = this.ui;
-                setInterval(function(){$(ui.error_box).fadeOut()},5000);
-              }
-            });
-
-            view.Wait = Marionette.ItemView.extend({
-              template: Backbone.Marionette.TemplateCache.get("#wait-template")
-            });
-
+              );
+            },
+            cancel_click:function(ev) {
+              this.options.mode = "view";
+              this.render();
+            }
           });
 
-          m_app.addRegions({
-            message : '.message-container',
-            user_list : '.user-list-container',
-            loading : '.loading-container'
+          app.view.UserList = Marionette.CollectionView.extend({
+            collection: app.model.UserCollection,
+            childView: app.view.User,
+            childViewOptions: function(model, index) {
+              return {
+                childIndex: index,
+                mode: "view"
+              }
+            }
           });
 
-          m_app.addInitializer(function(options){
-            m_app.loading.show(new m_app.view.Wait);
-            m_userList = new m_app.model.UserCollection;
+          app.view.UnexpectedError = Marionette.View.extend({
+            template: Backbone.Marionette.TemplateCache.get("#unexpected-error-template"),
+            ui: {
+              error_box:".error-box"
+            },
+            onShow: function(){
+              var ui = this.ui;
+              setInterval(function(){$(ui.error_box).fadeOut()},5000);
+            }
+          });
+
+          app.view.Wait = Marionette.View.extend({
+            template: Backbone.Marionette.TemplateCache.get("#wait-template")
+          });
+
+          app.on('start', function() {
+            var containerView = new app.view.Container();
+
+            app.showView(containerView);
+            containerView.getRegion('loading').show(new app.view.Wait);
+            m_userList = new app.model.UserCollection;
             m_userList.url = '/services/admin/users';
             m_userList.fetch({
               success: function(collection, response, options){
-                m_app.loading.reset();
-                m_app.user_list.show(new m_app.view.UserList({collection:m_userList}));
+                containerView.getRegion('loading').reset();
+                containerView.getRegion('userList').show(new app.view.UserList({collection:m_userList}));
               },
               error: function(collection, xhr, options){
-                m_app.loading.reset();
+                containerView.getRegion('loading').reset();
                 if (xhr.responseJSON == "kick") {
                   document.location = "@routes.Auth.login?return_url=@play.utils.UriEncoding.encodePathSegment(request.uri,"UTF-8")";
                 }
               }
             });
             $(window).scroll(function(ev){
-              if ((!m_app.loading.hasView()) && (m_prevScrollPos < $(window).scrollTop()) &&
+              if ((!containerView.getRegion('loading').hasView()) && (m_prevScrollPos < $(window).scrollTop()) &&
                 ($(window).scrollTop() + $(window).height() > $("body").height())) {
-                m_app.loading.show(new m_app.view.Wait);
-                userList = new m_app.model.UserCollection;
+                containerView.getRegion('loading').show(new app.view.Wait);
+                userList = new app.model.UserCollection;
                 userList.url = '/services/admin/users?skip=' + m_userList.length;
                 userList.fetch({
                   success: function(collection, response, options){
-                    m_app.loading.reset();
+                    containerView.getRegion('loading').reset();
                     m_userList.add(userList.models);
                   },
                   error: function(collection, xhr, options){
-                    m_app.loading.reset();
+                    containerView.getRegion('loading').reset();
                     if (xhr.responseJSON == "kick") {
                       document.location = "@routes.Auth.login?return_url=@play.utils.UriEncoding.encodePathSegment(request.uri,"UTF-8")";
                     }
@@ -268,7 +280,7 @@
             });
           });
 
-          m_app.start();
+          app.start();
         }
       }
     }();

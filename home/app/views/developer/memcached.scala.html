@@ -8,7 +8,6 @@
 </div>
 <div id="primary-container" class="manage-memcached-page">
   <div class="content">
-    <div class="message-container">
 @errorMessageOption match {
   case Some(errorMessage) => {
     <div class="error-box">@errorMessage</div>
@@ -17,7 +16,7 @@
 }
     </div>
 
-    <div class="key-value-container"></div>
+    <div id="main-content"></div>
 
     <div class="list-container">
 @memcachedStatsListOption match {
@@ -39,6 +38,15 @@
     <div class="clearing">&nbsp;</div>
   </div>
 </div>
+
+
+<script type="text/html" id="container-template">
+
+<div class="message-container"></div>
+
+<div class="key-value-container"></div>
+
+</script>
 
 <script type="text/html" id="key-value-template">
 
@@ -101,145 +109,154 @@
     @views.html.components.namespace_init(Seq("developer"))
     @views.html.components.epoxy_init()
     com.rodneylai.developer.memcached = function() {
-      var m_app;
       var m_keyValueView;
 
       return {
         init: function() {
-          m_app = new Backbone.Marionette.Application();
-
-          m_app.module('model', function (model, app, Backbone) {
-
-            model.KeyValue = Backbone.Model.extend({
-              defaults: {
-                id : null,
-                value : null
-              },
-              urlRoot: '/services/developer/memcached'
-            });
-
+          var App = Backbone.Marionette.Application.extend({
+            region: '#main-content',
+            model: {
+              KeyValue: Backbone.Model.extend({
+                defaults: {
+                  id : null,
+                  value : null
+                },
+                urlRoot: '/services/developer/memcached'
+              })
+            },
           });
 
-          m_app.module('view', function (view, app, Backbone, Marionette) {
+          var app = new App();
 
-            view.UnexpectedError = Marionette.ItemView.extend({
-              template: Backbone.Marionette.TemplateCache.get("#unexpected-error-template"),
-              ui: {
-                error_box:".error-box"
-              },
-              onShow: function(){
-                var ui = this.ui;
-                setInterval(function(){$(ui.error_box).fadeOut()},5000);
+          app.view = {};
+
+          app.view.Container = Marionette.View.extend({
+            template: Backbone.Marionette.TemplateCache.get("#container-template"),
+            regions: {
+              message: '.message-container',
+              keyValue: '.key-value-container'
+            }
+          });
+
+          app.view.UnexpectedError = Marionette.View.extend({
+            template: Backbone.Marionette.TemplateCache.get("#unexpected-error-template"),
+            ui: {
+              error_box:".error-box"
+            },
+            onShow: function(){
+              var ui = this.ui;
+              setInterval(function(){$(ui.error_box).fadeOut()},5000);
+            }
+          });
+
+          app.view.KeyNotFound = Marionette.View.extend({
+            template: Backbone.Marionette.TemplateCache.get("#key-not-found-template"),
+            ui: {
+              error_box:".error-box"
+            },
+            onShow: function(){
+              var ui = this.ui;
+              setInterval(function(){$(ui.error_box).fadeOut()},5000);
+            }
+          });
+
+          app.view.KeyRemoved = Marionette.View.extend({
+            template: Backbone.Marionette.TemplateCache.get("#key-removed-template"),
+            ui: {
+              information_box:".information-box"
+            },
+            onShow: function(){
+              var ui = this.ui;
+              setInterval(function(){$(ui.information_box).fadeOut()},5000);
+            }
+          });
+
+          app.view.KeyValue = com.rodneylai.EpoxyView.extend({
+            model: app.model.Key,
+            bindings: "data-bind",
+            template: Backbone.Marionette.TemplateCache.get("#key-value-template"),
+            ui: {
+              get_button:".get-button",
+              remove_button:".remove-button",
+              get_wait_img:"#get-wait-img",
+              remove_wait_img:"#remove-wait-img"
+            },
+            events: {
+              "keyup #key-input" : "check_for_enter",
+              "click .get-button[disabled!=disabled]" : "get_click",
+              "click .remove-button[disabled!=disabled]" : "remove_click"
+            },
+            check_for_enter:function(ev){
+              if (ev.keyCode == 13) {
+                this.get_click();
               }
-            });
-
-            view.KeyNotFound = Marionette.ItemView.extend({
-              template: Backbone.Marionette.TemplateCache.get("#key-not-found-template"),
-              ui: {
-                error_box:".error-box"
-              },
-              onShow: function(){
-                var ui = this.ui;
-                setInterval(function(){$(ui.error_box).fadeOut()},5000);
-              }
-            });
-
-            view.KeyRemoved = Marionette.ItemView.extend({
-              template: Backbone.Marionette.TemplateCache.get("#key-removed-template"),
-              ui: {
-                information_box:".information-box"
-              },
-              onShow: function(){
-                var ui = this.ui;
-                setInterval(function(){$(ui.information_box).fadeOut()},5000);
-              }
-            });
-
-            view.KeyValue = com.rodneylai.EpoxyItemView.extend({
-              model: app.model.Key,
-              bindings: "data-bind",
-              template: Backbone.Marionette.TemplateCache.get("#key-value-template"),
-              ui: {
-                get_button:".get-button",
-                remove_button:".remove-button",
-                get_wait_img:"#get-wait-img",
-                remove_wait_img:"#remove-wait-img"
-              },
-              events: {
-                "keyup #key-input" : "check_for_enter",
-                "click .get-button[disabled!=disabled]" : "get_click",
-                "click .remove-button[disabled!=disabled]" : "remove_click"
-              },
-              check_for_enter:function(ev){
-                if (ev.keyCode == 13) {
-                  this.get_click();
+            },
+            get_click: function() {
+              m_keyValueView.model.set('value',null);
+              m_keyValueView.render();
+              this.ui.get_button.attr("disabled","disabled");
+              this.ui.remove_button.attr("disabled","disabled");
+              this.ui.get_wait_img.show();
+              app.getView().getRegion('message').reset();
+              this.model.fetch({
+                success: function(model, response) {
+                  m_keyValueView.ui.get_button.removeAttr("disabled");
+                  m_keyValueView.ui.remove_button.removeAttr("disabled");
+                  m_keyValueView.ui.get_wait_img.hide();
+                  m_keyValueView.model = model;
+                  m_keyValueView.render();
+                },
+                error: function(model, xhr, options) {
+                  m_keyValueView.ui.get_button.removeAttr("disabled");
+                  m_keyValueView.ui.remove_button.removeAttr("disabled");
+                  m_keyValueView.ui.get_wait_img.hide();
+                  if (xhr.status == 404) {
+                    app.getView().getRegion('message').show(new app.view.KeyNotFound());
+                  } else if (xhr.responseJSON == "kick") {
+                    document.location = "@routes.Auth.login?return_url=@play.utils.UriEncoding.encodePathSegment(request.uri,"UTF-8")";
+                  } else {
+                    app.getView().getRegion('message').show(new app.view.UnexpectedError());
+                  }
                 }
-              },
-              get_click: function() {
-                this.ui.get_button.attr("disabled","disabled");
-                this.ui.remove_button.attr("disabled","disabled");
-                this.ui.get_wait_img.show();
-                this.model.fetch({
-                  success: function(model, response) {
-                    m_keyValueView.ui.get_button.removeAttr("disabled");
-                    m_keyValueView.ui.remove_button.removeAttr("disabled");
-                    m_keyValueView.ui.get_wait_img.hide();
-                    m_keyValueView.model = model;
-                    m_keyValueView.render();
-                  },
-                  error: function(model, xhr, options) {
-                    m_keyValueView.ui.get_button.removeAttr("disabled");
-                    m_keyValueView.ui.remove_button.removeAttr("disabled");
-                    m_keyValueView.ui.get_wait_img.hide();
-                    if (xhr.status == 404) {
-                      m_app.message.show(new m_app.view.KeyNotFound());
-                    } else if (xhr.responseJSON == "kick") {
-                      document.location = "@routes.Auth.login?return_url=@play.utils.UriEncoding.encodePathSegment(request.uri,"UTF-8")";
-                    } else {
-                      m_app.message.show(new m_app.view.UnexpectedError());
-                    }
-                  }
-                });
-              },
-              remove_click: function() {
-                this.ui.get_button.attr("disabled","disabled");
-                this.ui.remove_button.attr("disabled","disabled");
-                this.ui.remove_wait_img.show();
-                this.model.destroy({
-                  success: function(model, response) {
-                    m_keyValueView.ui.get_button.removeAttr("disabled");
-                    m_keyValueView.ui.remove_button.removeAttr("disabled");
-                    m_keyValueView.ui.remove_wait_img.hide();
-                    model.set("value",null);
-                    m_keyValueView.model = model;
-                    m_keyValueView.render();
-                    m_app.message.show(new m_app.view.KeyRemoved());
-                  },
-                  error: function(model, response) {
-                    m_keyValueView.ui.get_button.removeAttr("disabled");
-                    m_keyValueView.ui.remove_button.removeAttr("disabled");
-                    m_keyValueView.ui.remove_wait_img.hide();
-                    m_app.message.show(new m_app.view.UnexpectedError());
-                  }
-                });
-              }
-            });
-
-            view.Wait = Marionette.ItemView.extend({
-              template: Backbone.Marionette.TemplateCache.get("#wait-template")
-            });
-
+              });
+            },
+            remove_click: function() {
+              this.ui.get_button.attr("disabled","disabled");
+              this.ui.remove_button.attr("disabled","disabled");
+              this.ui.remove_wait_img.show();
+              this.model.destroy({
+                success: function(model, response) {
+                  m_keyValueView.ui.get_button.removeAttr("disabled");
+                  m_keyValueView.ui.remove_button.removeAttr("disabled");
+                  m_keyValueView.ui.remove_wait_img.hide();
+                  model.set("value",null);
+                  m_keyValueView.model = model;
+                  m_keyValueView.render();
+                  app.getView().getRegion('message').show(new app.view.KeyRemoved());
+                },
+                error: function(model, response) {
+                  m_keyValueView.ui.get_button.removeAttr("disabled");
+                  m_keyValueView.ui.remove_button.removeAttr("disabled");
+                  m_keyValueView.ui.remove_wait_img.hide();
+                  app.getView().getRegion('message').show(new app.view.UnexpectedError());
+                }
+              });
+            }
           });
 
-          m_app.addRegions({message : '.message-container',
-                            key_value : '.key-value-container'
+          app.view.Wait = Marionette.View.extend({
+            template: Backbone.Marionette.TemplateCache.get("#wait-template")
           });
 
-          m_app.addInitializer(function(options){
-            m_app.key_value.show(m_keyValueView = new m_app.view.KeyValue({ model : new m_app.model.KeyValue() }));
+          app.on('start', function() {
+            var containerView = new app.view.Container();
+
+            m_keyValueView = new app.view.KeyValue({ model : new app.model.KeyValue() })
+            app.showView(containerView);
+            containerView.getRegion('keyValue').show(m_keyValueView);
           });
 
-          m_app.start();
+          app.start();
         }
       }
     }();
@@ -252,7 +269,7 @@
 
 @*
  *
- * Copyright (c) 2015-2017 Rodney S.K. Lai
+ * Copyright (c) 2015-2020 Rodney S.K. Lai
  * https://github.com/rodney-lai
  *
  * Permission to use, copy, modify, and/or distribute this software for
