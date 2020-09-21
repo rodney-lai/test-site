@@ -40,6 +40,9 @@ case class Image(
   linkUrl: String
 )
 
+case class ScrapeImgPrefixConfig(url: String)
+case class ScrapeImgConfig(url: String, prefix: ScrapeImgPrefixConfig)
+
 trait ImageService {
   def getImages(): Task[Seq[Image]]
 }
@@ -48,9 +51,6 @@ class ImageServiceImpl @Inject() (
   cacheService: CacheService
 ) extends ImageService {
   private val log = LoggerFactory.getLogger(this.getClass.getName)
-
-  case class ScrapeImgPrefixConfig(url: String)
-  case class ScrapeImgConfig(url: String, prefix: ScrapeImgPrefixConfig)
 
   private def scrapeImages(url:String,prefixUrl:String,excludeUrlList:Seq[String],list:Seq[Image]):Seq[Image] = {
     if(url != s"${prefixUrl}/") log.debug(url)
@@ -69,11 +69,15 @@ class ImageServiceImpl @Inject() (
     }
   }
 
-  private def doScrapeImages(url:String,prefixUrl:String): Task[Seq[Image]] = Task {
+  protected[services] def doScrapeImages(url:String,prefixUrl:String): Task[Seq[Image]] = Task {
     val startInstant = Instant.now
     val images = scrapeImages(url,prefixUrl,Seq[String](),Seq[Image]())
     log.info(s"doScrapeImages[duration=${Duration.between(startInstant,Instant.now)}][count=${images.size}]")
     images
+  }
+
+  protected[services] def loadConfig() = {
+    ConfigSource.default.at("scrape.img").load[ScrapeImgConfig]
   }
 
   def getImages(): Task[Seq[Image]] = {
@@ -88,7 +92,7 @@ class ImageServiceImpl @Inject() (
         }
         Task.succeed(images)
       case None =>
-        ConfigSource.default.at("scrape.img").load[ScrapeImgConfig] match {
+        loadConfig() match {
           case Right(scrapeImgConfig) =>
             for {
               images <- doScrapeImages(scrapeImgConfig.url,scrapeImgConfig.prefix.url)
@@ -97,8 +101,8 @@ class ImageServiceImpl @Inject() (
               if(!result) log.error("getImages[failed_to_update_memcached]")
               images
             }
-          case Left(ex) =>
-            log.error("getImages[invalid_config]",ex)
+          case Left(failure) =>
+            log.error(s"getImages[invalid_config][$failure]")
             Task.succeed(Seq[Image]())
         }
     }

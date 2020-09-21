@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
 
   object Caliban {
-    val version = "0.9.1"
+    val version = "0.9.2"
     lazy val core = "com.github.ghostdogpr" %% "caliban" % version
     lazy val http4s = "com.github.ghostdogpr" %% "caliban-http4s" % version
   }
@@ -33,5 +33,7 @@ object Dependencies {
 
   lazy val pureConfig = "com.github.pureconfig" %% "pureconfig" % "0.13.0"
 
-  lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.1.1"
+  lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.2"
+
+  lazy val mockito = "org.mockito" %% "mockito-scala-scalatest" % "1.15.0"
 }

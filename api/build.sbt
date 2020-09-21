@@ -5,6 +5,8 @@ ThisBuild / version          := "0.9.0"
 ThisBuild / organization     := "com.rodneylai"
 ThisBuild / organizationName := "rodneylai"
 
+ThisBuild / coverageExcludedPackages := ".*Module"
+
 lazy val root = (project in file("."))
   .settings(
     name := "test-api",
@@ -28,7 +30,8 @@ lazy val root = (project in file("."))
       Logging.Logback.core,
       Logging.Logback.classic,
       Logging.slf4j,
-      scalaTest % Test
+      scalaTest % Test,
+      mockito % Test
     )
   )
 
