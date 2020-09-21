@@ -24,10 +24,6 @@ javaOptions in Universal ++= Seq(
   "-Dpidfile.path=/dev/null"
 )
 
-val javacvVersion = "1.4.3"
-
-val javacppVersion = "1.4.3"
-
 // Determine current platform
 val platform = {
   // Determine platform name using code similar to javacpp
@@ -66,13 +62,7 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "ch.qos.logback" % "logback-core" % "1.2.3",
   "com.iterable" %% "swagger-play" % "2.0.1",
-  "org.bytedeco" % "javacv" % javacvVersion excludeAll(
-    ExclusionRule(organization = "org.bytedeco.javacpp-presets"),
-    ExclusionRule(organization = "org.bytedeco.javacpp")
-    ),
-  "org.bytedeco.javacpp-presets" % "opencv"  % ("3.4.3-" + javacppVersion) classifier "",
-  "org.bytedeco.javacpp-presets" % "opencv"  % ("3.4.3-" + javacppVersion) classifier platform,
-  "org.bytedeco" % "javacpp" % javacppVersion,
+  "org.bytedeco" % "opencv-platform" % "4.4.0-1.5.4",
   "org.slf4j" % "slf4j-api" % "1.7.30",
   jdbc,
   ehcache,

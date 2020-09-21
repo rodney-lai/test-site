@@ -31,8 +31,8 @@ import com.amazonaws.regions.{Regions}
 import com.amazonaws.services.s3.{AmazonS3,AmazonS3ClientBuilder}
 import com.amazonaws.services.s3.model.{ObjectMetadata,PutObjectRequest}
 import io.swagger.annotations._
-import org.bytedeco.javacpp.opencv_core._
-import org.bytedeco.javacpp.opencv_imgcodecs
+import org.bytedeco.opencv.global.opencv_imgcodecs
+import org.bytedeco.opencv.opencv_core._
 import org.slf4j.{Logger,LoggerFactory}
 
 @Singleton
@@ -114,7 +114,7 @@ class UploadController @Inject() (
   }
 
   private def doCalcHistogram(buffer:akka.util.ByteString):String = {
-    val mat = opencv_imgcodecs.imdecode(new Mat(buffer.toArray,true),opencv_imgcodecs.CV_LOAD_IMAGE_UNCHANGED)
+    val mat = opencv_imgcodecs.imdecode(new Mat(buffer.toArray,true),opencv_imgcodecs.IMREAD_UNCHANGED)
     val histogram:String = calcHistogram(mat)
 
     mat.release()
