@@ -1,0 +1,28 @@
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:8-jdk
+
+    working_directory: ~/repo
+
+    environment:
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+
+    steps:
+      - checkout
+
+      - run:
+          name: Build Http4s REST and Caliban GraphQL API
+          working_directory: ./api
+          command: sbt assembly
+
+      - run:
+          name: Save test results
+          command: |
+              mkdir -p test-reports
+              find . -type f -regex ".*/target/test-reports/.*xml" -exec cp {} test-reports/ \;
+
+      - store_test_results:
+          path: test-reports
