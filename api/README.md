@@ -1,6 +1,8 @@
 Rodney's Test API v0.9.0
 ========================
 
+[![API Build Status](https://circleci.com/gh/rodney-lai/test-site.svg?style=shield)](https://circleci.com/gh/rodney-lai/test-site)  
+
 rlai [ at ] irismedia [ dot ] com
 
 [Test App](https://app.rodneylai.com/)
