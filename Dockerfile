@@ -85,7 +85,7 @@ RUN         cd /home/deploy-user/build/api; /home/deploy-user/sbt/bin/sbt assemb
 RUN         mkdir /home/deploy-user/deploy-api
 RUN         mv /home/deploy-user/build/api/target/scala-2.13/*.jar /home/deploy-user/deploy-api
 RUN         mkdir /home/deploy-user/deploy-api/files
-RUN         mv /home/deploy-user/build/api/README /home/deploy-user/deploy-api/files/README.md
+RUN         mv /home/deploy-user/build/api/README.md /home/deploy-user/deploy-api/files/README.md
 RUN         rm -rf /home/deploy-user/build
 
 FROM        ubuntu:20.04
