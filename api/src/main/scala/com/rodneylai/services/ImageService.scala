@@ -52,9 +52,13 @@ class ImageServiceImpl @Inject() (
 ) extends ImageService {
   private val log = LoggerFactory.getLogger(this.getClass.getName)
 
+  protected[services] def getDocument(url: String): Document = {
+    Jsoup.connect(url).get
+  }
+
   private def scrapeImages(url:String,prefixUrl:String,excludeUrlList:Seq[String],list:Seq[Image]):Seq[Image] = {
     if(url != s"${prefixUrl}/") log.debug(url)
-    Try(Jsoup.connect(url).get) match {
+    Try(getDocument(url)) match {
       case Success(doc:Document) =>
         val linkList:Seq[String] = doc.select("a[href]").iterator().asScala.toSeq.map(_.attr("abs:href")).filter(linkUrl => linkUrl.startsWith(prefixUrl)).filter(linkUrl => !excludeUrlList.contains(linkUrl))
 

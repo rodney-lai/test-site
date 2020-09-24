@@ -19,12 +19,13 @@
 
  package com.rodneylai.services
 
-import org.scalatest.Assertion
-import org.scalatest.wordspec._
-import org.scalatest.matchers.should.Matchers
+import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers._
 import org.mockito.{ ArgumentMatchersSugar, IdiomaticMockito }
 import org.mockito.Mockito._
+import org.scalatest.Assertion
+import org.scalatest.wordspec._
+import org.scalatest.matchers.should.Matchers
 import pureconfig._
 import pureconfig.generic.auto._
 import scala.concurrent.Future
@@ -122,6 +123,66 @@ class ImageServiceTests extends AsyncWordSpec
           }
         }
       }
+    }
+
+    "scrapeImages" can {
+      val baseUrl = "http://test.rodneylai.com"
+      val prefixBase = "prefixUrl"
+      val prefixUrl = s"${baseUrl}/${prefixBase}"
+
+      def TestFixture(
+        html: Map[String,String] = Map[String,String]()
+      )(test: (ImageServiceImpl) => Task[Assertion]): Future[Assertion] = {
+        val cacheService = mock[CacheService]
+        val imageService = spy(new ImageServiceImpl(cacheService))
+
+        doThrow(
+          new org.jsoup.UncheckedIOException("something bad happened")
+        ).when(imageService).getDocument(anyString)
+        html.foreach { case (key, value) =>
+          doReturn({
+            val doc = Jsoup.parse(value)
+            doc.setBaseUri(baseUrl)
+            doc
+          }).when(imageService).getDocument(key)
+        }
+
+        Runtime.default.unsafeRunToFuture(
+          test(imageService)
+        )
+      }
+
+      "return no images if html url is invalid" in {
+        TestFixture() { imageService =>
+          for {
+            result <- imageService.doScrapeImages(s"${baseUrl}/url1",prefixUrl)
+          } yield {
+            result should be (empty)
+          }
+        }
+      }
+
+      "find images in html" in {
+        TestFixture(
+          Map(
+            (s"${baseUrl}/url1" -> s"""<html><head><title>title1</title></head><body><img src="imgSrc1" title="imgTitle1" alt="imgAlt1" /><a href="${prefixBase}/url2">test link</a></body></html>"""),
+            (s"${prefixUrl}/url2" -> """<html><head><title>title2</title></head><body><img src="imgSrc2" title="imgTitle2" alt="imgAlt2" /></body></html>""")
+          )
+        ) { imageService =>
+          for {
+            result <- imageService.doScrapeImages(s"${baseUrl}/url1",prefixUrl)
+          } yield {
+            result should have size (2)
+            result should contain (
+              Image(s"${baseUrl}/imgSrc1","imgAlt1","title1",s"${baseUrl}/url1")
+            )
+            result should contain (
+              Image(s"${baseUrl}/imgSrc2","imgAlt2","title2",s"${prefixUrl}/url2")
+            )
+          }
+        }
+      }
+
     }
 
   }
