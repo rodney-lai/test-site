@@ -35,7 +35,7 @@ class CacheServiceImpl @Inject() (
 ) extends CacheService {
   private val log = LoggerFactory.getLogger(this.getClass.getName)
 
-  private val cache = Map[String,String]()
+  protected[services] val cache = Map[String,String]()
 
   def get(key: String): Option[String] = {
     Option(memCachedService.client) match {
@@ -46,7 +46,7 @@ class CacheServiceImpl @Inject() (
     }
   }
 
-  private def toTask(operationFuture: OperationFuture[java.lang.Boolean]): Task[Boolean] = {
+  protected[services] def toTask(operationFuture: OperationFuture[java.lang.Boolean]): Task[Boolean] = {
     val promise = scala.concurrent.Promise[Boolean]()
 
     operationFuture.addListener(new OperationCompletionListener {
