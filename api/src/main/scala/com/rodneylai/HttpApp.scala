@@ -39,6 +39,7 @@ object HttpApp extends CatsApp {
     val injector = Guice.createInjector(
       new CacheServiceModule,
       new ImageServiceModule,
+      new KafkaServiceModule,
       new MemCachedServiceModule,
       new RouterServiceModule
     )

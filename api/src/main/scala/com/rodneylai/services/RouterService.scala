@@ -19,7 +19,7 @@
 
 package com.rodneylai.services
 
-import caliban.{GraphQLInterpreter, Http4sAdapter, RootResolver, CalibanError}
+import caliban.{CalibanError, GraphQLInterpreter, Http4sAdapter, RootResolver}
 import caliban.GraphQL.graphQL
 import caliban.ResponseValue._
 import cats.data.Kleisli
@@ -39,9 +39,10 @@ import scala.concurrent.duration._
 import scala.io
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
+import zio.{IO, Runtime, Task, ZEnv}
 import zio.interop.catz._
 import zio.interop.catz.implicits._
-import zio.{IO, Runtime, Task, ZEnv}
+import zio.stream.ZStream
 
 trait RouterService {
   def buildGraphQLInterpreter(): IO[CalibanError.ValidationError, GraphQLInterpreter[Any, CalibanError]]
@@ -52,7 +53,8 @@ trait RouterService {
 }
 
 class RouterServiceImpl @Inject() (
-  imageService: ImageService
+  imageService: ImageService,
+  kafkaService: KafkaService
 ) extends RouterService {
   private val log = LoggerFactory.getLogger(this.getClass.getName)
 
@@ -71,6 +73,8 @@ class RouterServiceImpl @Inject() (
     version: Version,
     images: () => Task[Seq[Image]],
   )
+  case class Mutations(empty: String)
+  case class Subscriptions(webcamUpdated: ZStream[Any, Throwable, Option[String]])
 
   def buildRouter(
     interpreter: GraphQLInterpreter[Any, CalibanError],
@@ -97,11 +101,20 @@ class RouterServiceImpl @Inject() (
       }
     )
 
+    val wsGraphqlService = Http4sAdapter.makeWebSocketService(
+      interpreter.mapError {
+        case err =>
+          log.error("[ws_graphql_failure]", err)
+          err
+      }
+    )
+
     Router[Task](
       "/" -> infoRESTService,
       "/" -> CORS(fileService(FileService.Config("./files", blocker))),
       "/" -> CORS(Timeout(360 seconds)(imageRESTService)),
-      "/graphql" -> CORS(Timeout(360 seconds)(graphqlService))
+      "/graphql" -> CORS(Timeout(360 seconds)(graphqlService)),
+      "/ws/graphql"  -> CORS(wsGraphqlService)
     ).orNotFound
   }
 
@@ -110,8 +123,12 @@ class RouterServiceImpl @Inject() (
       Version(buildDate),
       () => imageService.getImages()
     )
+    val mutations = Mutations("nothing here")
+    val subscriptions = Subscriptions(kafkaService.getWebCamStream())
 
-    graphQL(RootResolver(queries)).interpreter
+    val api = graphQL(RootResolver(queries,mutations,subscriptions))
+
+    api.interpreter
   }
 
 }

@@ -31,6 +31,7 @@ Build, Deploy, Hosting
 * Server Hosting - [Amazon Web Services (AWS)](http://aws.amazon.com/)
 * Reverse Proxy - [Nginx](https://www.nginx.com/)
 * MemCached Hosting - [RedisLabs](https://redislabs.com/)
+* Kafka Hosting - [CloudKarafka](https://www.cloudkarafka.com/)
 * Logging - [Papertrail](https://papertrailapp.com/)
 * Monitoring - [UptimeRobot](https://uptimerobot.com/)
 * SSL Certificate Authority - [LetsEncrypt](https://letsencrypt.org/)

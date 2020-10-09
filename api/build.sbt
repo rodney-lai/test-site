@@ -23,13 +23,14 @@ lazy val root = (project in file("."))
       Circe.core,
       Circe.generic,
       Circe.parser,
-      jsoup,
-      memcached,
-      pureConfig,
-      guice,
       Logging.Logback.core,
       Logging.Logback.classic,
       Logging.slf4j,
+      guice,
+      jsoup,
+      kafka,
+      memcached,
+      pureConfig,
       scalaTest % Test,
       mockito % Test
     )

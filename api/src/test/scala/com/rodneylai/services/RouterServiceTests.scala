@@ -31,6 +31,7 @@ import org.scalatest.matchers.should.Matchers
 import scala.concurrent.Future
 import zio.interop.catz._
 import zio.{Runtime, Task}
+import zio.stream.ZStream
 
 class RouterServiceTests extends AsyncWordSpec
   with Matchers
@@ -55,11 +56,16 @@ class RouterServiceTests extends AsyncWordSpec
         expectedResult: String
       ): Future[Assertion] = {
         val imageService = mock[ImageService]
-        val routerService = spy(new RouterServiceImpl(imageService))
+        val kafkaService = mock[KafkaService]
+        val routerService = spy(new RouterServiceImpl(imageService,kafkaService))
 
         when(
           imageService.getImages()
         ).thenReturn(Task.succeed(images))
+
+        when(
+          kafkaService.getWebCamStream()
+        ).thenReturn(ZStream.empty)
 
         doReturn("theBuildDate").when(routerService).buildDate
 

@@ -25,6 +25,8 @@ object Dependencies {
     lazy val parser = "io.circe" %% "circe-parser" % version
   }
 
+  lazy val kafka = "dev.zio" %% "zio-kafka" % "0.12.0"
+  
   lazy val guice = "com.google.inject" % "guice" % "4.2.3"
 
   lazy val memcached = "net.spy" % "spymemcached" % "2.12.3"
