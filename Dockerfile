@@ -37,7 +37,7 @@ RUN         mkdir /home/deploy-user/tmp && \
 
 RUN         mkdir /home/deploy-user/tmp && \
             cd /home/deploy-user/tmp && \
-            wget https://piccolo.link/sbt-$SBT_VERSION.zip && \
+            wget https://github.com/sbt/sbt/releases/download/v$SBT_VERSION/sbt-$SBT_VERSION.zip && \
             unzip sbt-$SBT_VERSION.zip -d /home/deploy-user && \
             cd /home/deploy-user && \
             rm -rf /home/deploy-user/tmp
